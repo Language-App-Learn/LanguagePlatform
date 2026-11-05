@@ -1,0 +1,6 @@
+@ArapcaApp.Api_HostAddress = http://localhost:5150
+
+GET {{ArapcaApp.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
