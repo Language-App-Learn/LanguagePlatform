@@ -234,5 +234,14 @@
   "historyNextReview": "Next review: {date}",
   "@historyNextReview": {"placeholders": {"date": {"type": "String"}}},
   "historyUnknownWord": "Word no longer available",
-  "reviewHistoryOpen": "Review history"
+  "reviewHistoryOpen": "Review history",
+  "brandTagline": "Learn languages in your own language.",
+  "lessonPosition": "Lesson {current} of {total}",
+  "@lessonPosition": {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}}},
+  "lessonCompletedSnack": "Lesson marked as complete",
+  "leaveQuizTitle": "Leave the quiz?",
+  "leaveQuizMessage": "Your answers in this attempt will not be saved.",
+  "leaveQuizConfirm": "Leave",
+  "optionLetterSemantics": "Option {letter}",
+  "@optionLetterSemantics": {"placeholders": {"letter": {"type": "String"}}}
 }

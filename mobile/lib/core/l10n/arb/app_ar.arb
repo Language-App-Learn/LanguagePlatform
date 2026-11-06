@@ -210,5 +210,12 @@
   "reviewHistoryEmptyMessage": "ستظهر هنا مراجعات بطاقات الكلمات.",
   "historyNextReview": "المراجعة التالية: {date}",
   "historyUnknownWord": "الكلمة لم تعد متاحة",
-  "reviewHistoryOpen": "سجل المراجعة"
+  "reviewHistoryOpen": "سجل المراجعة",
+  "brandTagline": "تعلّم اللغات بلغتك.",
+  "lessonPosition": "الدرس {current} من {total}",
+  "lessonCompletedSnack": "تم وضع علامة اكتمال على الدرس",
+  "leaveQuizTitle": "مغادرة الاختبار؟",
+  "leaveQuizMessage": "لن يتم حفظ إجاباتك في هذه المحاولة.",
+  "leaveQuizConfirm": "مغادرة",
+  "optionLetterSemantics": "الخيار {letter}"
 }

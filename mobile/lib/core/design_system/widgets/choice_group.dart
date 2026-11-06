@@ -8,6 +8,7 @@ class ChoiceOption<T> {
     required this.value,
     required this.label,
     this.enabled = true,
+    this.leading,
   });
 
   /// Test ve erişilebilirlik anahtarı için kararlı kimlik.
@@ -15,6 +16,9 @@ class ChoiceOption<T> {
   final T value;
   final String label;
   final bool enabled;
+
+  /// Optional leading widget (list layout only), e.g. a language badge.
+  final Widget? leading;
 }
 
 enum ChoiceGroupLayout { chips, list }
@@ -103,6 +107,7 @@ class ChoiceGroup<T> extends StatelessWidget {
         child: ListTile(
           enabled: option.enabled,
           minVerticalPadding: AppSpacing.md,
+          leading: option.leading,
           title: Text(option.label),
           trailing: Icon(
             isSelected ? Icons.check_circle : Icons.circle_outlined,

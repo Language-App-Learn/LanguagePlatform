@@ -1,15 +1,29 @@
 # PROJECT_STATUS — Mobile (Flutter)
 
-> Update after every milestone. Keep short. Last update: 2026-11-06 (V3 session 1)
+> Update after every milestone. Keep short. Last update: 2026-11-06 (V4 session 1)
 
 ## Git state (verified at session start)
-- Branch `Flutter`; local HEAD = `origin/Flutter` = `4981d3e` ("add local persistence, flashcard review and architecture hardening"). Earlier commits: `d590fe6` (MVP), `4058ccc`.
-- V3 changes below are **uncommitted** (nothing pushed by this session).
+- Branch `Flutter`; local HEAD = `origin/Flutter` = `11b7e96` (V3 pushed). V4 changes below are **uncommitted**.
+- Earlier: `4981d3e` (persistence/architecture), `d590fe6` (MVP).
 
 ## Quality gates (this session)
-- `flutter analyze`: clean. `flutter test`: **291 passed, 0 failed** (baseline was 218).
-- Android: plain `flutter build apk --debug` still **fails** in `:shared_preferences_android:compileDebugKotlin`. Innermost cause in the log: Kotlin `IllegalStateException: Storage for [...\build\shared_preferences_android\...\class-fq-name-to-source.tab] is already registered` → "Could not close incremental caches". Not fixed by: clearing that plugin's build dir; `-Pkotlin.compiler.execution.strategy=in-process`. Gradle/Kotlin daemons were not killed (they run under Android Studio's JBR). **Works:** `flutter build apk --debug -Pkotlin.incremental=false` (per invocation only; no Gradle files changed). Open question for the developer: path-spelling/drive layout (project on D:, pub cache on C:) or a stale daemon; try after closing Android Studio.
+- `flutter analyze`: clean. `flutter test`: **303 passed, 0 failed** (V3 baseline 291; V4 added 12 tests and the large-text suite re-ran against the redesigned screens).
+- Android (V4 re-check): plain `flutter build apk --debug` still **fails** in `:shared_preferences_android:compileDebugKotlin` (Kotlin "Could not close incremental caches"; innermost: storage "is already registered"). `flutter build apk --debug -Pkotlin.incremental=false` **succeeds**. Earlier attempts that did not help: clearing the plugin build dir, in-process Kotlin compilation. Daemons not killed (Android Studio).
 - iOS: not built (needs macOS/Xcode). TalkBack / VoiceOver: not tested on devices.
+
+## V4 work (this session)
+| Area | Status |
+|---|---|
+| Splash: brand + tagline with restrained fade-in; no delay (route applied as soon as decided) | done |
+| Onboarding: native-shape illustrations (`StepIllustration`, color role per step) | done |
+| Language selection: ISO badges (`LanguageBadge`) on known/target cards; values stay independent | done |
+| Auth screens: form inside a card, keyboard dismiss on drag; still no fake success | done (light) |
+| Lesson reader: `LessonHeader` (course, "Lesson n of N", minutes, completion, course progress); Arabic content typography in `ContentText` (1.12x size, 1.9 line height, text never modified); completion snackbar | done |
+| Quiz: option letter markers (A/B/C or أ/ب/ج); leave-confirmation when abandoning an attempt (`PopScope`) | done |
+| Backend adapter | **blocked**: this workspace's backend only has `/weatherforecast`; see API_INTEGRATION.md |
+| Other question types | blocked on product decisions (multiple-select scoring, matching, ordering, fill-blank rules) |
+| Catalog / vocabulary / progress / settings visual polish | not redone in V4 (V3 state) |
+| Device accessibility (TalkBack/VoiceOver), iOS build | unverified |
 
 ## V3 work
 | Area | Status |

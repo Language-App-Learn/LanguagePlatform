@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/design_system/widgets/app_card.dart';
 import '../../../../core/design_system/widgets/brand_mark.dart';
 import '../../../../core/design_system/widgets/content_width.dart';
 import '../../../../core/design_system/widgets/notice_banner.dart';
@@ -32,6 +33,7 @@ class AuthScaffold extends StatelessWidget {
       body: SafeArea(
         child: ContentWidth(
           child: ListView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: AppSpacing.page,
             children: [
               const Center(child: BrandMark(size: 64, showName: false)),
@@ -48,7 +50,12 @@ class AuthScaffold extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
-              ...children,
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: children,
+                ),
+              ),
             ],
           ),
         ),

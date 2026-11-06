@@ -1365,6 +1365,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Review history'**
   String get reviewHistoryOpen;
+
+  /// No description provided for @brandTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn languages in your own language.'**
+  String get brandTagline;
+
+  /// No description provided for @lessonPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson {current} of {total}'**
+  String lessonPosition(int current, int total);
+
+  /// No description provided for @lessonCompletedSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson marked as complete'**
+  String get lessonCompletedSnack;
+
+  /// No description provided for @leaveQuizTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave the quiz?'**
+  String get leaveQuizTitle;
+
+  /// No description provided for @leaveQuizMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answers in this attempt will not be saved.'**
+  String get leaveQuizMessage;
+
+  /// No description provided for @leaveQuizConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get leaveQuizConfirm;
+
+  /// No description provided for @optionLetterSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Option {letter}'**
+  String optionLetterSemantics(String letter);
 }
 
 class _AppLocalizationsDelegate

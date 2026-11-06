@@ -44,11 +44,12 @@ class QuestionView extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.lg),
-        for (final option in question.options)
+        for (final (i, option) in question.options.indexed)
           Padding(
             padding: const EdgeInsetsDirectional.only(bottom: AppSpacing.sm),
             child: _OptionTile(
               key: ValueKey('option:${option.id}'),
+              letter: _letterFor(context.languageCode, i),
               label: option.text.resolve(languageCode),
               state: _stateOf(option.id),
               onTap: checked ? null : () => onSelect(option.id),
@@ -83,11 +84,13 @@ enum _OptionState { idle, selected, correct, wrong }
 class _OptionTile extends StatelessWidget {
   const _OptionTile({
     super.key,
+    required this.letter,
     required this.label,
     required this.state,
     required this.onTap,
   });
 
+  final String letter;
   final String label;
   final _OptionState state;
   final VoidCallback? onTap;
@@ -137,6 +140,19 @@ class _OptionTile extends StatelessWidget {
         child: ListTile(
           onTap: onTap,
           minVerticalPadding: AppSpacing.md,
+          leading: ExcludeSemantics(
+            child: CircleAvatar(
+              radius: 16,
+              backgroundColor: border.withValues(alpha: 0.18),
+              child: Text(
+                letter,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: scheme.onSurface,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
           title: Text(label),
           trailing: Icon(icon, color: iconColor),
         ),
@@ -193,4 +209,12 @@ class _Feedback extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Option marker: Latin A, B, C... or Arabic أ, ب, ج... by UI language.
+String _letterFor(String uiLanguage, int index) {
+  const latin = 'ABCDEFGH';
+  const arabic = ['أ', 'ب', 'ج', 'د', 'هـ', 'و', 'ز', 'ح'];
+  final i = index.clamp(0, latin.length - 1);
+  return uiLanguage == 'ar' ? arabic[i] : latin[i];
 }

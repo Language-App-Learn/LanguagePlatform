@@ -735,4 +735,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reviewHistoryOpen => 'Review history';
+
+  @override
+  String get brandTagline => 'Learn languages in your own language.';
+
+  @override
+  String lessonPosition(int current, int total) {
+    return 'Lesson $current of $total';
+  }
+
+  @override
+  String get lessonCompletedSnack => 'Lesson marked as complete';
+
+  @override
+  String get leaveQuizTitle => 'Leave the quiz?';
+
+  @override
+  String get leaveQuizMessage =>
+      'Your answers in this attempt will not be saved.';
+
+  @override
+  String get leaveQuizConfirm => 'Leave';
+
+  @override
+  String optionLetterSemantics(String letter) {
+    return 'Option $letter';
+  }
 }

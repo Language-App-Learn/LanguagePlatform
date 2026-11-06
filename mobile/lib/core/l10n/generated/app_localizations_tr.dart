@@ -734,4 +734,29 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get reviewHistoryOpen => 'Tekrar geçmişi';
+
+  @override
+  String get brandTagline => 'Dilleri kendi dilinde öğren.';
+
+  @override
+  String lessonPosition(int current, int total) {
+    return 'Ders $current / $total';
+  }
+
+  @override
+  String get lessonCompletedSnack => 'Ders tamamlandı olarak işaretlendi';
+
+  @override
+  String get leaveQuizTitle => 'Testten çıkılsın mı?';
+
+  @override
+  String get leaveQuizMessage => 'Bu denemedeki cevapların kaydedilmeyecek.';
+
+  @override
+  String get leaveQuizConfirm => 'Çık';
+
+  @override
+  String optionLetterSemantics(String letter) {
+    return '$letter şıkkı';
+  }
 }

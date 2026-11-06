@@ -12,6 +12,7 @@ import '../../../progress/application/progress_providers.dart';
 import '../../application/lesson_providers.dart';
 import '../../domain/lesson.dart';
 import '../widgets/lesson_actions.dart';
+import '../widgets/lesson_header.dart';
 import '../widgets/lesson_content_view.dart';
 
 /// Ders ekranı: içerik blokları sırayla + eylemler (tamamla, quiz, gezinme).
@@ -69,10 +70,12 @@ class _LessonBodyState extends ConsumerState<_LessonBody> {
       // Lazy: only visible blocks of long lessons are built.
       child: ListView.separated(
         padding: AppSpacing.page,
-        itemCount: lesson.contents.length + 1,
+        itemCount: lesson.contents.length + 2,
         separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.xl),
         itemBuilder: (context, i) {
-          if (i == lesson.contents.length) {
+          if (i == 0) return LessonHeader(lesson: lesson);
+          final index = i - 1;
+          if (index == lesson.contents.length) {
             return LessonActions(
               lesson: lesson,
               onOpenQuiz: () => context.push(AppRoutes.quizOf(lesson.id)),
@@ -82,7 +85,7 @@ class _LessonBodyState extends ConsumerState<_LessonBody> {
           }
           return LessonContentView(
             lesson: lesson,
-            content: lesson.contents[i],
+            content: lesson.contents[index],
             contentLanguage: contentLanguage,
           );
         },

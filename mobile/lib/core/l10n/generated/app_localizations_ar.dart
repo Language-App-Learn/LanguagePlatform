@@ -744,4 +744,29 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get reviewHistoryOpen => 'سجل المراجعة';
+
+  @override
+  String get brandTagline => 'تعلّم اللغات بلغتك.';
+
+  @override
+  String lessonPosition(int current, int total) {
+    return 'الدرس $current من $total';
+  }
+
+  @override
+  String get lessonCompletedSnack => 'تم وضع علامة اكتمال على الدرس';
+
+  @override
+  String get leaveQuizTitle => 'مغادرة الاختبار؟';
+
+  @override
+  String get leaveQuizMessage => 'لن يتم حفظ إجاباتك في هذه المحاولة.';
+
+  @override
+  String get leaveQuizConfirm => 'مغادرة';
+
+  @override
+  String optionLetterSemantics(String letter) {
+    return 'الخيار $letter';
+  }
 }

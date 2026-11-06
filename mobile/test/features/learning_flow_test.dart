@@ -302,7 +302,12 @@ void main() {
       await tester.tap(find.text('Mark as complete'));
       await tester.pumpAndSettle();
       expect(c.read(progressProvider).isCompleted('ar-a1-l1'), isTrue);
-      expect(find.text('Completed'), findsOneWidget);
+      expect(find.widgetWithText(FilledButton, 'Completed'), findsOneWidget);
+      expect(find.byKey(const ValueKey('lesson-header')), findsOneWidget);
+      expect(
+        find.text('Lesson marked as complete'),
+        findsOneWidget,
+      ); // snackbar
     });
 
     testWidgets('önceki/sonraki ders gezintisi', (tester) async {

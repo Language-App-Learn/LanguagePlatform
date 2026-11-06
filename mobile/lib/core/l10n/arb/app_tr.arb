@@ -210,5 +210,12 @@
   "reviewHistoryEmptyMessage": "Kelime kartı tekrarların burada görünecek.",
   "historyNextReview": "Sonraki tekrar: {date}",
   "historyUnknownWord": "Kelime artık mevcut değil",
-  "reviewHistoryOpen": "Tekrar geçmişi"
+  "reviewHistoryOpen": "Tekrar geçmişi",
+  "brandTagline": "Dilleri kendi dilinde öğren.",
+  "lessonPosition": "Ders {current} / {total}",
+  "lessonCompletedSnack": "Ders tamamlandı olarak işaretlendi",
+  "leaveQuizTitle": "Testten çıkılsın mı?",
+  "leaveQuizMessage": "Bu denemedeki cevapların kaydedilmeyecek.",
+  "leaveQuizConfirm": "Çık",
+  "optionLetterSemantics": "{letter} şıkkı"
 }

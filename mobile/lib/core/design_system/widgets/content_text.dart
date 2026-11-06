@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_language.dart';
 
-/// Öğrenilen dildeki metin (kelime, cümle, diyalog satırı). Yazı yönü
-/// arayüz dilinden değil içeriğin dilinden gelir; böylece Arapça içerik
-/// LTR arayüzde de, İngilizce içerik RTL arayüzde de doğru görünür.
+/// Text in the language being learned (word, sentence, dialogue line).
+/// Direction follows the CONTENT language, not the UI language, so Arabic
+/// content reads correctly inside an LTR UI and English content inside an
+/// RTL UI.
+///
+/// Arabic gets a slightly larger size and generous line height so that
+/// diacritics (tashkeel) above and below the letters are never clipped or
+/// crowded. Text is never normalised or stripped.
 class ContentText extends StatelessWidget {
   const ContentText(
     this.text, {
@@ -19,11 +24,23 @@ class ContentText extends StatelessWidget {
   final TextStyle? style;
   final TextAlign? textAlign;
 
+  /// Extra size for Arabic script relative to Latin at the same style.
+  static const double arabicScale = 1.12;
+  static const double arabicLineHeight = 1.9;
+
   @override
   Widget build(BuildContext context) {
+    final isArabic = languageCode == 'ar';
+    final base = style ?? DefaultTextStyle.of(context).style;
+    final effective = isArabic
+        ? base.copyWith(
+            fontSize: (base.fontSize ?? 14) * arabicScale,
+            height: arabicLineHeight,
+          )
+        : base;
     return Text(
       text,
-      style: style,
+      style: effective,
       textAlign: textAlign,
       textDirection: textDirectionForLanguage(languageCode),
     );

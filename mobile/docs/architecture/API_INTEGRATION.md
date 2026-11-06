@@ -30,3 +30,7 @@ Legend: LOCAL = model exists in the app; BOUNDARY = proposed client boundary; OP
 2. Implement the repository over `ApiClient` (a Dio adapter), mapping errors with `failureOf`.
 3. Bind it in the repository provider (demo implementations stay for tests and development).
 4. Enable an auth `redirect` in `app_router.dart` (strategy is documented there). Demo mode must never count as signed in.
+
+## Backend verification note (V4 session)
+
+The backend project present in this workspace (`backend/`, branch `Flutter`) contains only the template route `GET /weatherforecast`; none of the catalog routes (`/api/v1/catalog/languages|learning-paths|programs|courses`) mentioned by the backend team could be verified here, so no API adapter or DTO was written. To implement the first adapter, the mobile team needs from the backend branch: the OpenAPI/route list, JSON field names and types for languages, learning paths, programs and courses, the id type, pagination and error body format, and how a course relates to lessons. The stable language identifiers used on the client are ISO 639-1 codes (`en`, `tr`, `ar`).

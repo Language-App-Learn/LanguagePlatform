@@ -67,7 +67,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                   itemCount: steps.length,
                   onPageChanged: (value) => setState(() => _index = value),
                   itemBuilder: (context, i) =>
-                      OnboardingStepView(data: steps[i]),
+                      OnboardingStepView(data: steps[i], index: i),
                 ),
               ),
               Semantics(

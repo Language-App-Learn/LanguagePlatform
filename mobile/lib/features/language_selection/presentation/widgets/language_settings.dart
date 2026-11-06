@@ -5,6 +5,7 @@ import '../../../../core/design_system/widgets/choice_group.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../application/learning_preferences.dart';
 import '../../domain/learning_language.dart';
+import 'language_badge.dart';
 
 /// Arayüz dili seçici. Bildiğim/öğrendiğim dilden bağımsızdır.
 class InterfaceLanguageSetting extends ConsumerWidget {
@@ -30,6 +31,7 @@ class InterfaceLanguageSetting extends ConsumerWidget {
             id: language.code,
             value: language,
             label: language.nativeName,
+            leading: LanguageBadge(code: language.code),
           ),
       ],
       onSelected: ref.read(appLanguageProvider.notifier).select,
@@ -60,6 +62,7 @@ class KnownLanguageSetting extends ConsumerWidget {
             id: language.code,
             value: language,
             label: language.nativeName,
+            leading: LanguageBadge(code: language.code),
             enabled: language != prefs.targetLanguage,
           ),
       ],
@@ -91,6 +94,7 @@ class TargetLanguageSetting extends ConsumerWidget {
             id: language.code,
             value: language,
             label: language.nativeName,
+            leading: LanguageBadge(code: language.code),
             enabled: language != prefs.knownLanguage,
           ),
       ],

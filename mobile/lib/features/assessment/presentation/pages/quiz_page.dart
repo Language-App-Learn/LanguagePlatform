@@ -6,6 +6,7 @@ import '../../../../app/router/app_routes.dart';
 import '../../../../core/design_system/widgets/app_primary_button.dart';
 import '../../../../core/design_system/widgets/app_progress_bar.dart';
 import '../../../../core/design_system/widgets/async_value_view.dart';
+import '../../../../core/design_system/widgets/confirm_dialog.dart';
 import '../../../../core/design_system/widgets/content_width.dart';
 import '../../../../core/design_system/widgets/state_views.dart';
 import '../../../../core/l10n/l10n.dart';
@@ -16,51 +17,93 @@ import '../../domain/quiz.dart';
 import '../widgets/question_view.dart';
 import '../widgets/quiz_result_view.dart';
 
-/// Quiz: soru → kontrol → sonraki → sonuç → tekrar dene.
-class QuizPage extends ConsumerWidget {
+/// Quiz: question -> check -> next -> result -> retry. Leaving in the middle
+/// of an attempt asks for confirmation (the attempt is not saved).
+class QuizPage extends ConsumerStatefulWidget {
   const QuizPage({super.key, required this.lessonId});
 
   final String lessonId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final provider = quizControllerProvider(lessonId);
-    return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.quizTitle)),
-      body: SafeArea(
-        child: AsyncValueView<QuizState>(
-          value: ref.watch(provider),
-          onRetry: () => ref.invalidate(provider),
-          data: (state) => state.isEmpty
-              ? EmptyStateView(
-                  icon: Icons.quiz_outlined,
-                  title: context.l10n.quizEmptyTitle,
-                )
-              : ContentWidth(
-                  child: ListView(
-                    padding: AppSpacing.page,
-                    children: [
-                      state.isFinished
-                          ? QuizResultView(
-                              result: state.result!,
-                              onRetry: ref.read(provider.notifier).restart,
-                              onDone: () => _close(context),
-                            )
-                          : _QuestionStep(lessonId: lessonId, state: state),
-                    ],
-                  ),
-                ),
-        ),
-      ),
-    );
-  }
+  ConsumerState<QuizPage> createState() => _QuizPageState();
+}
 
-  void _close(BuildContext context) {
+class _QuizPageState extends ConsumerState<QuizPage> {
+  bool _confirmedLeave = false;
+
+  void _close() {
     if (context.canPop()) {
       context.pop();
     } else {
       context.go(AppRoutes.home);
     }
+  }
+
+  Future<void> _confirmLeave() async {
+    final l10n = context.l10n;
+    final leave = await showConfirmDialog(
+      context,
+      title: l10n.leaveQuizTitle,
+      message: l10n.leaveQuizMessage,
+      confirmLabel: l10n.leaveQuizConfirm,
+      destructive: true,
+    );
+    if (leave != true || !mounted) return;
+    setState(() => _confirmedLeave = true);
+    // Pop after the rebuild that allows it.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _close();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = quizControllerProvider(widget.lessonId);
+    final value = ref.watch(provider);
+    final state = value.value;
+    final inProgress =
+        state != null &&
+        !state.isEmpty &&
+        !state.isFinished &&
+        (state.answers.isNotEmpty || state.selected != null);
+
+    return PopScope(
+      canPop: !inProgress || _confirmedLeave,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmLeave();
+      },
+      child: Scaffold(
+        appBar: AppBar(title: Text(context.l10n.quizTitle)),
+        body: SafeArea(
+          child: AsyncValueView<QuizState>(
+            value: value,
+            onRetry: () => ref.invalidate(provider),
+            data: (state) => state.isEmpty
+                ? EmptyStateView(
+                    icon: Icons.quiz_outlined,
+                    title: context.l10n.quizEmptyTitle,
+                  )
+                : ContentWidth(
+                    child: ListView(
+                      padding: AppSpacing.page,
+                      children: [
+                        state.isFinished
+                            ? QuizResultView(
+                                result: state.result!,
+                                onRetry: ref.read(provider.notifier).restart,
+                                onDone: _close,
+                              )
+                            : _QuestionStep(
+                                lessonId: widget.lessonId,
+                                state: state,
+                              ),
+                      ],
+                    ),
+                  ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

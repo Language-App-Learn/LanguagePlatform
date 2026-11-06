@@ -43,9 +43,12 @@ class LessonActions extends ConsumerWidget {
           icon: done ? Icons.check_circle : Icons.check,
           onPressed: done
               ? null
-              : () => ref
-                    .read(progressProvider.notifier)
-                    .completeLesson(lesson.id),
+              : () {
+                  ref.read(progressProvider.notifier).completeLesson(lesson.id);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l10n.lessonCompletedSnack)),
+                  );
+                },
         ),
         const SizedBox(height: AppSpacing.md),
         OutlinedButton.icon(
