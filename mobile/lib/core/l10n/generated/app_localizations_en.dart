@@ -761,4 +761,213 @@ class AppLocalizationsEn extends AppLocalizations {
   String optionLetterSemantics(String letter) {
     return 'Option $letter';
   }
+
+  @override
+  String get trackTitle => 'Learn Arabic from Turkish';
+
+  @override
+  String get trackSubtitle => 'Choose your CEFR level';
+
+  @override
+  String get demoContentBadge => 'Demo content';
+
+  @override
+  String get levelNameA1 => 'Beginner';
+
+  @override
+  String get levelNameA2 => 'Elementary';
+
+  @override
+  String get levelNameB1 => 'Intermediate';
+
+  @override
+  String get levelNameB2 => 'Upper intermediate';
+
+  @override
+  String get levelNameC1 => 'Advanced';
+
+  @override
+  String get levelNameC2 => 'Proficient';
+
+  @override
+  String levelPublishedCount(int published, int total) {
+    return '$published of $total lessons published';
+  }
+
+  @override
+  String levelCompletedCount(int count) {
+    return '$count completed';
+  }
+
+  @override
+  String get levelNoLessons => 'No lessons published yet';
+
+  @override
+  String lessonNumber(int number) {
+    return 'Lesson $number';
+  }
+
+  @override
+  String get lessonInPreparation => 'In preparation';
+
+  @override
+  String get stageReading => 'Reading';
+
+  @override
+  String get stageSpeaking => 'Speaking';
+
+  @override
+  String get stageListening => 'Listening';
+
+  @override
+  String get stageWriting => 'Writing';
+
+  @override
+  String get stageTranslation => 'Translation';
+
+  @override
+  String get stageReadingDesc =>
+      'Read the Arabic text, listen to each line and answer questions.';
+
+  @override
+  String get stageSpeakingDesc => 'Study the dialogue and practice speaking.';
+
+  @override
+  String get stageListeningDesc => 'Listen and place the words in the blanks.';
+
+  @override
+  String get stageWritingDesc => 'Fill in missing words and build sentences.';
+
+  @override
+  String get stageTranslationDesc => 'Translate from Turkish into Arabic.';
+
+  @override
+  String get stageStatusAvailable => 'Available';
+
+  @override
+  String get stageStatusInProgress => 'In progress';
+
+  @override
+  String get stageStatusCompleted => 'Completed';
+
+  @override
+  String get stageStatusLocked => 'Not yet accessible';
+
+  @override
+  String get stageStatusUnavailable => 'Content not published yet';
+
+  @override
+  String get stageRetry => 'Practice again';
+
+  @override
+  String get lessonStatusNotStarted => 'Not started';
+
+  @override
+  String get lessonStatusInProgress => 'In progress';
+
+  @override
+  String get lessonStatusAwaiting => 'Awaiting official assessment';
+
+  @override
+  String get lessonStatusPassed => 'Passed';
+
+  @override
+  String get lessonStatusFailed => 'Not passed, try again';
+
+  @override
+  String get overallScoreNone => 'No official score yet';
+
+  @override
+  String passMarkInfo(int mark) {
+    return 'Overall pass mark: $mark out of 100';
+  }
+
+  @override
+  String get scoringPolicyMissing =>
+      'The stage weights are set by the server and are not available yet, so no final score is shown.';
+
+  @override
+  String get demoScoreNotice =>
+      'Demo practice result. It is not an official score and does not count towards passing.';
+
+  @override
+  String stageScoreLabel(String score) {
+    return 'Practice score: $score';
+  }
+
+  @override
+  String get audioUnavailable => 'Audio is not available yet';
+
+  @override
+  String get pdfUnavailable => 'The original PDF is not available yet';
+
+  @override
+  String get videoUnavailable => 'The teacher video is not available yet';
+
+  @override
+  String get aiPracticeTitle => 'Conversation practice';
+
+  @override
+  String get aiPracticeUnavailable =>
+      'AI conversation practice is not connected yet. No recording is made or sent.';
+
+  @override
+  String get dialogueTitle => 'Dialogue';
+
+  @override
+  String get readingQuestionsTitle => 'Questions';
+
+  @override
+  String get listeningInstruction =>
+      'Audio is not available yet. Place each word into the right blank.';
+
+  @override
+  String get writingFillTitle => 'Fill in the blank';
+
+  @override
+  String get writingArrangeTitle => 'Arrange the words';
+
+  @override
+  String get translationChoiceTitle => 'Choose the correct translation';
+
+  @override
+  String get translationWriteTitle => 'Write the translation';
+
+  @override
+  String get wordBank => 'Word bank';
+
+  @override
+  String get tapToPlace => 'Tap a word, then tap a blank (or drag the word).';
+
+  @override
+  String blankLabel(int number) {
+    return 'Blank $number';
+  }
+
+  @override
+  String get checkStage => 'Check answers';
+
+  @override
+  String get resetStage => 'Reset';
+
+  @override
+  String get undoStep => 'Undo';
+
+  @override
+  String get yourAnswer => 'Your answer';
+
+  @override
+  String get finishPractice => 'Finish practice';
+
+  @override
+  String get stageContentMissing =>
+      'This lesson has no published content for this stage yet.';
+
+  @override
+  String resultCorrect(int correct, int total) {
+    return '$correct of $total correct';
+  }
+
+  @override
+  String get practiceRecorded => 'Practice recorded on this device (demo).';
 }

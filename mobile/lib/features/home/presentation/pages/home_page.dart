@@ -10,6 +10,7 @@ import '../widgets/continue_learning_section.dart';
 import '../widgets/daily_goal_card.dart';
 import '../widgets/featured_courses_section.dart';
 import '../widgets/home_header.dart';
+import '../widgets/track_card.dart';
 import '../widgets/practice_section.dart';
 import '../widgets/progress_summary_card.dart';
 
@@ -29,6 +30,8 @@ class HomePage extends StatelessWidget {
             padding: AppSpacing.page,
             children: [
               const HomeHeader(),
+              const SizedBox(height: AppSpacing.lg),
+              const TrackCard(),
               const SizedBox(height: AppSpacing.lg),
               const DailyGoalCard(),
               const SizedBox(height: AppSpacing.lg),

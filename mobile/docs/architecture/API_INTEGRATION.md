@@ -34,3 +34,11 @@ Legend: LOCAL = model exists in the app; BOUNDARY = proposed client boundary; OP
 ## Backend verification note (V4 session)
 
 The backend project present in this workspace (`backend/`, branch `Flutter`) contains only the template route `GET /weatherforecast`; none of the catalog routes (`/api/v1/catalog/languages|learning-paths|programs|courses`) mentioned by the backend team could be verified here, so no API adapter or DTO was written. To implement the first adapter, the mobile team needs from the backend branch: the OpenAPI/route list, JSON field names and types for languages, learning paths, programs and courses, the id type, pagination and error body format, and how a course relates to lessons. The stable language identifiers used on the client are ISO 639-1 codes (`en`, `tr`, `ar`).
+
+## Five-stage lesson track (V5)
+
+Existing backend contract (`FLUTTER_BACKEND_CONTRACT.md` on `origin/Backend-Database`, read-only): catalog (languages, learning paths, programs, courses), published lesson outline/read, auth (register/login/refresh/logout/reset), preferences, enrollment, lesson start, assessment attempts + result, progress, vocabulary + favorites. The five-stage contract (`FIVE_STAGE_LESSON_CONTRACT.md`) is NOT published yet.
+
+Client side already prepared: `ServerLessonResult` (final score, server pass flag, stage scores, optional weights) and `serverLessonResultProvider` are the only entry points for official results; the UI never recomputes pass/fail. Demo stage content (`demoStageContent`, one lesson) and local practice scores (`lp.stages`) are clearly labeled and never uploaded.
+
+Needed from the five-stage contract: stage content DTOs (reading segments with stable ids + audio references, questions without answer keys, dialogue, listening blanks + word bank, writing items, translation items + accepted alternatives), attempt/submit endpoints per stage, final result shape (score, pass flag, weights, retry/next-lesson eligibility), media/PDF download URL lifetime, TTS/STT/AI provider availability signalling.

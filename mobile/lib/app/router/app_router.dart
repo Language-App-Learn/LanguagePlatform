@@ -10,6 +10,10 @@ import '../../features/catalog/presentation/pages/catalog_page.dart';
 import '../../features/courses/presentation/pages/course_detail_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/language_selection/presentation/pages/language_selection_page.dart';
+import '../../features/learning_track/presentation/pages/lesson_overview_page.dart';
+import '../../features/learning_track/presentation/pages/level_lessons_page.dart';
+import '../../features/learning_track/presentation/pages/level_selection_page.dart';
+import '../../features/learning_track/presentation/pages/stage_page.dart';
 import '../../features/lessons/presentation/pages/lesson_page.dart';
 import '../../features/onboarding/presentation/pages/onboarding_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
@@ -146,6 +150,34 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         path: AppRoutes.reviewHistory,
         builder: (context, state) => const ReviewHistoryPage(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.track,
+        builder: (context, state) =>
+            LevelSelectionPage(trackId: state.pathParameters['trackId']!),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.level,
+        builder: (context, state) => LevelLessonsPage(
+          trackId: state.pathParameters['trackId']!,
+          levelSegment: state.pathParameters['level']!,
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.stages,
+        builder: (context, state) =>
+            LessonOverviewPage(lessonId: state.pathParameters['lessonId']!),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.stage,
+        builder: (context, state) => StagePage(
+          lessonId: state.pathParameters['lessonId']!,
+          stage: state.pathParameters['stage']!,
+        ),
       ),
     ],
   );

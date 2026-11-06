@@ -1407,6 +1407,384 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Option {letter}'**
   String optionLetterSemantics(String letter);
+
+  /// No description provided for @trackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn Arabic from Turkish'**
+  String get trackTitle;
+
+  /// No description provided for @trackSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your CEFR level'**
+  String get trackSubtitle;
+
+  /// No description provided for @demoContentBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo content'**
+  String get demoContentBadge;
+
+  /// No description provided for @levelNameA1.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginner'**
+  String get levelNameA1;
+
+  /// No description provided for @levelNameA2.
+  ///
+  /// In en, this message translates to:
+  /// **'Elementary'**
+  String get levelNameA2;
+
+  /// No description provided for @levelNameB1.
+  ///
+  /// In en, this message translates to:
+  /// **'Intermediate'**
+  String get levelNameB1;
+
+  /// No description provided for @levelNameB2.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper intermediate'**
+  String get levelNameB2;
+
+  /// No description provided for @levelNameC1.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get levelNameC1;
+
+  /// No description provided for @levelNameC2.
+  ///
+  /// In en, this message translates to:
+  /// **'Proficient'**
+  String get levelNameC2;
+
+  /// No description provided for @levelPublishedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{published} of {total} lessons published'**
+  String levelPublishedCount(int published, int total);
+
+  /// No description provided for @levelCompletedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} completed'**
+  String levelCompletedCount(int count);
+
+  /// No description provided for @levelNoLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'No lessons published yet'**
+  String get levelNoLessons;
+
+  /// No description provided for @lessonNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson {number}'**
+  String lessonNumber(int number);
+
+  /// No description provided for @lessonInPreparation.
+  ///
+  /// In en, this message translates to:
+  /// **'In preparation'**
+  String get lessonInPreparation;
+
+  /// No description provided for @stageReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading'**
+  String get stageReading;
+
+  /// No description provided for @stageSpeaking.
+  ///
+  /// In en, this message translates to:
+  /// **'Speaking'**
+  String get stageSpeaking;
+
+  /// No description provided for @stageListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening'**
+  String get stageListening;
+
+  /// No description provided for @stageWriting.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing'**
+  String get stageWriting;
+
+  /// No description provided for @stageTranslation.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation'**
+  String get stageTranslation;
+
+  /// No description provided for @stageReadingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the Arabic text, listen to each line and answer questions.'**
+  String get stageReadingDesc;
+
+  /// No description provided for @stageSpeakingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Study the dialogue and practice speaking.'**
+  String get stageSpeakingDesc;
+
+  /// No description provided for @stageListeningDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen and place the words in the blanks.'**
+  String get stageListeningDesc;
+
+  /// No description provided for @stageWritingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in missing words and build sentences.'**
+  String get stageWritingDesc;
+
+  /// No description provided for @stageTranslationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate from Turkish into Arabic.'**
+  String get stageTranslationDesc;
+
+  /// No description provided for @stageStatusAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get stageStatusAvailable;
+
+  /// No description provided for @stageStatusInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get stageStatusInProgress;
+
+  /// No description provided for @stageStatusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get stageStatusCompleted;
+
+  /// No description provided for @stageStatusLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Not yet accessible'**
+  String get stageStatusLocked;
+
+  /// No description provided for @stageStatusUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Content not published yet'**
+  String get stageStatusUnavailable;
+
+  /// No description provided for @stageRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice again'**
+  String get stageRetry;
+
+  /// No description provided for @lessonStatusNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get lessonStatusNotStarted;
+
+  /// No description provided for @lessonStatusInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get lessonStatusInProgress;
+
+  /// No description provided for @lessonStatusAwaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting official assessment'**
+  String get lessonStatusAwaiting;
+
+  /// No description provided for @lessonStatusPassed.
+  ///
+  /// In en, this message translates to:
+  /// **'Passed'**
+  String get lessonStatusPassed;
+
+  /// No description provided for @lessonStatusFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not passed, try again'**
+  String get lessonStatusFailed;
+
+  /// No description provided for @overallScoreNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No official score yet'**
+  String get overallScoreNone;
+
+  /// No description provided for @passMarkInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall pass mark: {mark} out of 100'**
+  String passMarkInfo(int mark);
+
+  /// No description provided for @scoringPolicyMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'The stage weights are set by the server and are not available yet, so no final score is shown.'**
+  String get scoringPolicyMissing;
+
+  /// No description provided for @demoScoreNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo practice result. It is not an official score and does not count towards passing.'**
+  String get demoScoreNotice;
+
+  /// No description provided for @stageScoreLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice score: {score}'**
+  String stageScoreLabel(String score);
+
+  /// No description provided for @audioUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio is not available yet'**
+  String get audioUnavailable;
+
+  /// No description provided for @pdfUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The original PDF is not available yet'**
+  String get pdfUnavailable;
+
+  /// No description provided for @videoUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The teacher video is not available yet'**
+  String get videoUnavailable;
+
+  /// No description provided for @aiPracticeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation practice'**
+  String get aiPracticeTitle;
+
+  /// No description provided for @aiPracticeUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'AI conversation practice is not connected yet. No recording is made or sent.'**
+  String get aiPracticeUnavailable;
+
+  /// No description provided for @dialogueTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Dialogue'**
+  String get dialogueTitle;
+
+  /// No description provided for @readingQuestionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get readingQuestionsTitle;
+
+  /// No description provided for @listeningInstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio is not available yet. Place each word into the right blank.'**
+  String get listeningInstruction;
+
+  /// No description provided for @writingFillTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in the blank'**
+  String get writingFillTitle;
+
+  /// No description provided for @writingArrangeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrange the words'**
+  String get writingArrangeTitle;
+
+  /// No description provided for @translationChoiceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the correct translation'**
+  String get translationChoiceTitle;
+
+  /// No description provided for @translationWriteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Write the translation'**
+  String get translationWriteTitle;
+
+  /// No description provided for @wordBank.
+  ///
+  /// In en, this message translates to:
+  /// **'Word bank'**
+  String get wordBank;
+
+  /// No description provided for @tapToPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a word, then tap a blank (or drag the word).'**
+  String get tapToPlace;
+
+  /// No description provided for @blankLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Blank {number}'**
+  String blankLabel(int number);
+
+  /// No description provided for @checkStage.
+  ///
+  /// In en, this message translates to:
+  /// **'Check answers'**
+  String get checkStage;
+
+  /// No description provided for @resetStage.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get resetStage;
+
+  /// No description provided for @undoStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undoStep;
+
+  /// No description provided for @yourAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer'**
+  String get yourAnswer;
+
+  /// No description provided for @finishPractice.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish practice'**
+  String get finishPractice;
+
+  /// No description provided for @stageContentMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'This lesson has no published content for this stage yet.'**
+  String get stageContentMissing;
+
+  /// No description provided for @resultCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'{correct} of {total} correct'**
+  String resultCorrect(int correct, int total);
+
+  /// No description provided for @practiceRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice recorded on this device (demo).'**
+  String get practiceRecorded;
 }
 
 class _AppLocalizationsDelegate

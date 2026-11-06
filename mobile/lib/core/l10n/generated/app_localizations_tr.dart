@@ -759,4 +759,214 @@ class AppLocalizationsTr extends AppLocalizations {
   String optionLetterSemantics(String letter) {
     return '$letter şıkkı';
   }
+
+  @override
+  String get trackTitle => 'Türkçeden Arapça Öğrenme';
+
+  @override
+  String get trackSubtitle => 'CEFR seviyeni seç';
+
+  @override
+  String get demoContentBadge => 'Demo içerik';
+
+  @override
+  String get levelNameA1 => 'Başlangıç';
+
+  @override
+  String get levelNameA2 => 'Temel';
+
+  @override
+  String get levelNameB1 => 'Orta';
+
+  @override
+  String get levelNameB2 => 'Orta Üstü';
+
+  @override
+  String get levelNameC1 => 'İleri';
+
+  @override
+  String get levelNameC2 => 'Yetkin';
+
+  @override
+  String levelPublishedCount(int published, int total) {
+    return '$total dersten $published tanesi yayında';
+  }
+
+  @override
+  String levelCompletedCount(int count) {
+    return '$count tamamlandı';
+  }
+
+  @override
+  String get levelNoLessons => 'Henüz yayınlanmış ders yok';
+
+  @override
+  String lessonNumber(int number) {
+    return 'Ders $number';
+  }
+
+  @override
+  String get lessonInPreparation => 'Hazırlanıyor';
+
+  @override
+  String get stageReading => 'Okuma';
+
+  @override
+  String get stageSpeaking => 'Konuşma';
+
+  @override
+  String get stageListening => 'Dinleme';
+
+  @override
+  String get stageWriting => 'Yazma';
+
+  @override
+  String get stageTranslation => 'Tercüme';
+
+  @override
+  String get stageReadingDesc =>
+      'Arapça metni oku, her satırı dinle ve soruları cevapla.';
+
+  @override
+  String get stageSpeakingDesc => 'Diyaloğu incele ve konuşma pratiği yap.';
+
+  @override
+  String get stageListeningDesc => 'Dinle ve kelimeleri boşluklara yerleştir.';
+
+  @override
+  String get stageWritingDesc => 'Eksik kelimeleri tamamla ve cümle kur.';
+
+  @override
+  String get stageTranslationDesc => 'Türkçeden Arapçaya çevir.';
+
+  @override
+  String get stageStatusAvailable => 'Açık';
+
+  @override
+  String get stageStatusInProgress => 'Devam ediyor';
+
+  @override
+  String get stageStatusCompleted => 'Tamamlandı';
+
+  @override
+  String get stageStatusLocked => 'Henüz erişilemez';
+
+  @override
+  String get stageStatusUnavailable => 'İçerik henüz yayınlanmadı';
+
+  @override
+  String get stageRetry => 'Tekrar çalış';
+
+  @override
+  String get lessonStatusNotStarted => 'Başlanmadı';
+
+  @override
+  String get lessonStatusInProgress => 'Devam ediyor';
+
+  @override
+  String get lessonStatusAwaiting => 'Resmî değerlendirme bekleniyor';
+
+  @override
+  String get lessonStatusPassed => 'Geçti';
+
+  @override
+  String get lessonStatusFailed => 'Geçilemedi, tekrar dene';
+
+  @override
+  String get overallScoreNone => 'Henüz resmî puan yok';
+
+  @override
+  String passMarkInfo(int mark) {
+    return 'Genel geçme notu: 100 üzerinden $mark';
+  }
+
+  @override
+  String get scoringPolicyMissing =>
+      'Aşama ağırlıkları sunucu tarafından belirlenir ve henüz mevcut değil; bu yüzden nihai puan gösterilmiyor.';
+
+  @override
+  String get demoScoreNotice =>
+      'Demo alıştırma sonucu. Resmî puan değildir ve geçmeye sayılmaz.';
+
+  @override
+  String stageScoreLabel(String score) {
+    return 'Alıştırma puanı: $score';
+  }
+
+  @override
+  String get audioUnavailable => 'Ses henüz mevcut değil';
+
+  @override
+  String get pdfUnavailable => 'Orijinal PDF henüz mevcut değil';
+
+  @override
+  String get videoUnavailable => 'Öğretmen videosu henüz mevcut değil';
+
+  @override
+  String get aiPracticeTitle => 'Konuşma pratiği';
+
+  @override
+  String get aiPracticeUnavailable =>
+      'Yapay zekâ konuşma pratiği henüz bağlı değil. Hiçbir kayıt alınmaz veya gönderilmez.';
+
+  @override
+  String get dialogueTitle => 'Diyalog';
+
+  @override
+  String get readingQuestionsTitle => 'Sorular';
+
+  @override
+  String get listeningInstruction =>
+      'Ses henüz mevcut değil. Her kelimeyi doğru boşluğa yerleştir.';
+
+  @override
+  String get writingFillTitle => 'Boşluğu doldur';
+
+  @override
+  String get writingArrangeTitle => 'Kelimeleri sırala';
+
+  @override
+  String get translationChoiceTitle => 'Doğru çeviriyi seç';
+
+  @override
+  String get translationWriteTitle => 'Çeviriyi yaz';
+
+  @override
+  String get wordBank => 'Kelime havuzu';
+
+  @override
+  String get tapToPlace =>
+      'Bir kelimeye, sonra bir boşluğa dokun (veya kelimeyi sürükle).';
+
+  @override
+  String blankLabel(int number) {
+    return '$number. boşluk';
+  }
+
+  @override
+  String get checkStage => 'Cevapları kontrol et';
+
+  @override
+  String get resetStage => 'Sıfırla';
+
+  @override
+  String get undoStep => 'Geri al';
+
+  @override
+  String get yourAnswer => 'Cevabın';
+
+  @override
+  String get finishPractice => 'Alıştırmayı bitir';
+
+  @override
+  String get stageContentMissing =>
+      'Bu dersin bu aşaması için henüz yayınlanmış içerik yok.';
+
+  @override
+  String resultCorrect(int correct, int total) {
+    return '$total sorudan $correct doğru';
+  }
+
+  @override
+  String get practiceRecorded => 'Alıştırma bu cihazda kaydedildi (demo).';
 }

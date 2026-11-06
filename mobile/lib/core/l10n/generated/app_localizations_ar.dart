@@ -769,4 +769,213 @@ class AppLocalizationsAr extends AppLocalizations {
   String optionLetterSemantics(String letter) {
     return 'الخيار $letter';
   }
+
+  @override
+  String get trackTitle => 'تعلّم العربية من التركية';
+
+  @override
+  String get trackSubtitle => 'اختر مستواك وفق CEFR';
+
+  @override
+  String get demoContentBadge => 'محتوى تجريبي';
+
+  @override
+  String get levelNameA1 => 'مبتدئ';
+
+  @override
+  String get levelNameA2 => 'أساسي';
+
+  @override
+  String get levelNameB1 => 'متوسط';
+
+  @override
+  String get levelNameB2 => 'فوق المتوسط';
+
+  @override
+  String get levelNameC1 => 'متقدم';
+
+  @override
+  String get levelNameC2 => 'متمكّن';
+
+  @override
+  String levelPublishedCount(int published, int total) {
+    return '$published من $total دروس منشورة';
+  }
+
+  @override
+  String levelCompletedCount(int count) {
+    return '$count مكتملة';
+  }
+
+  @override
+  String get levelNoLessons => 'لا توجد دروس منشورة بعد';
+
+  @override
+  String lessonNumber(int number) {
+    return 'الدرس $number';
+  }
+
+  @override
+  String get lessonInPreparation => 'قيد الإعداد';
+
+  @override
+  String get stageReading => 'القراءة';
+
+  @override
+  String get stageSpeaking => 'المحادثة';
+
+  @override
+  String get stageListening => 'الاستماع';
+
+  @override
+  String get stageWriting => 'الكتابة';
+
+  @override
+  String get stageTranslation => 'الترجمة';
+
+  @override
+  String get stageReadingDesc =>
+      'اقرأ النص العربي واستمع إلى كل سطر وأجب عن الأسئلة.';
+
+  @override
+  String get stageSpeakingDesc => 'ادرس الحوار وتدرّب على التحدث.';
+
+  @override
+  String get stageListeningDesc => 'استمع وضع الكلمات في الفراغات.';
+
+  @override
+  String get stageWritingDesc => 'أكمل الكلمات الناقصة وكوّن الجمل.';
+
+  @override
+  String get stageTranslationDesc => 'ترجم من التركية إلى العربية.';
+
+  @override
+  String get stageStatusAvailable => 'متاح';
+
+  @override
+  String get stageStatusInProgress => 'قيد التقدم';
+
+  @override
+  String get stageStatusCompleted => 'مكتمل';
+
+  @override
+  String get stageStatusLocked => 'غير متاح بعد';
+
+  @override
+  String get stageStatusUnavailable => 'المحتوى غير منشور بعد';
+
+  @override
+  String get stageRetry => 'تدرّب مرة أخرى';
+
+  @override
+  String get lessonStatusNotStarted => 'لم يبدأ';
+
+  @override
+  String get lessonStatusInProgress => 'قيد التقدم';
+
+  @override
+  String get lessonStatusAwaiting => 'بانتظار التقييم الرسمي';
+
+  @override
+  String get lessonStatusPassed => 'ناجح';
+
+  @override
+  String get lessonStatusFailed => 'لم تنجح، حاول مرة أخرى';
+
+  @override
+  String get overallScoreNone => 'لا توجد درجة رسمية بعد';
+
+  @override
+  String passMarkInfo(int mark) {
+    return 'درجة النجاح العامة: $mark من 100';
+  }
+
+  @override
+  String get scoringPolicyMissing =>
+      'أوزان المراحل يحددها الخادم وليست متاحة بعد، لذلك لا تُعرض درجة نهائية.';
+
+  @override
+  String get demoScoreNotice =>
+      'نتيجة تدريب تجريبي. ليست درجة رسمية ولا تُحتسب للنجاح.';
+
+  @override
+  String stageScoreLabel(String score) {
+    return 'درجة التدريب: $score';
+  }
+
+  @override
+  String get audioUnavailable => 'الصوت غير متاح بعد';
+
+  @override
+  String get pdfUnavailable => 'ملف PDF الأصلي غير متاح بعد';
+
+  @override
+  String get videoUnavailable => 'فيديو المعلم غير متاح بعد';
+
+  @override
+  String get aiPracticeTitle => 'تدريب المحادثة';
+
+  @override
+  String get aiPracticeUnavailable =>
+      'تدريب المحادثة بالذكاء الاصطناعي غير متصل بعد. لا يتم تسجيل أو إرسال أي صوت.';
+
+  @override
+  String get dialogueTitle => 'الحوار';
+
+  @override
+  String get readingQuestionsTitle => 'الأسئلة';
+
+  @override
+  String get listeningInstruction =>
+      'الصوت غير متاح بعد. ضع كل كلمة في الفراغ الصحيح.';
+
+  @override
+  String get writingFillTitle => 'أكمل الفراغ';
+
+  @override
+  String get writingArrangeTitle => 'رتّب الكلمات';
+
+  @override
+  String get translationChoiceTitle => 'اختر الترجمة الصحيحة';
+
+  @override
+  String get translationWriteTitle => 'اكتب الترجمة';
+
+  @override
+  String get wordBank => 'بنك الكلمات';
+
+  @override
+  String get tapToPlace => 'المس كلمة ثم المس فراغًا (أو اسحب الكلمة).';
+
+  @override
+  String blankLabel(int number) {
+    return 'الفراغ $number';
+  }
+
+  @override
+  String get checkStage => 'تحقق من الإجابات';
+
+  @override
+  String get resetStage => 'إعادة تعيين';
+
+  @override
+  String get undoStep => 'تراجع';
+
+  @override
+  String get yourAnswer => 'إجابتك';
+
+  @override
+  String get finishPractice => 'إنهاء التدريب';
+
+  @override
+  String get stageContentMissing =>
+      'لا يوجد محتوى منشور لهذه المرحلة من الدرس بعد.';
+
+  @override
+  String resultCorrect(int correct, int total) {
+    return '$correct من $total صحيحة';
+  }
+
+  @override
+  String get practiceRecorded => 'تم حفظ التدريب على هذا الجهاز (تجريبي).';
 }
