@@ -1,0 +1,27 @@
+/// Rota yolları tek yerde. Parametreli yollar için yardımcılar sağlanır.
+abstract final class AppRoutes {
+  static const splash = '/splash';
+  static const onboarding = '/onboarding';
+  static const languageSetup = '/language-setup';
+
+  static const login = '/auth/login';
+  static const register = '/auth/register';
+  static const forgotPassword = '/auth/forgot-password';
+
+  // Alt gezinme sekmeleri
+  static const home = '/home';
+  static const courses = '/courses';
+  static const vocabulary = '/vocabulary';
+  static const progress = '/progress';
+  static const profile = '/profile';
+
+  // Sekme dışı (tam ekran) sayfalar
+  static const settings = '/settings';
+  static const course = '/course/:courseId';
+  static const lesson = '/lesson/:lessonId';
+  static const quiz = '/quiz/:lessonId';
+
+  static String courseOf(String id) => '/course/$id';
+  static String lessonOf(String id) => '/lesson/$id';
+  static String quizOf(String lessonId) => '/quiz/$lessonId';
+}
