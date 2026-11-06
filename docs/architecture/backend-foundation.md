@@ -1,5 +1,13 @@
 # Backend Foundation Architecture
 
+## İlk sürümün istemci kapsamı
+
+TASK 001 kapsam kararı (6 Kasım 2026): ilk sürüm yalnızca Android ve iOS mobil uygulamasıdır. İki platform mevcut `mobile/` projesindeki Flutter + Dart kod tabanını ve ortak ASP.NET Core 10 REST API'sini kullanır. Backend, Clean Architecture ve PostgreSQL 18 temeli üzerinde modüler monolit olarak devam eder.
+
+Öğrenci web frontend'i, Next.js/React/Angular projesi ve ayrı web yönetici paneli bu aşamanın kapsamı dışındadır. Mevcut Flutter projesi ve platform dosyaları korunur; web/masaüstü scaffold'ları bu platformlar için geliştirme veya yayın taahhüdü değildir.
+
+Mobil odak, çok dilli eğitim modelini daraltmaz. Dil yönleri, eğitim programları, kurslar, gelecekteki dersler ve puanlama aynı modül sınırlarıyla ilerler. Arayüz dili, kaynak eğitim dili ve hedef eğitim dili ayrı kavramlar olarak kalır.
+
 ## Mimari stil
 
 Backend, Clean Architecture bağımlılık yönünü koruyan modüler monolittir. Tek deploy edilebilir API ve tek PostgreSQL veritabanı vardır; modüller süreç içinde net iş sınırlarıyla ayrılır. Erken mikroservis bölünmesi, dağıtık transaction ve operasyon maliyeti bu aşamada bilinçli olarak alınmamıştır.
@@ -44,6 +52,24 @@ Bu modüller yalnızca sınır olarak tanımlıdır; henüz kaynak kodla uygulan
 - **Administration**: diğer modüllerin application use case'lerini yetki kontrollü biçimde çağıran operasyon yüzeyi; domain sahibi değildir.
 
 Modüller birbirlerinin tablolarına doğrudan yazmamalıdır. İlk aşamada modül içi Application çağrıları kullanılabilir; asenkron entegrasyon ihtiyacı doğarsa domain/integration event ve outbox ayrı bir kararla eklenmelidir.
+
+## Gelecekteki yönetici arayüzüne hazırlık
+
+Ders, içerik, sınav ve öğrenci yönetimi kuralları bir arayüze bağlı olmadan ilgili modüllerin Domain ve Application katmanlarında tanımlanacaktır. Gelecekteki yönetici arayüzü bu iş akışlarına DTO kullanan, sürümlenmiş ve yetkilendirilmiş API endpoint'leri üzerinden bağlanacak; veritabanına doğrudan erişmeyecektir.
+
+Kurs metadata'sının sahibi Learning Catalog; ders ve içeriğin sahibi Lesson Engine; sınav ve puanlama kurallarının sahibi Assessment & Scoring; hesap ve erişim yetkilerinin sahibi Identity; öğrenme ilerlemesinin sahibi Student Progress olacaktır. Administration bu modüllerin application use case'lerini çağırır; iş kurallarını çoğaltmaz. Puanlama ve içerik yayınlama gibi kararlar backend'de doğrulanır; mobil veya gelecekteki yönetici istemcisinin gönderdiği sonuçlar tek başına güvenilir kabul edilmez.
+
+Bu hazırlık mevcut katman ve modül sınırlarıyla sağlanır. Yönetici arayüzü, yönetim endpoint'leri ve ilgili yazma use case'leri kendi geliştirme görevlerinde, yetki politikalarıyla birlikte eklenecektir.
+
+## Geliştirme sırası
+
+1. **Backend katmanları:** mevcut API'nin Clean Architecture temeli ve proje bağımlılıkları.
+2. **PostgreSQL:** PostgreSQL 18 bağlantısı, migration uygulama, idempotent seed ve gerçek veritabanı integration testleri.
+3. **Eğitim kataloğu:** dil, öğrenme yönü, program ve kurs API'sinin PostgreSQL üzerinde uçtan uca doğrulanması.
+4. **Ders motoru:** ünite, ders, içerik ve tamamlama kuralları; Assessment & Scoring sınırı korunarak ayrı görevde geliştirme.
+5. **Flutter entegrasyonu:** doğrulanan API sözleşmelerinin mevcut Android/iOS istemcisine bağlanması.
+
+TASK 001'de backend katmanları ve katalog kaynak kodu oluşturulmuştur; PostgreSQL bağlantısı, migration uygulaması ve gerçek veritabanı doğrulaması henüz tamamlanmamıştır. Bir sonraki geliştirme adımı bu veritabanı doğrulamasıdır. Kimlik ve yetki gerektiren öğrenci işlemleri ilgili güvenlik temeliyle birlikte planlanacaktır.
 
 ## Dil kavramları ve yerelleştirme
 

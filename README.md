@@ -1,8 +1,20 @@
 # LanguagePlatform
 
-LanguagePlatform, birden fazla kaynak/hedef dil yönünü ve farklı öğrenme programlarını desteklemek üzere tasarlanmış bir öğrenme platformudur. Repository şu anda Flutter istemcisini (`mobile/`) ve .NET 10 modüler monolit backend temelini (`backend/`) içerir.
+LanguagePlatform, birden fazla kaynak/hedef dil yönünü ve farklı öğrenme programlarını desteklemek üzere tasarlanmış bir öğrenme platformudur. İlk sürüm yalnızca Android ve iOS mobil uygulaması olarak sunulacaktır. Repository, Flutter + Dart istemcisini (`mobile/`) ve ASP.NET Core 10 modüler monolit backend temelini (`backend/`) içerir. Clean Architecture ile geliştirilen backend API, PostgreSQL 18 kullanarak iki mobil platformun ortak sunucusu olacaktır.
 
 Bu aşamada çalışan backend kapsamı yalnızca **Backend Foundation + Learning Catalog** modülüdür. Ders motoru, kimlik, ödeme, yapay zekâ, sözlük, medya ve yönetim özellikleri henüz uygulanmamıştır.
+
+## İlk sürüm kapsamı ve öncelikler
+
+- Mobil istemci mevcut `mobile/` Flutter + Dart projesi üzerinden Android ve iOS için geliştirilecektir; proje korunacaktır.
+- Öğrenciye yönelik web frontend veya Next.js, React, Angular projesi oluşturulmayacaktır.
+- Ayrı web yönetici paneli bu aşamada geliştirilmeyecektir. Ders, içerik, sınav ve öğrenci yönetimi iş akışları gelecekte bir yönetici arayüzünün yetkilendirilmiş API üzerinden kullanabileceği şekilde backend katmanlarında tasarlanacaktır.
+- Çok dilli eğitim, kurs, ders ve puanlama altyapısı planlandığı şekilde devam edecektir.
+- Flutter projesindeki mevcut web/masaüstü platform dosyaları korunur; bunların bulunması ilk sürüm için web veya masaüstü yayın hedefi anlamına gelmez.
+
+Geliştirme sırası: **Backend katmanları → PostgreSQL → Eğitim kataloğu → Ders motoru → Flutter entegrasyonu**.
+
+Backend katmanları ve katalog temeli oluşturulmuştur. Bir sonraki adım PostgreSQL 18 bağlantısının güvenli yapılandırılması, migration ve seed'in uygulanması ve gerçek veritabanı testlerinin tamamlanmasıdır. Ardından katalog API'si PostgreSQL üzerinde uçtan uca doğrulanacak; ders motoru ve Flutter entegrasyonu ayrı görevlerde geliştirilecektir. TASK 001 kapsam güncellemesi bu sonraki modüllerin uygulamasını başlatmaz.
 
 ## Backend yapısı
 
