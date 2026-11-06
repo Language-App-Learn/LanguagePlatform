@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LanguagePlatform.Api/LanguagePlatform.Api.csproj" />
+    <Project Path="src/LanguagePlatform.Application/LanguagePlatform.Application.csproj" />
+    <Project Path="src/LanguagePlatform.Domain/LanguagePlatform.Domain.csproj" />
+    <Project Path="src/LanguagePlatform.Infrastructure/LanguagePlatform.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LanguagePlatform.Api.IntegrationTests/LanguagePlatform.Api.IntegrationTests.csproj" />
+    <Project Path="tests/LanguagePlatform.Application.Tests/LanguagePlatform.Application.Tests.csproj" />
+    <Project Path="tests/LanguagePlatform.Domain.Tests/LanguagePlatform.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

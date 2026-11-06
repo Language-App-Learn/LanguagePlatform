@@ -1,0 +1,8 @@
+namespace LanguagePlatform.Domain.Catalog;
+
+public enum CourseStatus
+{
+    Draft = 1,
+    Published = 2,
+    Archived = 3
+}
