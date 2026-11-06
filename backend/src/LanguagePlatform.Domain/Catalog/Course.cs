@@ -18,6 +18,8 @@ public sealed partial class Course
         string? description,
         CourseStatus status)
     {
+        Guard.Against(learningPathId == Guid.Empty || learningProgramId == Guid.Empty, "Course path and program are required.");
+        Guard.Against(!Enum.IsDefined(status), "Invalid course status.");
         Id = id;
         LearningPathId = learningPathId;
         LearningProgramId = learningProgramId;
@@ -36,6 +38,20 @@ public sealed partial class Course
     public CourseStatus Status { get; private set; }
     public LearningPath LearningPath { get; private set; } = null!;
     public LearningProgram LearningProgram { get; private set; } = null!;
+
+    public void SubmitForReview()
+    {
+        Guard.Against(Status != CourseStatus.Draft, "Only a draft course can enter review.");
+        Status = CourseStatus.InReview;
+    }
+
+    public void Publish()
+    {
+        Guard.Against(Status != CourseStatus.InReview, "Only reviewed courses can be published.");
+        Status = CourseStatus.Published;
+    }
+
+    public void Archive() => Status = CourseStatus.Archived;
 
     public static Course Create(
         Guid learningPathId,
