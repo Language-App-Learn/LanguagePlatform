@@ -532,4 +532,184 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get authUnavailable =>
       'تسجيل الدخول غير متصل بخادم بعد. لا تستطيع هذه النسخة إنشاء الحسابات أو التحقق منها.';
+
+  @override
+  String get cancel => 'إلغاء';
+
+  @override
+  String get homeResumeTitle => 'تابع درسك';
+
+  @override
+  String get weeklyActivityTitle => 'آخر 7 أيام';
+
+  @override
+  String activityStreak(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'سلسلة $days يوم',
+      many: 'سلسلة $days يومًا',
+      few: 'سلسلة $days أيام',
+      two: 'سلسلة يومين',
+      one: 'سلسلة يوم واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get activityNone =>
+      'لا يوجد نشاط مسجّل بعد. أكمل درسًا أو اختبارًا أو مراجعة ليظهر هنا.';
+
+  @override
+  String get statWordsLearned => 'كلمات تم تعلّمها';
+
+  @override
+  String get statWordsLearning => 'كلمات قيد التعلّم';
+
+  @override
+  String get statReviewsDue => 'مراجعات مستحقة';
+
+  @override
+  String get vocabularySearchHint => 'ابحث عن كلمة';
+
+  @override
+  String get vocabularyFavorites => 'المفضلة';
+
+  @override
+  String get favoriteAdd => 'إضافة إلى المفضلة';
+
+  @override
+  String get favoriteRemove => 'إزالة من المفضلة';
+
+  @override
+  String get reviewDueBadge => 'حان وقت المراجعة';
+
+  @override
+  String reviewDueBanner(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count كلمة مستحقة للمراجعة',
+      many: '$count كلمة مستحقة للمراجعة',
+      few: '$count كلمات مستحقة للمراجعة',
+      two: 'كلمتان مستحقتان للمراجعة',
+      one: 'كلمة واحدة مستحقة للمراجعة',
+      zero: 'لا كلمات مستحقة. تدرّب على كلمات جديدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get startReview => 'مراجعة';
+
+  @override
+  String get reviewTitle => 'بطاقات الكلمات';
+
+  @override
+  String get reviewShowAnswer => 'إظهار الإجابة';
+
+  @override
+  String reviewProgress(int current, int total) {
+    return 'البطاقة $current من $total';
+  }
+
+  @override
+  String get ratingAgain => 'مرة أخرى';
+
+  @override
+  String get ratingHard => 'صعب';
+
+  @override
+  String get ratingGood => 'جيد';
+
+  @override
+  String get ratingEasy => 'سهل';
+
+  @override
+  String get reviewDoneTitle => 'اكتملت الجلسة';
+
+  @override
+  String reviewDoneSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'راجعت $count كلمة.',
+      many: 'راجعت $count كلمة.',
+      few: 'راجعت $count كلمات.',
+      two: 'راجعت كلمتين.',
+      one: 'راجعت كلمة واحدة.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reviewNothingTitle => 'لا شيء للمراجعة';
+
+  @override
+  String get reviewNothingMessage =>
+      'اختر لغة للتعلّم أو عد عندما تحين مراجعة الكلمات.';
+
+  @override
+  String get settingsDemoNotice =>
+      'نسخة تجريبية: تُحفظ إعداداتك وتقدّمك على هذا الجهاز فقط وليس في حساب.';
+
+  @override
+  String get resetDataTitle => 'إعادة تعيين البيانات التجريبية المحلية';
+
+  @override
+  String get resetDataSubtitle =>
+      'يحذف التقدّم وحالة الكلمات والتفضيلات على هذا الجهاز';
+
+  @override
+  String get resetDataConfirmTitle => 'إعادة تعيين البيانات المحلية؟';
+
+  @override
+  String get resetDataConfirmMessage =>
+      'سيتم حذف حالة التعريف واختيارات اللغة والتقدّم وسجلات الكلمات على هذا الجهاز. لا يمكن التراجع.';
+
+  @override
+  String get resetDataConfirmAction => 'إعادة تعيين';
+
+  @override
+  String get errorNetwork =>
+      'لا يوجد اتصال بالإنترنت. تحقق من اتصالك وحاول مرة أخرى.';
+
+  @override
+  String get errorTimeout =>
+      'استغرق الطلب وقتًا طويلًا. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get errorUnauthorized => 'يرجى تسجيل الدخول للمتابعة.';
+
+  @override
+  String get errorForbidden => 'ليس لديك صلاحية الوصول إلى هذا المحتوى.';
+
+  @override
+  String get errorServer => 'حدثت مشكلة في الخادم. يرجى المحاولة لاحقًا.';
+
+  @override
+  String get errorUnavailable => 'هذه الميزة غير متصلة بعد.';
+
+  @override
+  String get storageWriteFailed =>
+      'تعذّر حفظ بعض التغييرات على هذا الجهاز وقد تضيع عند إغلاق التطبيق.';
+
+  @override
+  String get answerTrue => 'صحيح';
+
+  @override
+  String get answerFalse => 'خطأ';
+
+  @override
+  String get unsupportedContent =>
+      'هذا المحتوى غير مدعوم في هذا الإصدار من التطبيق.';
+
+  @override
+  String get pageNotFoundTitle => 'الصفحة غير موجودة';
+
+  @override
+  String get pageNotFoundMessage => 'الصفحة التي فتحتها غير موجودة.';
+
+  @override
+  String get goHome => 'الذهاب إلى الرئيسية';
 }

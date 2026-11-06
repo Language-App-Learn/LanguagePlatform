@@ -4,6 +4,7 @@ import '../../../../core/design_system/widgets/content_width.dart';
 import '../../../../core/design_system/widgets/notice_banner.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
+import '../../../progress/presentation/widgets/activity_widgets.dart';
 import '../widgets/continue_learning_section.dart';
 import '../widgets/daily_goal_card.dart';
 import '../widgets/featured_courses_section.dart';
@@ -29,12 +30,16 @@ class HomePage extends StatelessWidget {
               const HomeHeader(),
               const SizedBox(height: AppSpacing.lg),
               const DailyGoalCard(),
+              const SizedBox(height: AppSpacing.lg),
+              const WeeklyActivityCard(),
               const SizedBox(height: AppSpacing.xl),
               const ContinueLearningSection(),
               const SizedBox(height: AppSpacing.xl),
               const FeaturedCoursesSection(),
               const SizedBox(height: AppSpacing.xl),
               const PracticeSection(),
+              const SizedBox(height: AppSpacing.xl),
+              const VocabularySummaryRow(),
               const SizedBox(height: AppSpacing.xl),
               const ProgressSummaryCard(),
               const SizedBox(height: AppSpacing.xl),

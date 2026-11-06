@@ -273,13 +273,19 @@ void main() {
 
         for (var i = 0; i < total; i++) {
           state = c.read(quizControllerProvider('tr-a1-l1')).requireValue;
-          final q = state.current as MultipleChoiceQuestion;
+          final q = state.current;
           ctl.check(); // seçim yokken etkisiz
           expect(
             c.read(quizControllerProvider('tr-a1-l1')).requireValue.checked,
             isFalse,
           );
-          ctl.select(MultipleChoiceAnswer(q.id, q.correctOptionId));
+          ctl.select(switch (q) {
+            MultipleChoiceQuestion() => MultipleChoiceAnswer(
+              q.id,
+              q.correctOptionId,
+            ),
+            TrueFalseQuestion() => TrueFalseAnswer(q.id, q.correctAnswer),
+          });
           ctl.check();
           ctl.next();
         }

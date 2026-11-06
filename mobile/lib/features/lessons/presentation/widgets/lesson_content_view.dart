@@ -70,6 +70,7 @@ class LessonContentView extends ConsumerWidget {
           ),
         ],
       ),
+      UnknownContent() => const UnsupportedContentView(),
       ExerciseContent(:final question) => ExerciseView(
         question: question,
         contentLanguage: contentLanguage,

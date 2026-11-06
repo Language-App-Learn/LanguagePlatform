@@ -531,4 +531,174 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get authUnavailable =>
       'Sign-in is not connected to a server yet. This build cannot create or verify accounts.';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get homeResumeTitle => 'Resume your lesson';
+
+  @override
+  String get weeklyActivityTitle => 'Last 7 days';
+
+  @override
+  String activityStreak(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days-day streak',
+      one: '1-day streak',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get activityNone =>
+      'No activity recorded yet. Finish a lesson, quiz or review to see it here.';
+
+  @override
+  String get statWordsLearned => 'Words learned';
+
+  @override
+  String get statWordsLearning => 'Words in progress';
+
+  @override
+  String get statReviewsDue => 'Reviews due';
+
+  @override
+  String get vocabularySearchHint => 'Search words';
+
+  @override
+  String get vocabularyFavorites => 'Favorites';
+
+  @override
+  String get favoriteAdd => 'Add to favorites';
+
+  @override
+  String get favoriteRemove => 'Remove from favorites';
+
+  @override
+  String get reviewDueBadge => 'Due for review';
+
+  @override
+  String reviewDueBanner(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count words due for review',
+      one: '1 word due for review',
+      zero: 'No words due. Practice new words',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get startReview => 'Review';
+
+  @override
+  String get reviewTitle => 'Flashcards';
+
+  @override
+  String get reviewShowAnswer => 'Show answer';
+
+  @override
+  String reviewProgress(int current, int total) {
+    return 'Card $current of $total';
+  }
+
+  @override
+  String get ratingAgain => 'Again';
+
+  @override
+  String get ratingHard => 'Hard';
+
+  @override
+  String get ratingGood => 'Good';
+
+  @override
+  String get ratingEasy => 'Easy';
+
+  @override
+  String get reviewDoneTitle => 'Session complete';
+
+  @override
+  String reviewDoneSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'You reviewed $count words.',
+      one: 'You reviewed 1 word.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reviewNothingTitle => 'Nothing to review';
+
+  @override
+  String get reviewNothingMessage =>
+      'Choose a language to learn or come back when words are due.';
+
+  @override
+  String get settingsDemoNotice =>
+      'Demo build: your settings and progress are stored only on this device, not in an account.';
+
+  @override
+  String get resetDataTitle => 'Reset local demo data';
+
+  @override
+  String get resetDataSubtitle =>
+      'Deletes progress, vocabulary state and preferences on this device';
+
+  @override
+  String get resetDataConfirmTitle => 'Reset local data?';
+
+  @override
+  String get resetDataConfirmMessage =>
+      'This deletes your onboarding state, language choices, progress and vocabulary records on this device. It cannot be undone.';
+
+  @override
+  String get resetDataConfirmAction => 'Reset';
+
+  @override
+  String get errorNetwork =>
+      'No internet connection. Check your connection and try again.';
+
+  @override
+  String get errorTimeout => 'The request took too long. Please try again.';
+
+  @override
+  String get errorUnauthorized => 'Please sign in to continue.';
+
+  @override
+  String get errorForbidden => 'You don\'t have access to this content.';
+
+  @override
+  String get errorServer => 'The server had a problem. Please try again later.';
+
+  @override
+  String get errorUnavailable => 'This feature is not connected yet.';
+
+  @override
+  String get storageWriteFailed =>
+      'Some changes could not be saved on this device and may be lost when you close the app.';
+
+  @override
+  String get answerTrue => 'True';
+
+  @override
+  String get answerFalse => 'False';
+
+  @override
+  String get unsupportedContent =>
+      'This content is not supported in this version of the app.';
+
+  @override
+  String get pageNotFoundTitle => 'Page not found';
+
+  @override
+  String get pageNotFoundMessage => 'The page you opened does not exist.';
+
+  @override
+  String get goHome => 'Go to home';
 }

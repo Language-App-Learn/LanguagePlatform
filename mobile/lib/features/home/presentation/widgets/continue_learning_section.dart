@@ -30,14 +30,24 @@ class ContinueLearningSection extends ConsumerWidget {
       emptyBuilder: (context) => AppCard(
         child: Text(l10n.homeAllDone, style: theme.textTheme.titleSmall),
       ),
-      data: (steps) {
+      data: (allSteps) {
+        // Resume the last opened (not yet completed) lesson first.
+        final lastId = ref.watch(
+          progressProvider.select((p) => p.lastOpened?.lessonId),
+        );
+        final steps = [...allSteps];
+        final resumeAt = steps.indexWhere((s) => s.lesson.id == lastId);
+        if (resumeAt > 0) steps.insert(0, steps.removeAt(resumeAt));
+        final resuming = resumeAt >= 0;
         final current = steps.first;
         final upcoming = steps.length > 1 ? steps[1] : null;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SectionHeader(
-              title: current.courseStarted
+              title: resuming
+                  ? l10n.homeResumeTitle
+                  : current.courseStarted
                   ? l10n.homeContinueTitle
                   : l10n.homeStartTitle,
             ),
@@ -63,7 +73,7 @@ class ContinueLearningSection extends ConsumerWidget {
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   AppPrimaryButton(
-                    label: current.courseStarted
+                    label: (resuming || current.courseStarted)
                         ? l10n.continueCourse
                         : l10n.startLesson,
                     icon: Icons.play_arrow,

@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/utils/bidi.dart';
 import '../../domain/vocabulary_item.dart';
+import '../../domain/vocabulary_record.dart';
 
 extension VocabularyStatusLabel on VocabularyStatus {
   String label(AppLocalizations l10n) => switch (this) {
@@ -16,27 +17,37 @@ extension VocabularyStatusLabel on VocabularyStatus {
   };
 }
 
-/// Kelime listesi satırı: kelime, okunuş, anlam ve öğrenme durumu.
+/// Word list row: word, transliteration, meaning, status and favorite toggle.
 class WordTile extends StatelessWidget {
   const WordTile({
     super.key,
     required this.item,
-    required this.status,
+    required this.record,
     required this.contentLanguage,
     required this.onTap,
+    required this.onToggleFavorite,
+    required this.isDue,
   });
 
   final VocabularyItem item;
-  final VocabularyStatus status;
+  final VocabularyRecord record;
   final String contentLanguage;
   final VoidCallback onTap;
+  final VoidCallback onToggleFavorite;
+  final bool isDue;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     return AppCard(
       key: ValueKey('word:${item.id}'),
       onTap: onTap,
+      padding: const EdgeInsetsDirectional.only(
+        start: AppSpacing.lg,
+        top: AppSpacing.sm,
+        bottom: AppSpacing.sm,
+      ),
       child: Row(
         children: [
           Expanded(
@@ -63,8 +74,25 @@ class WordTile extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: AppSpacing.md),
-          _StatusDot(status: status),
+          if (isDue)
+            Tooltip(
+              message: l10n.reviewDueBadge,
+              child: Icon(
+                Icons.schedule,
+                size: AppSizes.iconSm,
+                color: context.semanticColors.accent,
+              ),
+            ),
+          _StatusDot(status: record.status),
+          IconButton(
+            key: ValueKey('favorite:${item.id}'),
+            tooltip: record.favorite ? l10n.favoriteRemove : l10n.favoriteAdd,
+            onPressed: onToggleFavorite,
+            icon: Icon(
+              record.favorite ? Icons.star : Icons.star_border,
+              color: record.favorite ? context.semanticColors.accent : null,
+            ),
+          ),
         ],
       ),
     );
@@ -85,9 +113,12 @@ class _StatusDot extends StatelessWidget {
       VocabularyStatus.learning => (Icons.autorenew, semantic.accent),
       VocabularyStatus.learned => (Icons.check_circle, semantic.success),
     };
-    return Tooltip(
-      message: status.label(context.l10n),
-      child: Icon(icon, color: color),
+    return Padding(
+      padding: const EdgeInsetsDirectional.symmetric(horizontal: AppSpacing.xs),
+      child: Tooltip(
+        message: status.label(context.l10n),
+        child: Icon(icon, color: color),
+      ),
     );
   }
 }

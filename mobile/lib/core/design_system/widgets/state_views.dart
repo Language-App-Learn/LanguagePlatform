@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../error/app_exceptions.dart';
+import '../../errors/app_failure.dart';
 import '../../l10n/l10n.dart';
 import '../../theme/app_tokens.dart';
 
@@ -144,19 +144,33 @@ class InlineErrorCard extends StatelessWidget {
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Text(
-                error is NotFoundException
-                    ? l10n.errorNotFound
-                    : l10n.errorGeneric,
+                failureOf(error).message(l10n),
                 style: TextStyle(color: theme.colorScheme.onErrorContainer),
               ),
             ),
-            if (onRetry != null)
+            if (onRetry != null && failureOf(error).isRecoverable)
               TextButton(onPressed: onRetry, child: Text(l10n.retry)),
           ],
         ),
       ),
     );
   }
+}
+
+/// User-facing message for a failure kind (never a raw exception text).
+extension AppFailureMessage on AppFailure {
+  String message(AppLocalizations l10n) => switch (this) {
+    NetworkUnavailableFailure() => l10n.errorNetwork,
+    TimeoutFailure() => l10n.errorTimeout,
+    UnauthorizedFailure() => l10n.errorUnauthorized,
+    ForbiddenFailure() => l10n.errorForbidden,
+    NotFoundFailure() => l10n.errorNotFound,
+    ServerFailure() => l10n.errorServer,
+    ServiceUnavailableFailure() => l10n.errorUnavailable,
+    ValidationFailure() ||
+    UnexpectedResponseFailure() ||
+    UnknownFailure() => l10n.errorGeneric,
+  };
 }
 
 class ErrorStateView extends StatelessWidget {
@@ -168,11 +182,11 @@ class ErrorStateView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final notFound = error is NotFoundException;
+    final failure = failureOf(error);
     return _StateLayout(
-      icon: notFound ? Icons.search_off : Icons.error_outline,
-      title: notFound ? l10n.errorNotFound : l10n.errorGeneric,
-      action: onRetry == null
+      icon: failure is NotFoundFailure ? Icons.search_off : Icons.error_outline,
+      title: failure.message(l10n),
+      action: onRetry == null || !failure.isRecoverable
           ? null
           : FilledButton.icon(
               onPressed: onRetry,

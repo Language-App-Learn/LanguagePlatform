@@ -1,4 +1,4 @@
-import '../../../core/error/app_exceptions.dart';
+import '../../../core/errors/app_exceptions.dart';
 import '../domain/lesson.dart';
 import '../domain/lesson_repository.dart';
 import 'demo_lesson_data.dart';

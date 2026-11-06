@@ -1,16 +1,25 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Onboarding tamamlandı mı? Henüz kalıcı değil: uygulama yeniden
-/// başlayınca tanıtım tekrar gösterilir (yerel depolama kararı bekliyor).
-class OnboardingCompletedNotifier extends Notifier<bool> {
-  OnboardingCompletedNotifier([this._initial = false]);
+import '../../../core/storage/app_preferences.dart';
 
-  final bool _initial;
+/// Whether onboarding was completed; persisted so it is not shown again
+/// after a restart (until local data is reset).
+class OnboardingCompletedNotifier extends Notifier<bool> {
+  OnboardingCompletedNotifier([this._initial]);
+
+  final bool? _initial;
 
   @override
-  bool build() => _initial;
+  bool build() =>
+      _initial ??
+      ref.read(appPreferencesRepositoryProvider).load().onboardingCompleted;
 
-  void complete() => state = true;
+  void complete() {
+    state = true;
+    ref
+        .read(appPreferencesRepositoryProvider)
+        .update((p) => p.copyWith(onboardingCompleted: true));
+  }
 }
 
 final onboardingCompletedProvider =

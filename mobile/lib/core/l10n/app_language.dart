@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../storage/app_preferences.dart';
+
 /// Uygulama ARAYÜZ dili. "Bildiğim dil" ve "öğrendiğim dil"den ayrı bir
 /// kavramdır (bkz. `LearningLanguage`).
 ///
@@ -34,16 +36,26 @@ enum AppLanguage {
   }
 }
 
-/// Seçilen arayüz dili. `null`: cihaz dilini takip et. Kalıcı değil.
+/// Selected interface language; `null` follows the device language.
+/// An explicit [initial] (tests) wins; otherwise the persisted value is used.
 class AppLanguageNotifier extends Notifier<AppLanguage?> {
   AppLanguageNotifier([this._initial]);
 
   final AppLanguage? _initial;
 
   @override
-  AppLanguage? build() => _initial;
+  AppLanguage? build() =>
+      _initial ??
+      AppLanguage.fromCode(
+        ref.read(appPreferencesRepositoryProvider).load().interfaceLanguage,
+      );
 
-  void select(AppLanguage? language) => state = language;
+  void select(AppLanguage? language) {
+    state = language;
+    ref
+        .read(appPreferencesRepositoryProvider)
+        .update((p) => p.copyWith(interfaceLanguage: () => language?.code));
+  }
 }
 
 final appLanguageProvider = NotifierProvider<AppLanguageNotifier, AppLanguage?>(

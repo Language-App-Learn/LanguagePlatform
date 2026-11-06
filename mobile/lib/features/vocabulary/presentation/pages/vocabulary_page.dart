@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_routes.dart';
+import '../../../../core/design_system/widgets/app_card.dart';
 import '../../../../core/design_system/widgets/async_value_view.dart';
 import '../../../../core/design_system/widgets/choice_group.dart';
 import '../../../../core/design_system/widgets/content_width.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../language_selection/application/content_language.dart';
+import '../../../progress/application/progress_providers.dart';
+import '../../application/review_session.dart';
 import '../../application/vocabulary_providers.dart';
 import '../../domain/vocabulary_item.dart';
 import '../widgets/word_detail_sheet.dart';
 import '../widgets/word_tile.dart';
 
-/// Öğrenilen dildeki kelime listesi, duruma göre filtre, detay kartı.
-/// İleride flashcard ve aralıklı tekrar bu ekrandan başlatılacak.
+enum _WordFilter { all, fresh, learning, learned, favorites }
+
+/// Word list with search, status/favorite filters, detail card and the
+/// entry point of the flashcard review.
 class VocabularyPage extends ConsumerStatefulWidget {
   const VocabularyPage({super.key});
 
@@ -22,15 +29,38 @@ class VocabularyPage extends ConsumerStatefulWidget {
 }
 
 class _VocabularyPageState extends ConsumerState<VocabularyPage> {
-  /// `null`: tüm durumlar. Yalnızca bu ekranı ilgilendiren geçici UI durumu.
-  VocabularyStatus? _filter;
+  // Ephemeral UI state of this screen only.
+  _WordFilter _filter = _WordFilter.all;
+  String _query = '';
+
+  bool _matchesQuery(VocabularyItem item) {
+    final q = _query.trim().toLowerCase();
+    if (q.isEmpty) return true;
+    return item.term.toLowerCase().contains(q) ||
+        (item.transliteration?.toLowerCase().contains(q) ?? false) ||
+        item.meaning.matches(q);
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final words = ref.watch(targetVocabularyProvider);
-    final statuses = ref.watch(vocabularyStatusProvider);
+    final records = ref.watch(vocabularyRecordsProvider);
     final contentLanguage = ref.watch(contentLanguageProvider);
+    final now = ref.watch(clockProvider)();
+    final dueCount = ref.watch(dueReviewCountProvider);
+
+    bool passes(VocabularyItem item) {
+      final record = records.recordOf(item.id);
+      final byFilter = switch (_filter) {
+        _WordFilter.all => true,
+        _WordFilter.fresh => record.status == VocabularyStatus.fresh,
+        _WordFilter.learning => record.status == VocabularyStatus.learning,
+        _WordFilter.learned => record.status == VocabularyStatus.learned,
+        _WordFilter.favorites => record.favorite,
+      };
+      return byFilter && _matchesQuery(item);
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.vocabularyTitle)),
@@ -45,26 +75,69 @@ class _VocabularyPageState extends ConsumerState<VocabularyPage> {
                   AppSpacing.lg,
                   AppSpacing.sm,
                 ),
-                child: Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: ChoiceGroup<VocabularyStatus?>(
-                    groupId: 'vocabulary-filter',
-                    selected: _filter,
-                    onSelected: (value) => setState(() => _filter = value),
-                    options: [
-                      ChoiceOption(
-                        id: 'all',
-                        value: null,
-                        label: l10n.filterAll,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppCard(
+                      key: const ValueKey('review-card'),
+                      onTap: () => context.push(AppRoutes.review),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.style_outlined),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: Text(
+                              l10n.reviewDueBanner(dueCount),
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                          ),
+                          Text(l10n.startReview),
+                          const Icon(Icons.chevron_right),
+                        ],
                       ),
-                      for (final status in VocabularyStatus.values)
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    TextField(
+                      onChanged: (v) => setState(() => _query = v),
+                      decoration: InputDecoration(
+                        hintText: l10n.vocabularySearchHint,
+                        prefixIcon: const Icon(Icons.search),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    ChoiceGroup<_WordFilter>(
+                      groupId: 'vocabulary-filter',
+                      selected: _filter,
+                      onSelected: (value) => setState(() => _filter = value),
+                      options: [
                         ChoiceOption(
-                          id: status.name,
-                          value: status,
-                          label: status.label(l10n),
+                          id: 'all',
+                          value: _WordFilter.all,
+                          label: l10n.filterAll,
                         ),
-                    ],
-                  ),
+                        ChoiceOption(
+                          id: 'fresh',
+                          value: _WordFilter.fresh,
+                          label: l10n.vocabularyStatusNew,
+                        ),
+                        ChoiceOption(
+                          id: 'learning',
+                          value: _WordFilter.learning,
+                          label: l10n.vocabularyStatusLearning,
+                        ),
+                        ChoiceOption(
+                          id: 'learned',
+                          value: _WordFilter.learned,
+                          label: l10n.vocabularyStatusLearned,
+                        ),
+                        ChoiceOption(
+                          id: 'favorites',
+                          value: _WordFilter.favorites,
+                          label: l10n.vocabularyFavorites,
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
               Expanded(
@@ -72,9 +145,7 @@ class _VocabularyPageState extends ConsumerState<VocabularyPage> {
                   value: words.whenData(
                     (items) => [
                       for (final item in items)
-                        if (_filter == null ||
-                            statuses.statusOf(item.id) == _filter)
-                          item,
+                        if (passes(item)) item,
                     ],
                   ),
                   onRetry: () => ref.invalidate(vocabularyProvider),
@@ -116,10 +187,15 @@ class _VocabularyPageState extends ConsumerState<VocabularyPage> {
                         const SizedBox(height: AppSpacing.sm),
                     itemBuilder: (context, i) {
                       final item = items[i];
+                      final record = records.recordOf(item.id);
                       return WordTile(
                         item: item,
-                        status: statuses.statusOf(item.id),
+                        record: record,
+                        isDue: record.review.isDue(now),
                         contentLanguage: contentLanguage,
+                        onToggleFavorite: () => ref
+                            .read(vocabularyRecordsProvider.notifier)
+                            .toggleFavorite(item.id),
                         onTap: () => showModalBottomSheet<void>(
                           context: context,
                           isScrollControlled: true,

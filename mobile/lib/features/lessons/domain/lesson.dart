@@ -110,3 +110,13 @@ final class ExerciseContent extends LessonContent {
 
   final MultipleChoiceQuestion question;
 }
+
+/// A block whose `type` this app version does not know (e.g. media or AI
+/// blocks added to content later). It is kept instead of dropped so content
+/// round-trips, and the UI shows a neutral "not supported" notice.
+final class UnknownContent extends LessonContent {
+  const UnknownContent(this.type);
+
+  /// The unrecognised type identifier from the content source.
+  final String type;
+}

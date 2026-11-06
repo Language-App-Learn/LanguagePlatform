@@ -38,7 +38,36 @@ class DemoQuizRepository implements QuizRepository {
         if (content is ExerciseContent) content.question,
       for (final (index, item) in items.indexed)
         _meaningQuestion(item, pool, index),
-    ];
+      if (items.isNotEmpty) _trueFalseQuestion(lesson, items.first, pool),
+    ].where((q) => q.isValid).toList();
+  }
+
+  /// One true/false statement per lesson: odd lessons state the real
+  /// meaning, even lessons state another word's meaning (deterministic).
+  TrueFalseQuestion _trueFalseQuestion(
+    Lesson lesson,
+    VocabularyItem item,
+    List<VocabularyItem> pool,
+  ) {
+    final truthful = lesson.order.isOdd;
+    final other = pool.firstWhere((o) => o.id != item.id, orElse: () => item);
+    final shown = truthful ? item : other;
+    String template(String code) {
+      final meaning = shown.meaning.resolve(code);
+      return switch (code) {
+        'tr' => '“${item.term}” kelimesi “$meaning” anlamına gelir.',
+        'ar' => 'كلمة «${item.term}» تعني «$meaning».',
+        _ => '“${item.term}” means “$meaning”.',
+      };
+    }
+
+    return TrueFalseQuestion(
+      id: 'tf-${lesson.id}',
+      prompt: LocalizedText({
+        for (final code in const ['tr', 'ar', 'en']) code: template(code),
+      }),
+      correctAnswer: truthful,
+    );
   }
 
   /// "X ne demek?" sorusu. Çeldiriciler aynı dilin diğer kelimelerinden

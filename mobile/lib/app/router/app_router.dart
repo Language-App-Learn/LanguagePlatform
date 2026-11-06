@@ -16,21 +16,31 @@ import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/progress/presentation/pages/progress_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
+import '../../features/vocabulary/presentation/pages/review_page.dart';
 import '../../features/vocabulary/presentation/pages/vocabulary_page.dart';
 import '../shell/main_shell.dart';
 import 'app_routes.dart';
+import 'route_error_page.dart';
 
 /// Açılış rotası; testlerde override edilerek doğrudan bir ekranla başlanır.
 final initialLocationProvider = Provider<String>((ref) => AppRoutes.splash);
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
-/// Merkezi gezinme. Gerçek kimlik doğrulama olmadığından burada AUTH GUARD
+/// Central navigation. Unknown routes show [RouteErrorPage].
+///
+/// Future auth redirect strategy (NOT enabled): once a real session exists,
+/// add a `redirect` that sends signed-out users to `AppRoutes.login` for
+/// protected paths, driven by a Riverpod-backed `refreshListenable`. The
+/// demo session (`SessionStatus.demo`) must never count as signed in.
+///
+/// Gerçek kimlik doğrulama olmadığından burada AUTH GUARD
 /// yoktur; demo ile gerçek oturum arasındaki sınır `sessionProvider`'dadır.
 /// Backend bağlanınca `redirect` bu noktaya eklenecek.
 final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
     navigatorKey: _rootNavigatorKey,
+    errorBuilder: (context, state) => const RouteErrorPage(),
     initialLocation: ref.read(initialLocationProvider),
     routes: [
       GoRoute(
@@ -125,6 +135,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.quiz,
         builder: (context, state) =>
             QuizPage(lessonId: state.pathParameters['lessonId']!),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.review,
+        builder: (context, state) => const ReviewPage(),
       ),
     ],
   );

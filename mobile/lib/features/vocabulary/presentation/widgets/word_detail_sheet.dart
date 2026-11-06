@@ -26,7 +26,7 @@ class WordDetailSheet extends ConsumerWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final status = ref.watch(
-      vocabularyStatusProvider.select((m) => m.statusOf(item.id)),
+      vocabularyRecordsProvider.select((m) => m.statusOf(item.id)),
     );
     final example = item.example;
 
@@ -81,7 +81,7 @@ class WordDetailSheet extends ConsumerWidget {
               title: l10n.wordStatusTitle,
               selected: status,
               onSelected: (value) => ref
-                  .read(vocabularyStatusProvider.notifier)
+                  .read(vocabularyRecordsProvider.notifier)
                   .setStatus(item.id, value),
               options: [
                 for (final value in VocabularyStatus.values)

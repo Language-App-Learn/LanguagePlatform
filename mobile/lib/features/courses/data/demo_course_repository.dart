@@ -1,4 +1,4 @@
-import '../../../core/error/app_exceptions.dart';
+import '../../../core/errors/app_exceptions.dart';
 import '../../../core/l10n/localized_text.dart';
 import '../domain/course.dart';
 import '../domain/course_repository.dart';

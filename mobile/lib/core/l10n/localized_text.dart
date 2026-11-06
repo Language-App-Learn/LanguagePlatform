@@ -24,6 +24,10 @@ class LocalizedText {
         (_values.values.isEmpty ? '' : _values.values.first);
   }
 
+  /// Whether an explicit translation exists for [code] (no fallback).
+  bool hasTranslation(String code) =>
+      _plain != null || _values.containsKey(code);
+
   /// Herhangi bir dildeki metin [query]'yi (büyük/küçük harf duyarsız)
   /// içeriyor mu? Arama için kullanılır.
   bool matches(String query) {

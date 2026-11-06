@@ -17,6 +17,7 @@ import '../../../../core/utils/bidi.dart';
 import '../../../courses/application/course_providers.dart';
 import '../../application/progress_providers.dart';
 import '../../domain/learning_progress.dart';
+import '../widgets/activity_widgets.dart';
 import '../widgets/course_progress_tile.dart';
 
 /// Yerel DEMO ilerleme özeti: tamamlanan dersler, quiz ortalaması, günlük
@@ -64,6 +65,12 @@ class ProgressPage extends ConsumerWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.lg),
+              const VocabularySummaryRow(),
+              const SizedBox(height: AppSpacing.xl),
+              SectionHeader(title: l10n.weeklyActivityTitle),
+              const WeeklyActivityCard(),
               const SizedBox(height: AppSpacing.xl),
               SectionHeader(title: l10n.progressDailyGoalTitle),
               AppCard(

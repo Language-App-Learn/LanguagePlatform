@@ -77,7 +77,16 @@ class _QuestionStep extends ConsumerWidget {
     final question = state.current;
     final selectedId = switch (state.selected) {
       MultipleChoiceAnswer(:final optionId) => optionId,
-      _ => null,
+      TrueFalseAnswer(:final value) => value.toString(),
+      null => null,
+    };
+    // Every supported question type is presented as choices.
+    final choices = switch (question) {
+      MultipleChoiceQuestion() => question,
+      TrueFalseQuestion() => question.asChoices(
+        trueLabel: LocalizedText.plain(l10n.answerTrue),
+        falseLabel: LocalizedText.plain(l10n.answerFalse),
+      ),
     };
 
     return Column(
@@ -97,16 +106,18 @@ class _QuestionStep extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.xl),
         // Yeni soruya geçerken durum sıfırlansın diye soru kimliği anahtar.
-        if (question is MultipleChoiceQuestion)
-          QuestionView(
-            key: ValueKey(question.id),
-            question: question,
-            languageCode: ref.watch(contentLanguageProvider),
-            selectedOptionId: selectedId,
-            checked: state.checked,
-            onSelect: (id) =>
-                controller.select(MultipleChoiceAnswer(question.id, id)),
+        QuestionView(
+          key: ValueKey(question.id),
+          question: choices,
+          languageCode: ref.watch(contentLanguageProvider),
+          selectedOptionId: selectedId,
+          checked: state.checked,
+          onSelect: (id) => controller.select(
+            question is TrueFalseQuestion
+                ? TrueFalseAnswer(question.id, id == 'true')
+                : MultipleChoiceAnswer(question.id, id),
           ),
+        ),
         const SizedBox(height: AppSpacing.xl),
         if (!state.checked)
           AppPrimaryButton(

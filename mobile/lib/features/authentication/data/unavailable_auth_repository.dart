@@ -1,4 +1,4 @@
-import '../../../core/error/app_exceptions.dart';
+import '../../../core/errors/app_exceptions.dart';
 import '../domain/auth_repository.dart';
 
 /// Backend bağlanana kadar kullanılan yer tutucu. HİÇBİR işlem başarılı

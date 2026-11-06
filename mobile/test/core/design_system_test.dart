@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:language_platform/core/design_system/widgets/async_value_view.dart';
 import 'package:language_platform/core/design_system/widgets/choice_group.dart';
 import 'package:language_platform/core/design_system/widgets/state_views.dart';
-import 'package:language_platform/core/error/app_exceptions.dart';
+import 'package:language_platform/core/errors/app_exceptions.dart';
 import 'package:language_platform/core/l10n/l10n.dart';
 
 Widget _host(Widget child, {Locale locale = const Locale('en')}) {

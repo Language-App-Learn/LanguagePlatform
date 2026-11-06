@@ -16,6 +16,12 @@ sealed class QuizQuestion {
   final LocalizedText prompt;
 
   bool isCorrect(QuizAnswer answer);
+
+  /// Problems that make this question unusable (empty = valid). Malformed
+  /// questions must be dropped by repositories/controllers, never shown.
+  List<String> get validationIssues;
+
+  bool get isValid => validationIssues.isEmpty;
 }
 
 @immutable
@@ -47,6 +53,17 @@ final class MultipleChoiceQuestion extends QuizQuestion {
       answer is MultipleChoiceAnswer &&
       answer.questionId == id &&
       answer.optionId == correctOptionId;
+
+  @override
+  List<String> get validationIssues {
+    final ids = options.map((o) => o.id).toList();
+    return [
+      if (id.isEmpty) 'empty id',
+      if (options.length < 2) 'fewer than 2 options',
+      if (ids.toSet().length != ids.length) 'duplicate option ids',
+      if (!ids.contains(correctOptionId)) 'correct option missing',
+    ];
+  }
 }
 
 @immutable
@@ -83,4 +100,48 @@ class QuizResult {
       totalQuestions == 0 ? 0 : (correctAnswers * 100 / totalQuestions).round();
 
   bool get passed => percentage >= passingPercentage;
+}
+
+/// Statement the learner marks as true or false. Scoring: all-or-nothing.
+final class TrueFalseQuestion extends QuizQuestion {
+  const TrueFalseQuestion({
+    required super.id,
+    required super.prompt,
+    required this.correctAnswer,
+    this.explanation,
+  });
+
+  final bool correctAnswer;
+  final LocalizedText? explanation;
+
+  @override
+  bool isCorrect(QuizAnswer answer) =>
+      answer is TrueFalseAnswer &&
+      answer.questionId == id &&
+      answer.value == correctAnswer;
+
+  @override
+  List<String> get validationIssues => [if (id.isEmpty) 'empty id'];
+
+  /// The same question as two choices (`true` / `false`), so one choice UI
+  /// serves both types. Labels are supplied by the UI layer (localized).
+  MultipleChoiceQuestion asChoices({
+    required LocalizedText trueLabel,
+    required LocalizedText falseLabel,
+  }) => MultipleChoiceQuestion(
+    id: id,
+    prompt: prompt,
+    options: [
+      QuizOption(id: 'true', text: trueLabel),
+      QuizOption(id: 'false', text: falseLabel),
+    ],
+    correctOptionId: correctAnswer ? 'true' : 'false',
+    explanation: explanation,
+  );
+}
+
+final class TrueFalseAnswer extends QuizAnswer {
+  const TrueFalseAnswer(super.questionId, this.value);
+
+  final bool value;
 }

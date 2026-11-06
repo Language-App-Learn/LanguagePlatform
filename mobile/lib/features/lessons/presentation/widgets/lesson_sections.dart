@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/design_system/widgets/content_text.dart';
+import '../../../../core/design_system/widgets/notice_banner.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/utils/bidi.dart';
@@ -248,6 +249,19 @@ class ExampleSentenceView extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Neutral placeholder for a block type this app version cannot render.
+class UnsupportedContentView extends StatelessWidget {
+  const UnsupportedContentView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return NoticeBanner(
+      key: const ValueKey('unsupported-content'),
+      message: context.l10n.unsupportedContent,
     );
   }
 }

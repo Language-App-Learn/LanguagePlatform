@@ -1035,6 +1035,276 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign-in is not connected to a server yet. This build cannot create or verify accounts.'**
   String get authUnavailable;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @homeResumeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume your lesson'**
+  String get homeResumeTitle;
+
+  /// No description provided for @weeklyActivityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 days'**
+  String get weeklyActivityTitle;
+
+  /// No description provided for @activityStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, =1{1-day streak} other{{days}-day streak}}'**
+  String activityStreak(int days);
+
+  /// No description provided for @activityNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No activity recorded yet. Finish a lesson, quiz or review to see it here.'**
+  String get activityNone;
+
+  /// No description provided for @statWordsLearned.
+  ///
+  /// In en, this message translates to:
+  /// **'Words learned'**
+  String get statWordsLearned;
+
+  /// No description provided for @statWordsLearning.
+  ///
+  /// In en, this message translates to:
+  /// **'Words in progress'**
+  String get statWordsLearning;
+
+  /// No description provided for @statReviewsDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews due'**
+  String get statReviewsDue;
+
+  /// No description provided for @vocabularySearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search words'**
+  String get vocabularySearchHint;
+
+  /// No description provided for @vocabularyFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get vocabularyFavorites;
+
+  /// No description provided for @favoriteAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favorites'**
+  String get favoriteAdd;
+
+  /// No description provided for @favoriteRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favorites'**
+  String get favoriteRemove;
+
+  /// No description provided for @reviewDueBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Due for review'**
+  String get reviewDueBadge;
+
+  /// No description provided for @reviewDueBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No words due. Practice new words} =1{1 word due for review} other{{count} words due for review}}'**
+  String reviewDueBanner(int count);
+
+  /// No description provided for @startReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get startReview;
+
+  /// No description provided for @reviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Flashcards'**
+  String get reviewTitle;
+
+  /// No description provided for @reviewShowAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Show answer'**
+  String get reviewShowAnswer;
+
+  /// No description provided for @reviewProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Card {current} of {total}'**
+  String reviewProgress(int current, int total);
+
+  /// No description provided for @ratingAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Again'**
+  String get ratingAgain;
+
+  /// No description provided for @ratingHard.
+  ///
+  /// In en, this message translates to:
+  /// **'Hard'**
+  String get ratingHard;
+
+  /// No description provided for @ratingGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Good'**
+  String get ratingGood;
+
+  /// No description provided for @ratingEasy.
+  ///
+  /// In en, this message translates to:
+  /// **'Easy'**
+  String get ratingEasy;
+
+  /// No description provided for @reviewDoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Session complete'**
+  String get reviewDoneTitle;
+
+  /// No description provided for @reviewDoneSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{You reviewed 1 word.} other{You reviewed {count} words.}}'**
+  String reviewDoneSummary(int count);
+
+  /// No description provided for @reviewNothingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to review'**
+  String get reviewNothingTitle;
+
+  /// No description provided for @reviewNothingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a language to learn or come back when words are due.'**
+  String get reviewNothingMessage;
+
+  /// No description provided for @settingsDemoNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo build: your settings and progress are stored only on this device, not in an account.'**
+  String get settingsDemoNotice;
+
+  /// No description provided for @resetDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset local demo data'**
+  String get resetDataTitle;
+
+  /// No description provided for @resetDataSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deletes progress, vocabulary state and preferences on this device'**
+  String get resetDataSubtitle;
+
+  /// No description provided for @resetDataConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset local data?'**
+  String get resetDataConfirmTitle;
+
+  /// No description provided for @resetDataConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This deletes your onboarding state, language choices, progress and vocabulary records on this device. It cannot be undone.'**
+  String get resetDataConfirmMessage;
+
+  /// No description provided for @resetDataConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get resetDataConfirmAction;
+
+  /// No description provided for @errorNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection. Check your connection and try again.'**
+  String get errorNetwork;
+
+  /// No description provided for @errorTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The request took too long. Please try again.'**
+  String get errorTimeout;
+
+  /// No description provided for @errorUnauthorized.
+  ///
+  /// In en, this message translates to:
+  /// **'Please sign in to continue.'**
+  String get errorUnauthorized;
+
+  /// No description provided for @errorForbidden.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have access to this content.'**
+  String get errorForbidden;
+
+  /// No description provided for @errorServer.
+  ///
+  /// In en, this message translates to:
+  /// **'The server had a problem. Please try again later.'**
+  String get errorServer;
+
+  /// No description provided for @errorUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This feature is not connected yet.'**
+  String get errorUnavailable;
+
+  /// No description provided for @storageWriteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Some changes could not be saved on this device and may be lost when you close the app.'**
+  String get storageWriteFailed;
+
+  /// No description provided for @answerTrue.
+  ///
+  /// In en, this message translates to:
+  /// **'True'**
+  String get answerTrue;
+
+  /// No description provided for @answerFalse.
+  ///
+  /// In en, this message translates to:
+  /// **'False'**
+  String get answerFalse;
+
+  /// No description provided for @unsupportedContent.
+  ///
+  /// In en, this message translates to:
+  /// **'This content is not supported in this version of the app.'**
+  String get unsupportedContent;
+
+  /// No description provided for @pageNotFoundTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Page not found'**
+  String get pageNotFoundTitle;
+
+  /// No description provided for @pageNotFoundMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The page you opened does not exist.'**
+  String get pageNotFoundMessage;
+
+  /// No description provided for @goHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to home'**
+  String get goHome;
 }
 
 class _AppLocalizationsDelegate

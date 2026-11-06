@@ -8,6 +8,7 @@ import '../../../../core/design_system/widgets/content_width.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../language_selection/application/content_language.dart';
+import '../../../progress/application/progress_providers.dart';
 import '../../application/lesson_providers.dart';
 import '../../domain/lesson.dart';
 import '../widgets/lesson_actions.dart';
@@ -37,16 +38,35 @@ class LessonPage extends ConsumerWidget {
   }
 }
 
-class _LessonBody extends ConsumerWidget {
+class _LessonBody extends ConsumerStatefulWidget {
   const _LessonBody({required this.lesson});
 
   final Lesson lesson;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_LessonBody> createState() => _LessonBodyState();
+}
+
+class _LessonBodyState extends ConsumerState<_LessonBody> {
+  @override
+  void initState() {
+    super.initState();
+    // Remember the last opened lesson for "continue". Opening a lesson does
+    // NOT complete it. Deferred: providers must not change during build.
+    Future.microtask(() {
+      if (!mounted) return;
+      ref
+          .read(progressProvider.notifier)
+          .markOpened(widget.lesson.courseId, widget.lesson.id);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final lesson = widget.lesson;
     final contentLanguage = ref.watch(contentLanguageProvider);
     return ContentWidth(
-      // Lazy: uzun derslerde yalnızca görünen bloklar oluşturulur.
+      // Lazy: only visible blocks of long lessons are built.
       child: ListView.separated(
         padding: AppSpacing.page,
         itemCount: lesson.contents.length + 1,

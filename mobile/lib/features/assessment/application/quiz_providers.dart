@@ -80,7 +80,11 @@ class QuizController extends AsyncNotifier<QuizState> {
 
   @override
   Future<QuizState> build() async {
-    final questions = await ref.watch(quizQuestionsProvider(lessonId).future);
+    // Malformed questions fail safe: they are dropped, never presented.
+    final questions = [
+      for (final q in await ref.watch(quizQuestionsProvider(lessonId).future))
+        if (q.isValid) q,
+    ];
     return QuizState(lessonId: lessonId, questions: questions);
   }
 
@@ -122,7 +126,7 @@ class QuizController extends AsyncNotifier<QuizState> {
     );
     final progress = ref.read(progressProvider.notifier);
     progress.recordQuizScore(lessonId, result.percentage);
-    if (result.passed) progress.completeLesson(lessonId);
+    if (result.passed) progress.completeLesson(lessonId, logActivity: false);
     state = AsyncData(s.copyWith(result: result));
   }
 

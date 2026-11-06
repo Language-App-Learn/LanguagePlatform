@@ -1,10 +1,8 @@
 import 'package:flutter/widgets.dart';
 
-import '../../../core/l10n/app_language.dart';
-
 /// Öğrencinin bildiği veya öğrenmek istediği dil.
 ///
-/// Arayüz dilinden ([AppLanguage]) bağımsız bir kavramdır; şimdilik aynı üç
+/// Arayüz dilinden (`AppLanguage`) bağımsız bir kavramdır; şimdilik aynı üç
 /// dil sunulur, ancak liste ileride (de, fr, es ...) backend'den gelen
 /// katalogla genişleyecektir. Backend sözleşmesi netleşince buradaki alanlar
 /// (ör. ISO kodu, yerel ad, yazı yönü) DTO ile eşlenecektir.
@@ -21,14 +19,27 @@ class LearningLanguage {
   final String nativeName;
   final TextDirection textDirection;
 
-  static final List<LearningLanguage> supported = List.unmodifiable([
-    for (final language in AppLanguage.values)
-      LearningLanguage(
-        code: language.code,
-        nativeName: language.nativeName,
-        textDirection: language.textDirection,
-      ),
-  ]);
+  /// Languages offered for learning and as "known language". This list is
+  /// independent of the interface languages (`AppLanguage`): a language can
+  /// become learnable (e.g. German) before the app UI is translated into it.
+  /// Course content and translations are keyed by these same ISO codes.
+  static const List<LearningLanguage> supported = [
+    LearningLanguage(
+      code: 'en',
+      nativeName: 'English',
+      textDirection: TextDirection.ltr,
+    ),
+    LearningLanguage(
+      code: 'tr',
+      nativeName: 'Türkçe',
+      textDirection: TextDirection.ltr,
+    ),
+    LearningLanguage(
+      code: 'ar',
+      nativeName: 'العربية',
+      textDirection: TextDirection.rtl,
+    ),
+  ];
 
   static LearningLanguage? fromCode(String? code) {
     for (final language in supported) {

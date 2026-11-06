@@ -529,4 +529,175 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get authUnavailable =>
       'Giriş henüz bir sunucuya bağlı değil. Bu sürüm hesap oluşturamaz veya doğrulayamaz.';
+
+  @override
+  String get cancel => 'Vazgeç';
+
+  @override
+  String get homeResumeTitle => 'Dersine devam et';
+
+  @override
+  String get weeklyActivityTitle => 'Son 7 gün';
+
+  @override
+  String activityStreak(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days günlük seri',
+      one: '1 günlük seri',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get activityNone =>
+      'Henüz kayıtlı etkinlik yok. Bir ders, test veya tekrar tamamladığında burada görünür.';
+
+  @override
+  String get statWordsLearned => 'Öğrenilen kelime';
+
+  @override
+  String get statWordsLearning => 'Devam eden kelime';
+
+  @override
+  String get statReviewsDue => 'Bekleyen tekrar';
+
+  @override
+  String get vocabularySearchHint => 'Kelime ara';
+
+  @override
+  String get vocabularyFavorites => 'Favoriler';
+
+  @override
+  String get favoriteAdd => 'Favorilere ekle';
+
+  @override
+  String get favoriteRemove => 'Favorilerden çıkar';
+
+  @override
+  String get reviewDueBadge => 'Tekrar zamanı geldi';
+
+  @override
+  String reviewDueBanner(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count kelime tekrar bekliyor',
+      one: '1 kelime tekrar bekliyor',
+      zero: 'Tekrar bekleyen kelime yok. Yeni kelimeler çalış',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get startReview => 'Tekrar';
+
+  @override
+  String get reviewTitle => 'Kelime kartları';
+
+  @override
+  String get reviewShowAnswer => 'Cevabı göster';
+
+  @override
+  String reviewProgress(int current, int total) {
+    return 'Kart $current / $total';
+  }
+
+  @override
+  String get ratingAgain => 'Tekrar';
+
+  @override
+  String get ratingHard => 'Zor';
+
+  @override
+  String get ratingGood => 'İyi';
+
+  @override
+  String get ratingEasy => 'Kolay';
+
+  @override
+  String get reviewDoneTitle => 'Oturum tamamlandı';
+
+  @override
+  String reviewDoneSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count kelime tekrar ettin.',
+      one: '1 kelime tekrar ettin.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reviewNothingTitle => 'Tekrar edilecek bir şey yok';
+
+  @override
+  String get reviewNothingMessage =>
+      'Öğrenmek için bir dil seç veya kelimelerin zamanı gelince geri dön.';
+
+  @override
+  String get settingsDemoNotice =>
+      'Demo sürümü: ayarların ve ilerlemen yalnızca bu cihazda tutulur, bir hesapta değil.';
+
+  @override
+  String get resetDataTitle => 'Yerel demo verilerini sıfırla';
+
+  @override
+  String get resetDataSubtitle =>
+      'Bu cihazdaki ilerleme, kelime durumu ve tercihleri siler';
+
+  @override
+  String get resetDataConfirmTitle => 'Yerel veriler sıfırlansın mı?';
+
+  @override
+  String get resetDataConfirmMessage =>
+      'Bu cihazdaki tanıtım durumu, dil seçimleri, ilerleme ve kelime kayıtları silinir. Geri alınamaz.';
+
+  @override
+  String get resetDataConfirmAction => 'Sıfırla';
+
+  @override
+  String get errorNetwork =>
+      'İnternet bağlantısı yok. Bağlantını kontrol edip tekrar dene.';
+
+  @override
+  String get errorTimeout => 'İstek çok uzun sürdü. Lütfen tekrar dene.';
+
+  @override
+  String get errorUnauthorized => 'Devam etmek için lütfen giriş yap.';
+
+  @override
+  String get errorForbidden => 'Bu içeriğe erişimin yok.';
+
+  @override
+  String get errorServer =>
+      'Sunucuda bir sorun oluştu. Lütfen daha sonra tekrar dene.';
+
+  @override
+  String get errorUnavailable => 'Bu özellik henüz bağlı değil.';
+
+  @override
+  String get storageWriteFailed =>
+      'Bazı değişiklikler bu cihaza kaydedilemedi ve uygulamayı kapatınca kaybolabilir.';
+
+  @override
+  String get answerTrue => 'Doğru';
+
+  @override
+  String get answerFalse => 'Yanlış';
+
+  @override
+  String get unsupportedContent =>
+      'Bu içerik uygulamanın bu sürümünde desteklenmiyor.';
+
+  @override
+  String get pageNotFoundTitle => 'Sayfa bulunamadı';
+
+  @override
+  String get pageNotFoundMessage => 'Açmaya çalıştığın sayfa mevcut değil.';
+
+  @override
+  String get goHome => 'Ana sayfaya git';
 }

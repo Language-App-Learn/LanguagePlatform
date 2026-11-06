@@ -1,79 +1,50 @@
-# PROJECT_STATUS — Mobil (Flutter)
+# PROJECT_STATUS — Mobile (Flutter)
 
-> Her önemli görev sonunda güncelle. Kısa tut. Son güncelleme: 2026-11-06
+> Update after every milestone. Keep short. Last update: 2026-11-06 (architecture hardening session)
 
-## Aşama durumu
-| Aşama | Durum |
+## Status
+- Last commit: `d590fe6` (MVP). **V2 work and this session's hardening are uncommitted** on branch `Flutter` (nothing pushed).
+- Quality gates (this session): `dart format --set-exit-if-changed lib test` clean · `flutter analyze` clean · `flutter test` **218 passed, 0 failed**.
+- Android: plain `flutter build apk --debug` **fails** in `:shared_preferences_android:compileDebugKotlin` ("Could not close incremental caches", Kotlin incremental cache; project on D:, pub cache on C:). `flutter build apk --debug -Pkotlin.incremental=false` **succeeds** (temporary command-line workaround; `gradle.properties` untouched). iOS: not built (needs macOS/Xcode).
+
+## Architecture docs
+`docs/architecture/`: OVERVIEW, STATE_MANAGEMENT, DATA_AND_PERSISTENCE, API_INTEGRATION (checklist of unconfirmed contracts), TESTING.
+
+## Done in this session (architecture hardening)
+| Area | Result |
 |---|---|
-| 1 Foundation (Riverpod, GoRouter, tema, l10n, RTL, core UI) | ✅ Tamam |
-| 2 Onboarding & tercihler (splash, tanıtım, 3 ayrı dil, tema) | ✅ Tamam |
-| 3 Katalog (ana sayfa, kurs listesi, filtre, kurs detay, demo repo) | ✅ Tamam |
-| 4 Ders motoru (içerik modeli, ders ekranı, diyalog/kelime/gramer/örnek/alıştırma, gezinme) | ✅ Tamam |
-| 5 Quiz & ilerleme & kelimeler | ✅ Tamam |
-| 6 Profil, ayarlar, giriş/kayıt UI (entegrasyon yer tutucuları) | ✅ Tamam |
-| 7 Refactor, test, doğrulama | ✅ Tamam (Android debug build sonucu aşağıda) |
+| Audit | No import cycles between features; logic outside widgets; findings below were fixed |
+| Persistence | `GuardedKeyValueStore`: ordered, coalesced, read-your-writes, failed writes counted (never silently "saved"), Settings warning; `SharedPreferences` adapter now throws when the plugin reports failure; keys/shapes unchanged (backward compatible) |
+| Error model | `core/errors/app_failure.dart` (typed failures + `failureOf`), localized messages, retry only when recoverable |
+| API readiness | `ApiClient` boundary, `ApiResponse.unwrap`, `failureForStatus`; fake transport in tests; no Dio, no invented endpoints |
+| Lesson engine | `UnknownContent` (safe rendering), `LessonValidator` (all demo lessons validated in tests) |
+| Assessment | `TrueFalseQuestion` (+ UI via choices), `validationIssues` on all questions; controller drops malformed ones |
+| Progress | Passed quiz no longer double-counts activity (quiz event only); metric definitions documented |
+| Navigation | Localized not-found page for unknown routes; auth-redirect strategy documented in router (not enabled) |
+| Multilingual | `LearningLanguage` decoupled from interface languages; `hasTranslation`; tests for Arabic diacritics, fallback, completeness of course titles |
+| Resilience | `semanticColors` no longer crashes without the theme extension |
 
-Devam eden aşama: yok. Sonraki: bkz. "Sonraki adımlar".
+## Not done / partial (be explicit)
+- Not done: premium UI redesign, lesson block ids/versioning, multiple-select / matching / ordering / fill-blank questions (semantics not specified), Dio implementation, auth redirect, accessibility audit on devices (TalkBack/VoiceOver), performance profiling on a real low-end device (code reviewed: lazy lists, `select` rebuild scoping, coalesced writes).
+- Partial: Phase 4 dashboard (no selected-course/CEFR card).
 
-## Mimari
-```
-lib/
-  main.dart                      → bootstrap(LanguagePlatformApp)
-  app/        app.dart, bootstrap/, router/ (app_router, app_routes), shell/ (alt gezinme)
-  core/       config/, error/, l10n/ (ARB, AppLanguage, LocalizedText), theme/ (tokens, renkler, tema),
-              design_system/widgets/, utils/ (bidi)
-  features/   splash, onboarding, language_selection, authentication, home, catalog, courses,
-              lessons, assessment, vocabulary, progress, profile, settings
-              (her biri ihtiyaca göre presentation/ application/ domain/ data/)
-```
-- Bağımlılık yönü: presentation → application → domain ← data. UI'da HTTP/DB yok.
-- Tüm veri `*Repository` arayüzlerinden gelir; şu an **Demo** uygulamaları (`Demo*Repository`) provider'da bağlıdır. Gerçek API tek satırda (provider) değiştirilir.
-- Router'da **auth guard yoktur** (gerçek kimlik doğrulama yok). Demo ↔ gerçek sınırı: `sessionProvider` (`signedOut | demo`), demo giriş `AppConfig.demoModeEnabled` (`--dart-define=DEMO_MODE=false` ile kapanır).
-- Üç ayrı kavram: **arayüz dili** (`appLanguageProvider`, ARB), **bildiğim dil** ve **öğrendiğim dil** (`learningPreferencesProvider`). İçerik çevirileri `contentLanguageProvider` (bildiği dil → arayüz dili → en) ile seçilir; kurs/ders başlıkları arayüz dilinde gösterilir.
-- Çok dilli içerik: `LocalizedText` (ör. `{tr, ar, en}`); arayüz metni: ARB (`context.l10n`). Sayılar Latin rakamla gösterilir; teknik değerler (e-posta, "A1", yüzde) `isolateLtr` ile RTL'de bozulmaz. Öğrenilen dil metni `ContentText` ile kendi yönünde çizilir.
-- Ders içeriği `sealed LessonContent` (Heading, Text, Dialogue, Vocabulary, Grammar, Example, Exercise). Dinleme/video/ses kaydı/konuşma/AI etkinlikleri yeni alt sınıf olarak eklenir; `switch` derleme zamanında eksikleri gösterir. **Bu türler henüz yok ve çalışıyormuş gibi gösterilmez.**
-- Quiz motoru `sealed QuizQuestion/QuizAnswer` + `QuizQuestion.isCorrect`; şu an yalnızca çoktan seçmeli. Quiz soruları demo olarak dersin alıştırma + kelimelerinden üretilir.
+## Packages
+flutter_riverpod 3.4, go_router 18, flutter_localizations, intl, shared_preferences 2.5. No packages added or removed this session.
 
-## Kararlar ve paketler
-| Konu | Karar |
-|---|---|
-| State management | `flutter_riverpod` 3.4 (Notifier/AsyncNotifier; otomatik retry kapalı, "Tekrar dene" elle) |
-| Routing | `go_router` 18 (`StatefulShellRoute` 5 sekme; detay sayfaları kök navigator'da) |
-| Localization | `flutter_localizations` + `intl` + gen-l10n (tr, ar, en; yedek dil en) |
-| Tema | Material 3, açık/koyu/sistem; token'lar `core/theme/app_tokens.dart`, marka renkleri `app_colors.dart` |
-| HTTP | `dio` — **eklenmedi**, backend entegrasyonunda eklenecek |
-| Kurulu paketler | cupertino_icons, flutter_localizations (SDK), intl, flutter_riverpod, go_router |
+## Known issues / risks
+- Plain Android debug build fails on this machine (see above); fix path: keep project and pub cache on the same drive or set `kotlin.incremental=false` deliberately (developer decision; not applied).
+- Local demo progress/preferences only; no account sync. Device clock drives dashboard/streak.
+- Generated plugin files under linux/macos/windows show line-ending-only modifications; not touched.
+- Word detail sheet lacks a favorite toggle; review history has no dedicated screen.
 
-## Test sonuçları (2026-11-06)
-- `flutter analyze`: temiz (0 sorun).
-- `flutter test`: **156 test geçti** — alan mantığı (ilerleme, quiz, filtre, doğrulayıcılar, demo veri bütünlüğü, öğrenme yolu, quiz motoru), splash/onboarding/dil seçimi, katalog/kurs/ders/quiz/ilerleme/kelime akışları (loading/error/empty dahil), giriş/kayıt/şifre sıfırlama (sahte başarı yok), profil/ayarlar, RTL/LTR/aynalama, 14 ekran × 3 dil × açık/koyu duman testi (360×640, taşma yok).
-- Duman testi giriş/kayıt satırındaki gerçek bir taşmayı yakaladı; düzeltildi.
-- Android debug build: bkz. rapor (build uzun sürdü; sonuç raporda).
-- iOS derlemesi Windows'ta yapılamaz → **doğrulanmadı**.
+## Backend integration pending
+See `docs/architecture/API_INTEGRATION.md` (authentication, profile, catalog, lesson blocks, completion events, quiz grading, vocabulary sync, progress reconciliation, media).
 
-## Backend entegrasyonu bekleyenler (hepsi demo/yer tutucu)
-- Kimlik doğrulama: `AuthRepository` arayüzü hazır, `UnavailableAuthRepository` her işlemde "servis bağlı değil" döner. Giriş/kayıt/şifre sıfırlama hiçbir şeyi başarılı saymaz; token/oturum üretilmez. Gerekenler: uç noktalar, token türü/yenileme, hata kodları, e-posta doğrulama, güvenli depolama kararı.
-- Kurs/ders/kelime/quiz: `Demo*Repository` → DTO + Dio uygulaması. Bilinmeyenler: kimlik türleri, çok dilli alan biçimi, ders gövdesi blok şeması ve medya URL'leri, soru türü ayırt edici alanı, sayfalama.
-- İlerleme (ders tamamlama, quiz sonucu, günlük hedef): yerel ve **kalıcı değil**; `ProgressRepository` + olay uçları gerekir.
-- Kelime durumu: yerel; flashcard/aralıklı tekrar ve sözlük API'si sonra.
-- Tercihler (arayüz dili, tema, bildiğim/öğrendiğim dil, onboarding görüldü): **kalıcı değil**; yerel depolama paketi kararı (ör. `shared_preferences`) onay bekliyor.
-- Hesap ayarları (profil düzenleme, şifre değiştirme): devre dışı yer tutucu.
-- Abonelik/ödeme: yok, sahte akış eklenmedi.
+## iOS validation still required (on macOS/Xcode)
+Build and run; `shared_preferences` persistence on device; safe areas, keyboard insets, back-swipe; VoiceOver with RTL; text scaling.
 
-## Açık görevler
-- **Marka / yayıncı kimliği kesinleşince:** Android `applicationId`/`namespace` (`com.example.musab_hoca_arapca`, `android/app/build.gradle.kts`, `MainActivity.kt` paket dizini), iOS `PRODUCT_BUNDLE_IDENTIFIER`, görünen ad, uygulama ikonu. Bilinçli olarak değiştirilmedi.
-- Marka renkleri/logo (`AppColors.seed`, `BrandMark`) geçici.
-- Arapça için özel font ihtiyacı gerçek cihazda değerlendirilecek (şimdilik sistem fontu).
-- Gerçek cihazda erişilebilirlik (TalkBack/VoiceOver) ve büyük yazı boyutu elle denenmeli (otomatik testte yalnızca 360×640 ve semantics etiketleri var).
-- Hesap bağımlı ekranlar için Dio + hata eşleme (`core/network/`).
-
-## Bilinen sorunlar
-- Tercihler ve ilerleme uygulama kapanınca sıfırlanır (bilinçli, kalıcılık bekliyor).
-- Ders içi alıştırma sonucu ilerlemeye yazılmaz (yalnızca quiz yazar).
-- `flutter pub get` linux/macos/windows `generated_plugin*` dosyalarını otomatik değiştirir (üretilmiş dosyalar).
-
-## Sonraki geliştirme adımları
-1. Yerel depolama kararı ve tercih/ilerleme kalıcılığı (onay gerekir).
-2. Backend sözleşmesi netleşince `dio` + DTO eşlemeleri, gerçek `AuthRepository`, auth guard.
-3. Flashcard / aralıklı tekrar; ses (dinleme) içeriği için yeni `LessonContent` türü.
-4. Marka kimliği → paket kimlikleri, ikon, splash.
+## Next steps
+1. Review and commit the V2 + hardening work.
+2. Product input needed before: lesson media/AI blocks, additional question types, grading policy.
+3. Dio adapter + DTOs once the backend contract is confirmed.
+4. UI/accessibility pass on emulator/device; decide on `kotlin.incremental` / drive layout.

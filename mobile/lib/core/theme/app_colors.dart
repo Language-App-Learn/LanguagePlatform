@@ -92,6 +92,14 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
 }
 
 extension AppSemanticColorsContext on BuildContext {
-  AppSemanticColors get semanticColors =>
-      Theme.of(this).extension<AppSemanticColors>()!;
+  /// Semantic colors of the current theme; falls back to the matching
+  /// default set when a theme without the extension is used (e.g. in tests
+  /// or third-party widgets), instead of crashing.
+  AppSemanticColors get semanticColors {
+    final theme = Theme.of(this);
+    return theme.extension<AppSemanticColors>() ??
+        (theme.brightness == Brightness.dark
+            ? AppSemanticColors.dark
+            : AppSemanticColors.light);
+  }
 }

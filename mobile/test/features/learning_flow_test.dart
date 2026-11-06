@@ -15,6 +15,7 @@ import 'package:language_platform/features/progress/application/progress_provide
 import 'package:language_platform/features/progress/domain/learning_progress.dart';
 import 'package:language_platform/features/vocabulary/application/vocabulary_providers.dart';
 import 'package:language_platform/features/vocabulary/domain/vocabulary_item.dart';
+import 'package:language_platform/features/vocabulary/domain/vocabulary_record.dart';
 
 import '../helpers/pump_app.dart';
 
@@ -319,7 +320,7 @@ void main() {
       await tester.tap(find.text('Take the quiz'));
       await tester.pumpAndSettle();
       expect(currentPath(c), '/quiz/ar-a1-l1');
-      expect(find.text('Question 1 of 5'), findsOneWidget);
+      expect(find.text('Question 1 of 6'), findsOneWidget);
     });
 
     testWidgets('olmayan ders: bulunamadı', (tester) async {
@@ -349,12 +350,17 @@ void main() {
       ProviderContainer c, {
       required bool correct,
     }) async {
-      final q =
-          c.read(quizControllerProvider(lessonId)).requireValue.current
-              as MultipleChoiceQuestion;
-      final id = correct
-          ? q.correctOptionId
-          : q.options.firstWhere((o) => o.id != q.correctOptionId).id;
+      final question = c
+          .read(quizControllerProvider(lessonId))
+          .requireValue
+          .current;
+      final id = switch (question) {
+        MultipleChoiceQuestion q =>
+          correct
+              ? q.correctOptionId
+              : q.options.firstWhere((o) => o.id != q.correctOptionId).id,
+        TrueFalseQuestion q => (q.correctAnswer == correct).toString(),
+      };
       await tester.tap(_key('option:$id'));
       await tester.pump();
       await tester.tap(find.text('Check answer'));
@@ -377,12 +383,12 @@ void main() {
       tester,
     ) async {
       final c = await open(tester);
-      for (var i = 0; i < 5; i++) {
+      for (var i = 0; i < 6; i++) {
         await answer(tester, c, correct: true);
       }
       expect(find.text('100%'.isolateLtr), findsOneWidget);
       expect(find.text('Great job!'), findsOneWidget);
-      expect(find.text('5 of 5 correct'), findsOneWidget);
+      expect(find.text('6 of 6 correct'), findsOneWidget);
       expect(c.read(progressProvider).quizScores[lessonId], 100);
       expect(c.read(progressProvider).isCompleted(lessonId), isTrue);
       expect(find.textContaining('only on this device'), findsOneWidget);
@@ -392,7 +398,7 @@ void main() {
       tester,
     ) async {
       final c = await open(tester);
-      for (var i = 0; i < 5; i++) {
+      for (var i = 0; i < 6; i++) {
         await answer(tester, c, correct: false);
       }
       expect(find.text('0%'.isolateLtr), findsOneWidget);
@@ -401,12 +407,12 @@ void main() {
 
       await tester.tap(find.text('Try again'));
       await tester.pumpAndSettle();
-      expect(find.text('Question 1 of 5'), findsOneWidget);
+      expect(find.text('Question 1 of 6'), findsOneWidget);
     });
 
     testWidgets('Bitti ana sayfaya döner (geri yığın yoksa)', (tester) async {
       final c = await open(tester);
-      for (var i = 0; i < 5; i++) {
+      for (var i = 0; i < 6; i++) {
         await answer(tester, c, correct: true);
       }
       await tester.tap(find.text('Done'));
@@ -480,7 +486,7 @@ void main() {
       await tester.tap(_key('word-status:learned'));
       await tester.pumpAndSettle();
       expect(
-        c.read(vocabularyStatusProvider)['ar-marhaba'],
+        c.read(vocabularyRecordsProvider)['ar-marhaba']?.status,
         VocabularyStatus.learned,
       );
     });
@@ -492,9 +498,11 @@ void main() {
         initialLocation: AppRoutes.vocabulary,
         overrides: [
           trToArPreferences,
-          vocabularyStatusProvider.overrideWith(
-            () => VocabularyStatusNotifier({
-              'ar-marhaba': VocabularyStatus.learned,
+          vocabularyRecordsProvider.overrideWith(
+            () => VocabularyRecordsNotifier({
+              'ar-marhaba': const VocabularyRecord(
+                status: VocabularyStatus.learned,
+              ),
             }),
           ),
         ],

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/design_system/widgets/brand_mark.dart';
 import '../../../../core/design_system/widgets/content_width.dart';
 import '../../../../core/design_system/widgets/notice_banner.dart';
-import '../../../../core/error/app_exceptions.dart';
+import '../../../../core/errors/app_exceptions.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../domain/auth_validators.dart';

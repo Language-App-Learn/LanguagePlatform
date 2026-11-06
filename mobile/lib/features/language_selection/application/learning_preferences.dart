@@ -1,10 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/storage/app_preferences.dart';
 import '../domain/learning_language.dart';
 
-/// Öğrenme tercihleri: bildiği dil ve öğrenmek istediği dil.
-/// (Arayüz dili ayrıdır: `appLanguageProvider`.)
+/// Learning preferences: known language and target language.
+/// (The interface language is separate: `appLanguageProvider`.)
 @immutable
 class LearningPreferences {
   const LearningPreferences({this.knownLanguage, this.targetLanguage});
@@ -12,38 +13,58 @@ class LearningPreferences {
   final LearningLanguage? knownLanguage;
   final LearningLanguage? targetLanguage;
 
-  /// İki dil seçilmiş ve birbirinden farklı.
+  /// Both chosen and different from each other.
   bool get isComplete =>
       knownLanguage != null &&
       targetLanguage != null &&
       knownLanguage != targetLanguage;
 }
 
-/// Tercihler henüz kalıcı değil (yerel depolama kararı bekliyor).
+/// Persisted locally. An explicit initial value (tests) wins over storage.
 class LearningPreferencesNotifier extends Notifier<LearningPreferences> {
-  LearningPreferencesNotifier([this._initial = const LearningPreferences()]);
+  LearningPreferencesNotifier([this._initial]);
 
-  final LearningPreferences _initial;
+  final LearningPreferences? _initial;
 
   @override
-  LearningPreferences build() => _initial;
+  LearningPreferences build() {
+    if (_initial != null) return _initial;
+    final stored = ref.read(appPreferencesRepositoryProvider).load();
+    final known = LearningLanguage.fromCode(stored.knownLanguage);
+    var target = LearningLanguage.fromCode(stored.targetLanguage);
+    if (known != null && known == target) target = null; // corrupted pair
+    return LearningPreferences(knownLanguage: known, targetLanguage: target);
+  }
 
-  /// Hedef dille aynı dil seçilemez; çağrı yok sayılır.
+  /// The same language as the target cannot be chosen; the call is ignored.
   void selectKnown(LearningLanguage language) {
     if (state.targetLanguage == language) return;
     state = LearningPreferences(
       knownLanguage: language,
       targetLanguage: state.targetLanguage,
     );
+    _persist();
   }
 
-  /// Bilinen dille aynı dil seçilemez; çağrı yok sayılır.
+  /// The same language as the known language cannot be chosen; ignored.
   void selectTarget(LearningLanguage language) {
     if (state.knownLanguage == language) return;
     state = LearningPreferences(
       knownLanguage: state.knownLanguage,
       targetLanguage: language,
     );
+    _persist();
+  }
+
+  void _persist() {
+    ref
+        .read(appPreferencesRepositoryProvider)
+        .update(
+          (p) => p.copyWith(
+            knownLanguage: () => state.knownLanguage?.code,
+            targetLanguage: () => state.targetLanguage?.code,
+          ),
+        );
   }
 }
 
