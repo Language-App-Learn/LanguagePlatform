@@ -223,5 +223,16 @@
   "unsupportedContent": "This content is not supported in this version of the app.",
   "pageNotFoundTitle": "Page not found",
   "pageNotFoundMessage": "The page you opened does not exist.",
-  "goHome": "Go to home"
+  "goHome": "Go to home",
+  "activeCourseTitle": "Your course",
+  "activeCourseEmptyTitle": "No course yet",
+  "activeCourseEmptyMessage": "Pick a course to see your level and progress here.",
+  "openCourse": "Open course",
+  "reviewHistoryTitle": "Review history",
+  "reviewHistoryEmptyTitle": "No reviews yet",
+  "reviewHistoryEmptyMessage": "Your flashcard reviews will appear here.",
+  "historyNextReview": "Next review: {date}",
+  "@historyNextReview": {"placeholders": {"date": {"type": "String"}}},
+  "historyUnknownWord": "Word no longer available",
+  "reviewHistoryOpen": "Review history"
 }

@@ -184,3 +184,22 @@ final learningPathProvider = FutureProvider<List<LearningStep>>((ref) async {
   }
   return steps;
 });
+
+/// The course shown as "your course": the last opened one (when it still
+/// exists and matches the chosen target language), otherwise the next
+/// course on the learning path. `null` when neither applies.
+final activeCourseProvider = FutureProvider<Course?>((ref) async {
+  final courses = await ref.watch(coursesProvider.future);
+  final target = ref.watch(targetLanguageCodeProvider);
+  final lastId = ref.watch(
+    progressProvider.select((p) => p.lastOpened?.courseId),
+  );
+  for (final course in courses) {
+    if (course.id == lastId &&
+        (target == null || course.languageCode == target)) {
+      return course;
+    }
+  }
+  final path = await ref.watch(learningPathProvider.future);
+  return path.firstOrNull?.course;
+});

@@ -701,4 +701,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get goHome => 'Go to home';
+
+  @override
+  String get activeCourseTitle => 'Your course';
+
+  @override
+  String get activeCourseEmptyTitle => 'No course yet';
+
+  @override
+  String get activeCourseEmptyMessage =>
+      'Pick a course to see your level and progress here.';
+
+  @override
+  String get openCourse => 'Open course';
+
+  @override
+  String get reviewHistoryTitle => 'Review history';
+
+  @override
+  String get reviewHistoryEmptyTitle => 'No reviews yet';
+
+  @override
+  String get reviewHistoryEmptyMessage =>
+      'Your flashcard reviews will appear here.';
+
+  @override
+  String historyNextReview(String date) {
+    return 'Next review: $date';
+  }
+
+  @override
+  String get historyUnknownWord => 'Word no longer available';
+
+  @override
+  String get reviewHistoryOpen => 'Review history';
 }

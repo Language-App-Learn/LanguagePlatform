@@ -700,4 +700,38 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get goHome => 'Ana sayfaya git';
+
+  @override
+  String get activeCourseTitle => 'Kursun';
+
+  @override
+  String get activeCourseEmptyTitle => 'Henüz kurs yok';
+
+  @override
+  String get activeCourseEmptyMessage =>
+      'Seviyeni ve ilerlemeni burada görmek için bir kurs seç.';
+
+  @override
+  String get openCourse => 'Kursu aç';
+
+  @override
+  String get reviewHistoryTitle => 'Tekrar geçmişi';
+
+  @override
+  String get reviewHistoryEmptyTitle => 'Henüz tekrar yok';
+
+  @override
+  String get reviewHistoryEmptyMessage =>
+      'Kelime kartı tekrarların burada görünecek.';
+
+  @override
+  String historyNextReview(String date) {
+    return 'Sonraki tekrar: $date';
+  }
+
+  @override
+  String get historyUnknownWord => 'Kelime artık mevcut değil';
+
+  @override
+  String get reviewHistoryOpen => 'Tekrar geçmişi';
 }

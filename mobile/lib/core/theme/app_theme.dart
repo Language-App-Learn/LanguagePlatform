@@ -40,7 +40,10 @@ abstract final class AppTheme {
         ),
         titleLarge: text.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         titleMedium: text.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        bodyLarge: text.bodyLarge?.copyWith(height: 1.5),
+        bodyMedium: text.bodyMedium?.copyWith(height: 1.45),
       ),
+      materialTapTargetSize: MaterialTapTargetSize.padded,
       appBarTheme: AppBarTheme(
         centerTitle: true,
         backgroundColor: scheme.surface,
@@ -100,6 +103,21 @@ abstract final class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: scheme.surfaceContainer,
         indicatorColor: scheme.primaryContainer,
+      ),
+      dialogTheme: const DialogThemeData(
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.xlAll),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        showDragHandle: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadiusDirectional.vertical(
+            top: Radius.circular(AppRadius.xl),
+          ),
+        ),
+      ),
+      listTileTheme: const ListTileThemeData(
+        minVerticalPadding: AppSpacing.sm,
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
       ),
       snackBarTheme: const SnackBarThemeData(
         behavior: SnackBarBehavior.floating,

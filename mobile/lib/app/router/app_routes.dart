@@ -21,6 +21,7 @@ abstract final class AppRoutes {
   static const lesson = '/lesson/:lessonId';
   static const quiz = '/quiz/:lessonId';
   static const review = '/review';
+  static const reviewHistory = '/review-history';
 
   static String courseOf(String id) => '/course/$id';
   static String lessonOf(String id) => '/lesson/$id';

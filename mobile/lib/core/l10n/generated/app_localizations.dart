@@ -1305,6 +1305,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Go to home'**
   String get goHome;
+
+  /// No description provided for @activeCourseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your course'**
+  String get activeCourseTitle;
+
+  /// No description provided for @activeCourseEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No course yet'**
+  String get activeCourseEmptyTitle;
+
+  /// No description provided for @activeCourseEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a course to see your level and progress here.'**
+  String get activeCourseEmptyMessage;
+
+  /// No description provided for @openCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Open course'**
+  String get openCourse;
+
+  /// No description provided for @reviewHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review history'**
+  String get reviewHistoryTitle;
+
+  /// No description provided for @reviewHistoryEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet'**
+  String get reviewHistoryEmptyTitle;
+
+  /// No description provided for @reviewHistoryEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your flashcard reviews will appear here.'**
+  String get reviewHistoryEmptyMessage;
+
+  /// No description provided for @historyNextReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Next review: {date}'**
+  String historyNextReview(String date);
+
+  /// No description provided for @historyUnknownWord.
+  ///
+  /// In en, this message translates to:
+  /// **'Word no longer available'**
+  String get historyUnknownWord;
+
+  /// No description provided for @reviewHistoryOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Review history'**
+  String get reviewHistoryOpen;
 }
 
 class _AppLocalizationsDelegate

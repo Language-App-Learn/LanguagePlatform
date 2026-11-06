@@ -16,6 +16,7 @@ import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/progress/presentation/pages/progress_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
+import '../../features/vocabulary/presentation/pages/review_history_page.dart';
 import '../../features/vocabulary/presentation/pages/review_page.dart';
 import '../../features/vocabulary/presentation/pages/vocabulary_page.dart';
 import '../shell/main_shell.dart';
@@ -140,6 +141,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         path: AppRoutes.review,
         builder: (context, state) => const ReviewPage(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.reviewHistory,
+        builder: (context, state) => const ReviewHistoryPage(),
       ),
     ],
   );

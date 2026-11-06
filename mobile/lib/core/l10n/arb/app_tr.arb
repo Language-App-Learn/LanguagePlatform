@@ -200,5 +200,15 @@
   "unsupportedContent": "Bu içerik uygulamanın bu sürümünde desteklenmiyor.",
   "pageNotFoundTitle": "Sayfa bulunamadı",
   "pageNotFoundMessage": "Açmaya çalıştığın sayfa mevcut değil.",
-  "goHome": "Ana sayfaya git"
+  "goHome": "Ana sayfaya git",
+  "activeCourseTitle": "Kursun",
+  "activeCourseEmptyTitle": "Henüz kurs yok",
+  "activeCourseEmptyMessage": "Seviyeni ve ilerlemeni burada görmek için bir kurs seç.",
+  "openCourse": "Kursu aç",
+  "reviewHistoryTitle": "Tekrar geçmişi",
+  "reviewHistoryEmptyTitle": "Henüz tekrar yok",
+  "reviewHistoryEmptyMessage": "Kelime kartı tekrarların burada görünecek.",
+  "historyNextReview": "Sonraki tekrar: {date}",
+  "historyUnknownWord": "Kelime artık mevcut değil",
+  "reviewHistoryOpen": "Tekrar geçmişi"
 }

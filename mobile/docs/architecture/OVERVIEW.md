@@ -32,3 +32,11 @@ Accepted cross-feature presentation imports (reuse instead of duplication):
 - Lesson blocks are a `sealed class LessonContent` (compile-time exhaustive `switch`). Unknown future block types are modelled by `UnknownContent` and shown as "not supported". A registry/plugin system was deliberately not added; block ids and versioning are deferred until the content contract exists (see API_INTEGRATION.md).
 - Questions are a `sealed class QuizQuestion` with `isCorrect` and `validationIssues`; invalid questions are dropped by the quiz controller. Implemented types: multiple choice, true/false.
 - Demo vs real: all data comes through `*Repository` interfaces bound to `Demo*Repository` / `Local*` implementations in providers. Switching to remote implementations only changes those providers.
+
+## Evaluated, not implemented: lesson block ids and versions
+
+Blocks currently have no identity beyond their index in `Lesson.contents`. A backward-compatible way to add it later: give `LessonContent` an optional `id` (default derived as `'<lessonId>#<index>'`) and an optional `contentVersion` on `Lesson`, populated by the remote mapper; existing demo lessons and the sealed `switch` stay unchanged. It is deferred because nothing consumes block ids yet (no per-block progress, no server schema).
+
+## Home dashboard sources (all derived from recorded local data)
+
+Active course: last opened course (if it matches the target language) else next course on the learning path. Weekly activity, streak, daily goal, vocabulary totals and due reviews come from `progressProvider` / `vocabularyRecordsProvider` with the injected clock.

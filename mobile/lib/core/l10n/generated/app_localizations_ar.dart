@@ -712,4 +712,36 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get goHome => 'الذهاب إلى الرئيسية';
+
+  @override
+  String get activeCourseTitle => 'دورتك';
+
+  @override
+  String get activeCourseEmptyTitle => 'لا توجد دورة بعد';
+
+  @override
+  String get activeCourseEmptyMessage => 'اختر دورة لترى مستواك وتقدّمك هنا.';
+
+  @override
+  String get openCourse => 'فتح الدورة';
+
+  @override
+  String get reviewHistoryTitle => 'سجل المراجعة';
+
+  @override
+  String get reviewHistoryEmptyTitle => 'لا توجد مراجعات بعد';
+
+  @override
+  String get reviewHistoryEmptyMessage => 'ستظهر هنا مراجعات بطاقات الكلمات.';
+
+  @override
+  String historyNextReview(String date) {
+    return 'المراجعة التالية: $date';
+  }
+
+  @override
+  String get historyUnknownWord => 'الكلمة لم تعد متاحة';
+
+  @override
+  String get reviewHistoryOpen => 'سجل المراجعة';
 }

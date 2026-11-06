@@ -200,5 +200,15 @@
   "unsupportedContent": "هذا المحتوى غير مدعوم في هذا الإصدار من التطبيق.",
   "pageNotFoundTitle": "الصفحة غير موجودة",
   "pageNotFoundMessage": "الصفحة التي فتحتها غير موجودة.",
-  "goHome": "الذهاب إلى الرئيسية"
+  "goHome": "الذهاب إلى الرئيسية",
+  "activeCourseTitle": "دورتك",
+  "activeCourseEmptyTitle": "لا توجد دورة بعد",
+  "activeCourseEmptyMessage": "اختر دورة لترى مستواك وتقدّمك هنا.",
+  "openCourse": "فتح الدورة",
+  "reviewHistoryTitle": "سجل المراجعة",
+  "reviewHistoryEmptyTitle": "لا توجد مراجعات بعد",
+  "reviewHistoryEmptyMessage": "ستظهر هنا مراجعات بطاقات الكلمات.",
+  "historyNextReview": "المراجعة التالية: {date}",
+  "historyUnknownWord": "الكلمة لم تعد متاحة",
+  "reviewHistoryOpen": "سجل المراجعة"
 }

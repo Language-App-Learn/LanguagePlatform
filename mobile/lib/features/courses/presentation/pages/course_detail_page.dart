@@ -60,10 +60,12 @@ class _CourseDetailBody extends ConsumerWidget {
               child: ListView(
                 padding: AppSpacing.page,
                 children: [
-                  Row(
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.xs,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       LevelBadge(level: course.level),
-                      const SizedBox(width: AppSpacing.sm),
                       Text(
                         l10n.lessonCount(course.lessonCount),
                         style: theme.textTheme.bodyMedium,

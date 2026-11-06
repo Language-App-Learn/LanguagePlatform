@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../core/design_system/widgets/app_card.dart';
-import '../../../../core/design_system/widgets/async_value_view.dart';
+import '../../../../core/design_system/widgets/state_views.dart';
 import '../../../../core/design_system/widgets/choice_group.dart';
 import '../../../../core/design_system/widgets/content_width.dart';
 import '../../../../core/l10n/l10n.dart';
@@ -63,153 +63,165 @@ class _VocabularyPageState extends ConsumerState<VocabularyPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.vocabularyTitle)),
+      appBar: AppBar(
+        title: Text(l10n.vocabularyTitle),
+        actions: [
+          IconButton(
+            key: const ValueKey('open-review-history'),
+            tooltip: l10n.reviewHistoryOpen,
+            icon: const Icon(Icons.history),
+            onPressed: () => context.push(AppRoutes.reviewHistory),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: ContentWidth(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(
-                  AppSpacing.lg,
-                  AppSpacing.lg,
-                  AppSpacing.lg,
-                  AppSpacing.sm,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppCard(
-                      key: const ValueKey('review-card'),
-                      onTap: () => context.push(AppRoutes.review),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.style_outlined),
-                          const SizedBox(width: AppSpacing.md),
-                          Expanded(
-                            child: Text(
-                              l10n.reviewDueBanner(dueCount),
-                              style: Theme.of(context).textTheme.titleSmall,
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    AppSpacing.sm,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppCard(
+                        key: const ValueKey('review-card'),
+                        onTap: () => context.push(AppRoutes.review),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.style_outlined),
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: Text(
+                                l10n.reviewDueBanner(dueCount),
+                                style: Theme.of(context).textTheme.titleSmall,
+                              ),
                             ),
+                            Text(l10n.startReview),
+                            const Icon(Icons.chevron_right),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      TextField(
+                        onChanged: (v) => setState(() => _query = v),
+                        decoration: InputDecoration(
+                          hintText: l10n.vocabularySearchHint,
+                          prefixIcon: const Icon(Icons.search),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      ChoiceGroup<_WordFilter>(
+                        groupId: 'vocabulary-filter',
+                        selected: _filter,
+                        onSelected: (value) => setState(() => _filter = value),
+                        options: [
+                          ChoiceOption(
+                            id: 'all',
+                            value: _WordFilter.all,
+                            label: l10n.filterAll,
                           ),
-                          Text(l10n.startReview),
-                          const Icon(Icons.chevron_right),
+                          ChoiceOption(
+                            id: 'fresh',
+                            value: _WordFilter.fresh,
+                            label: l10n.vocabularyStatusNew,
+                          ),
+                          ChoiceOption(
+                            id: 'learning',
+                            value: _WordFilter.learning,
+                            label: l10n.vocabularyStatusLearning,
+                          ),
+                          ChoiceOption(
+                            id: 'learned',
+                            value: _WordFilter.learned,
+                            label: l10n.vocabularyStatusLearned,
+                          ),
+                          ChoiceOption(
+                            id: 'favorites',
+                            value: _WordFilter.favorites,
+                            label: l10n.vocabularyFavorites,
+                          ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    TextField(
-                      onChanged: (v) => setState(() => _query = v),
-                      decoration: InputDecoration(
-                        hintText: l10n.vocabularySearchHint,
-                        prefixIcon: const Icon(Icons.search),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    ChoiceGroup<_WordFilter>(
-                      groupId: 'vocabulary-filter',
-                      selected: _filter,
-                      onSelected: (value) => setState(() => _filter = value),
-                      options: [
-                        ChoiceOption(
-                          id: 'all',
-                          value: _WordFilter.all,
-                          label: l10n.filterAll,
-                        ),
-                        ChoiceOption(
-                          id: 'fresh',
-                          value: _WordFilter.fresh,
-                          label: l10n.vocabularyStatusNew,
-                        ),
-                        ChoiceOption(
-                          id: 'learning',
-                          value: _WordFilter.learning,
-                          label: l10n.vocabularyStatusLearning,
-                        ),
-                        ChoiceOption(
-                          id: 'learned',
-                          value: _WordFilter.learned,
-                          label: l10n.vocabularyStatusLearned,
-                        ),
-                        ChoiceOption(
-                          id: 'favorites',
-                          value: _WordFilter.favorites,
-                          label: l10n.vocabularyFavorites,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: AsyncValueView<List<VocabularyItem>>(
-                  value: words.whenData(
-                    (items) => [
-                      for (final item in items)
-                        if (passes(item)) item,
                     ],
                   ),
-                  onRetry: () => ref.invalidate(vocabularyProvider),
-                  isEmpty: (items) => items.isEmpty,
-                  emptyBuilder: (context) => Center(
-                    child: Padding(
-                      padding: AppSpacing.page,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.translate,
-                            size: AppSizes.iconXl,
-                            color: Theme.of(context).colorScheme.outline,
-                          ),
-                          const SizedBox(height: AppSpacing.lg),
-                          Text(
-                            l10n.vocabularyEmptyTitle,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            l10n.vocabularyEmptyMessage,
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
+                ),
+              ),
+              ...switch (words.whenData(
+                (items) => [
+                  for (final item in items)
+                    if (passes(item)) item,
+                ],
+              )) {
+                AsyncLoading() => [
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: LoadingView(),
+                  ),
+                ],
+                AsyncError(:final error) => [
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: ErrorStateView(
+                      error: error,
+                      onRetry: () => ref.invalidate(vocabularyProvider),
                     ),
                   ),
-                  data: (items) => ListView.separated(
+                ],
+                AsyncData(:final value) when value.isEmpty => [
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: EmptyStateView(
+                      icon: Icons.translate,
+                      title: l10n.vocabularyEmptyTitle,
+                      message: l10n.vocabularyEmptyMessage,
+                    ),
+                  ),
+                ],
+                AsyncData(:final value) => [
+                  SliverPadding(
                     padding: const EdgeInsetsDirectional.fromSTEB(
                       AppSpacing.lg,
                       AppSpacing.sm,
                       AppSpacing.lg,
                       AppSpacing.xxl,
                     ),
-                    itemCount: items.length,
-                    separatorBuilder: (_, _) =>
-                        const SizedBox(height: AppSpacing.sm),
-                    itemBuilder: (context, i) {
-                      final item = items[i];
-                      final record = records.recordOf(item.id);
-                      return WordTile(
-                        item: item,
-                        record: record,
-                        isDue: record.review.isDue(now),
-                        contentLanguage: contentLanguage,
-                        onToggleFavorite: () => ref
-                            .read(vocabularyRecordsProvider.notifier)
-                            .toggleFavorite(item.id),
-                        onTap: () => showModalBottomSheet<void>(
-                          context: context,
-                          isScrollControlled: true,
-                          showDragHandle: true,
-                          builder: (_) => WordDetailSheet(
-                            item: item,
-                            contentLanguage: contentLanguage,
+                    // Lazy: only visible rows are built.
+                    sliver: SliverList.separated(
+                      itemCount: value.length,
+                      separatorBuilder: (_, _) =>
+                          const SizedBox(height: AppSpacing.sm),
+                      itemBuilder: (context, i) {
+                        final item = value[i];
+                        final record = records.recordOf(item.id);
+                        return WordTile(
+                          item: item,
+                          record: record,
+                          isDue: record.review.isDue(now),
+                          contentLanguage: contentLanguage,
+                          onToggleFavorite: () => ref
+                              .read(vocabularyRecordsProvider.notifier)
+                              .toggleFavorite(item.id),
+                          onTap: () => showModalBottomSheet<void>(
+                            context: context,
+                            isScrollControlled: true,
+                            showDragHandle: true,
+                            builder: (_) => WordDetailSheet(
+                              item: item,
+                              contentLanguage: contentLanguage,
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ),
+                ],
+              },
             ],
           ),
         ),

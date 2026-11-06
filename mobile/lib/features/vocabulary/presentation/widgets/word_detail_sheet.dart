@@ -28,6 +28,9 @@ class WordDetailSheet extends ConsumerWidget {
     final status = ref.watch(
       vocabularyRecordsProvider.select((m) => m.statusOf(item.id)),
     );
+    final favorite = ref.watch(
+      vocabularyRecordsProvider.select((m) => m.recordOf(item.id).favorite),
+    );
     final example = item.example;
 
     return SafeArea(
@@ -42,10 +45,24 @@ class WordDetailSheet extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            ContentText(
-              item.term,
-              languageCode: item.languageCode,
-              style: theme.textTheme.displaySmall,
+            Row(
+              children: [
+                Expanded(
+                  child: ContentText(
+                    item.term,
+                    languageCode: item.languageCode,
+                    style: theme.textTheme.displaySmall,
+                  ),
+                ),
+                IconButton(
+                  key: const ValueKey('detail-favorite'),
+                  tooltip: favorite ? l10n.favoriteRemove : l10n.favoriteAdd,
+                  onPressed: () => ref
+                      .read(vocabularyRecordsProvider.notifier)
+                      .toggleFavorite(item.id),
+                  icon: Icon(favorite ? Icons.star : Icons.star_border),
+                ),
+              ],
             ),
             if (item.transliteration != null)
               Text(
