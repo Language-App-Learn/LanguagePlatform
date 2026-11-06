@@ -10,6 +10,8 @@ public sealed class AssessmentAttempt : PlatformEntity
     public DateTime? CompletedAtUtc { get; private set; }
     public decimal? Score { get; private set; }
     public required decimal MaximumScore { get; init; }
+    public decimal? PassingScoreSnapshot { get; init; }
+    public DateTime? DeadlineUtc { get; init; }
     public AttemptStatus Status { get; private set; } = AttemptStatus.InProgress;
     public required int AttemptNumber { get; init; }
     public required string IdempotencyKey { get; init; }

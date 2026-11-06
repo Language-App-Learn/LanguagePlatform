@@ -30,4 +30,10 @@ public sealed record CourseDto(
     string Slug,
     string Title,
     string? Description,
-    string Status);
+    string Status)
+{
+    public string SourceLanguageCode { get; init; } = "";
+    public string TargetLanguageCode { get; init; } = "";
+    public IReadOnlyList<CourseTranslationDto> Localizations { get; init; } = [];
+    public IReadOnlyList<CourseLevelDto> Levels { get; init; } = [];
+}

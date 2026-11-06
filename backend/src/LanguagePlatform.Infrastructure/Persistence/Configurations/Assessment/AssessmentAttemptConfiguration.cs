@@ -16,6 +16,7 @@ public sealed class AssessmentAttemptConfiguration : IEntityTypeConfiguration<As
         builder.Property(x => x.CompletedAtUtc);
         builder.Property(x => x.Score).HasPrecision(18, 4);
         builder.Property(x => x.MaximumScore).HasPrecision(18, 4).IsRequired();
+        builder.Property(x => x.PassingScoreSnapshot).HasPrecision(18, 4);
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(x => x.AttemptNumber).IsRequired();
         builder.Property(x => x.IdempotencyKey).HasMaxLength(128).IsRequired();
@@ -28,6 +29,8 @@ public sealed class AssessmentAttemptConfiguration : IEntityTypeConfiguration<As
         builder.ToTable(t => t.HasCheckConstraint("ck_assessment_attempts_2", "maximum_score > 0"));
         builder.ToTable(t => t.HasCheckConstraint("ck_assessment_attempts_3", "score IS NULL OR (score >= 0 AND score <= maximum_score)"));
         builder.ToTable(t => t.HasCheckConstraint("ck_assessment_attempts_4", "completed_at_utc IS NULL OR completed_at_utc >= started_at_utc"));
+        builder.ToTable(t => t.HasCheckConstraint("ck_assessment_attempts_policy",
+            "(passing_score_snapshot IS NULL OR passing_score_snapshot BETWEEN 0 AND 100) AND (deadline_utc IS NULL OR deadline_utc > started_at_utc)"));
 
     }
 }

@@ -13,6 +13,7 @@ public sealed class StudentSavedWordConfiguration : IEntityTypeConfiguration<Stu
         builder.Property(x => x.DictionaryEntryId).IsRequired();
         builder.Property(x => x.SavedAtUtc).IsRequired();
         builder.Property(x => x.Note).HasMaxLength(2000);
+        builder.Property(x => x.IsFavorite).HasDefaultValue(true);
         builder.HasOne<LanguagePlatform.Infrastructure.Identity.ApplicationUser>().WithMany().HasForeignKey(x => x.StudentId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<LanguagePlatform.Domain.Dictionary.DictionaryEntry>().WithMany().HasForeignKey(x => x.DictionaryEntryId).OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(x => new { x.StudentId, x.DictionaryEntryId }).IsUnique();

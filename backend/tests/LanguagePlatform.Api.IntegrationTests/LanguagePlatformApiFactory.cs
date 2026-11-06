@@ -37,7 +37,13 @@ public sealed class LanguagePlatformApiFactory : WebApplicationFactory<Program>
         public Task<IReadOnlyList<LearningProgramDto>> GetProgramsAsync(CancellationToken cancellationToken) =>
             Task.FromResult<IReadOnlyList<LearningProgramDto>>([]);
 
-        public Task<IReadOnlyList<CourseDto>> GetCoursesAsync(CancellationToken cancellationToken) =>
-            Task.FromResult<IReadOnlyList<CourseDto>>([]);
+        public Task<CoursePage> GetCoursesAsync(CourseQuery query, CancellationToken cancellationToken)
+        {
+            query.Validate();
+            return Task.FromResult(new CoursePage([], null));
+        }
+
+        public Task<CourseDto?> FindCourseAsync(Guid id, string? locale, CancellationToken cancellationToken) =>
+            Task.FromResult<CourseDto?>(null);
     }
 }

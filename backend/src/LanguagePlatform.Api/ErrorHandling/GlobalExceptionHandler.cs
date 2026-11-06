@@ -1,7 +1,9 @@
 using LanguagePlatform.Domain.Common;
+using LanguagePlatform.Application.Common;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace LanguagePlatform.Api.ErrorHandling;
 
@@ -17,13 +19,20 @@ public sealed partial class GlobalExceptionHandler(
         var (statusCode, title) = exception switch
         {
             DomainException => (StatusCodes.Status400BadRequest, "A business rule was violated."),
-            DbUpdateException => (StatusCodes.Status409Conflict, "The requested change conflicts with existing data."),
+            BadHttpRequestException => (StatusCodes.Status400BadRequest, "Invalid request."),
+            PermissionDeniedException => (StatusCodes.Status403Forbidden, "Permission denied."),
+            ResourceNotFoundException => (StatusCodes.Status404NotFound, "The requested resource was not found."),
+            StateConflictException => (StatusCodes.Status409Conflict, "The requested action conflicts with current state."),
+            DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "The resource changed. Reload it before retrying."),
+            DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.UniqueViolation
+                or PostgresErrorCodes.ForeignKeyViolation or PostgresErrorCodes.CheckViolation or PostgresErrorCodes.RestrictViolation } }
+                => (StatusCodes.Status409Conflict, "The requested change conflicts with existing data."),
             _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred.")
         };
 
         if (statusCode >= StatusCodes.Status500InternalServerError)
         {
-            LogUnhandledRequest(logger, exception, httpContext.TraceIdentifier);
+            LogUnhandledRequest(logger, exception.GetType().Name, httpContext.TraceIdentifier);
         }
         else
         {
@@ -34,12 +43,11 @@ public sealed partial class GlobalExceptionHandler(
         return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext
         {
             HttpContext = httpContext,
-            Exception = exception,
             ProblemDetails = new ProblemDetails
             {
                 Status = statusCode,
                 Title = title,
-                Detail = statusCode < StatusCodes.Status500InternalServerError ? exception.Message : null,
+                Detail = exception is DomainException or StateConflictException ? exception.Message : null,
                 Instance = httpContext.Request.Path
             }
         });
@@ -48,8 +56,8 @@ public sealed partial class GlobalExceptionHandler(
     [LoggerMessage(
         EventId = 1,
         Level = LogLevel.Error,
-        Message = "Unhandled request failure. Trace identifier: {traceIdentifier}")]
-    private static partial void LogUnhandledRequest(ILogger logger, Exception exception, string traceIdentifier);
+        Message = "Unhandled request failure of type {exceptionType}. Trace identifier: {traceIdentifier}")]
+    private static partial void LogUnhandledRequest(ILogger logger, string exceptionType, string traceIdentifier);
 
     [LoggerMessage(
         EventId = 2,

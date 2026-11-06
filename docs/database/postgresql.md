@@ -1,78 +1,31 @@
-# PostgreSQL 18 Development Guide
+# PostgreSQL 18 development and verification
 
-## Bağlantı
+## Connection targets
 
-Beklenen geliştirme veritabanı adı `language_platform_dev`'dir. Repository parola içermez. API aşağıdaki sırada bağlantıyı çözer:
+Use `language_platform_dev` for development and a separate, disposable `language_platform_test` for tests. The API reads `ConnectionStrings:LanguagePlatform` from configuration (User Secrets in Development or `ConnectionStrings__LanguagePlatform`). The EF design-time factory reads `LANGUAGEPLATFORM_DESIGN_CONNECTION` separately. Configure these outside Git. Avoid printing passwords, connection strings and protected credentials.
 
-1. `ConnectionStrings:LanguagePlatform` configuration anahtarı (User Secrets önerilir),
-2. Parola içermeyen yerel geliştirme varsayılanı: host `localhost`, port `5432`, database `language_platform_dev`, user `postgres`.
+The system PostgreSQL service was stopped during this task and no development credentials were available. The live verification used a separate, temporary PostgreSQL 18.6 instance bound to loopback with a generated password. No changes were applied to `language_platform_dev`. The temporary instance was stopped after verification.
 
-Gerçek parola gereken ortamlarda User Secrets kullanın:
+## Migration review and application
 
-```powershell
-dotnet user-secrets set "ConnectionStrings:LanguagePlatform" "Host=localhost;Port=5432;Database=language_platform_dev;Username=<kullanici>;Password=<parola>;Include Error Detail=false" --project .\backend\src\LanguagePlatform.Api\LanguagePlatform.Api.csproj
-```
+The chain preserves `InitialLearningCatalog`, `AddIdentityAndMediaFoundation`, `AddContentAssessmentAndProgress`, `AddDictionaryReadingAndAI` and `AddBillingNotificationsAndPlatform`. New migrations add:
 
-## Migration
+- `AddLearningPathPreference`: nullable directional path FK, a matching index and EF concurrency mapping to PostgreSQL's existing system `xmin` column.
+- `AddObjectiveAssessmentAndFavorites`: nullable attempt deadline and pass threshold snapshots with a check constraint. Existing attempts stay readable to existing stores but lack the snapshot required by the new objective API. Existing saved words are initialized as favorites. The SQL uses a boolean default.
 
-İlk migration: `InitialLearningCatalog`.
+From the repository root, restore/build, then use the following read-only EF checks:
 
 ```powershell
-cd backend
-dotnet ef migrations list --project .\src\LanguagePlatform.Infrastructure\LanguagePlatform.Infrastructure.csproj --startup-project .\src\LanguagePlatform.Api\LanguagePlatform.Api.csproj
-dotnet ef database update --project .\src\LanguagePlatform.Infrastructure\LanguagePlatform.Infrastructure.csproj --startup-project .\src\LanguagePlatform.Api\LanguagePlatform.Api.csproj
+dotnet ef migrations has-pending-model-changes --no-build --project backend/src/LanguagePlatform.Infrastructure --startup-project backend/src/LanguagePlatform.Api
+dotnet ef migrations script --idempotent --no-build --project backend/src/LanguagePlatform.Infrastructure --startup-project backend/src/LanguagePlatform.Api
 ```
 
-`EnsureCreated()` kullanılmaz. Production'da migration uygulama başlangıcında çalıştırılmaz; onaylı release adımı olmalıdır.
+Verify the server identity, environment, database name, current migration history and backup before applying any migration. Use `dotnet ef database update --project backend/src/LanguagePlatform.Infrastructure --startup-project backend/src/LanguagePlatform.Api` only with an explicitly configured and verified local development connection. Review the generated SQL and use a reviewed forward fix for production. Rolling back the new schema drops the preference/favorite and policy snapshot fields. Startup migration and seeds require Development and a loopback `language_platform_dev` target. Production changes are deployment operations.
 
-## Tablolar ve kısıtlar
+## Seed and tests
 
-- `languages`: PK `id`, unique `code`, required ad/yazı yönü/aktiflik.
-- `learning_paths`: kaynak ve hedef FK'leri `RESTRICT`; yön unique; kaynak/hedef farklılığı check constraint.
-- `learning_programs`: unique `code`; program türü string-backed value object.
-- `courses`: dil yönü ve programa `RESTRICT` FK; unique `slug`; durum string olarak saklanır.
+`Database__SeedOnStartup=true` adds catalog languages, paths and programs. `Database__SeedDemoContentOnStartup=true` additionally creates a clearly marked published and draft course, a lesson, an objective assessment and one dictionary entry. The fixture author is inactive and has no password or roles. Run once against a migrated development database and clear the flag afterward. Sequential repeats preserve existing rows. Seed failures surface on startup.
 
-`RESTRICT`, katalog referansı varken dil/yön/program silerek geçmiş veriyi bozmaya izin vermez. İleride fiziksel silme yerine pasifleştirme tercih edilmelidir.
+Set `LANGUAGEPLATFORM_TEST_CONNECTION` locally for a dedicated PostgreSQL 18 `language_platform_test` on localhost, 127.0.0.1 or ::1. The test runner verifies the connected server version and database name before creating an isolated schema with a random name. It migrates only that schema and drops only the schema it created. It never uses the API development connection. Missing test configuration is reported as a skip.
 
-## Seed
-
-Seed verileri:
-
-- Diller: `tr`, `ar`, `en`
-- Yönler: `tr → ar`, `en → ar`, `ar → tr`
-- Programlar: Modern Language, YDT, YDS, YÖKDİL, Quran Reading
-
-Seed iş servisi mevcut business key'leri kontrol eder ve tekrar çalıştırıldığında kayıtları çoğaltmaz. Henüz hazırlanmış kurs olmadığı için `courses` boş kalır.
-
-Migration uygulanmış geliştirme veritabanında seed çalıştırmak için:
-
-```powershell
-cd backend
-$env:Database__SeedOnStartup = "true"
-dotnet run --project .\src\LanguagePlatform.Api\LanguagePlatform.Api.csproj
-Remove-Item Env:Database__SeedOnStartup
-```
-
-İlk yerel kurulumda migration ile seed'i opt-in birlikte çalıştırmak mümkündür:
-
-```powershell
-$env:Database__ApplyMigrationsOnStartup = "true"
-$env:Database__SeedOnStartup = "true"
-dotnet run --project .\src\LanguagePlatform.Api\LanguagePlatform.Api.csproj
-Remove-Item Env:Database__ApplyMigrationsOnStartup
-Remove-Item Env:Database__SeedOnStartup
-```
-
-Bu migration seçeneği production ortamında kod tarafından reddedilir.
-
-## Gerçek PostgreSQL integration testi
-
-SQLite/InMemory kullanılmaz. Test, verilen PostgreSQL test database'i içinde benzersiz bir schema oluşturur, migration uygular, unique constraint ve seed idempotency davranışını doğrular, sonra yalnızca oluşturduğu schema'yı siler.
-
-```powershell
-$env:LANGUAGEPLATFORM_TEST_CONNECTION = "Host=localhost;Port=5432;Database=language_platform_test;Username=<kullanici>;Password=<parola>;Include Error Detail=false"
-dotnet test .\backend\tests\LanguagePlatform.Api.IntegrationTests\LanguagePlatform.Api.IntegrationTests.csproj
-Remove-Item Env:LANGUAGEPLATFORM_TEST_CONNECTION
-```
-
-Bu değişkeni hiçbir zaman production veritabanına yönlendirmeyin. Test kullanıcısının dedicated test database'inde schema oluşturma/silme yetkisi olmalıdır.
+Tests verify the complete migration history, FK/restrict and check violations, unique email/directional paths, rollback, UTC/UUID/JSONB column types, and stale-row detection with `xmin`. HTTP flows cover published visibility, session rotation, two-user access boundaries, snapshot grading, idempotency and publication audit. No substitute database provider is used.

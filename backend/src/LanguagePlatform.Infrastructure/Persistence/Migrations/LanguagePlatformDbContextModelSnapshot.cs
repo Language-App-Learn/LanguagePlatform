@@ -697,6 +697,10 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("completed_at_utc");
 
+                    b.Property<DateTime?>("DeadlineUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deadline_utc");
+
                     b.Property<string>("IdempotencyKey")
                         .IsRequired()
                         .HasMaxLength(128)
@@ -707,6 +711,11 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)")
                         .HasColumnName("maximum_score");
+
+                    b.Property<decimal?>("PassingScoreSnapshot")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("passing_score_snapshot");
 
                     b.Property<decimal?>("Score")
                         .HasPrecision(18, 4)
@@ -752,6 +761,8 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("ck_assessment_attempts_3", "score IS NULL OR (score >= 0 AND score <= maximum_score)");
 
                             t.HasCheckConstraint("ck_assessment_attempts_4", "completed_at_utc IS NULL OR completed_at_utc >= started_at_utc");
+
+                            t.HasCheckConstraint("ck_assessment_attempts_policy", "(passing_score_snapshot IS NULL OR passing_score_snapshot BETWEEN 0 AND 100) AND (deadline_utc IS NULL OR deadline_utc > started_at_utc)");
                         });
                 });
 
@@ -2423,6 +2434,12 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("dictionary_entry_id");
 
+                    b.Property<bool>("IsFavorite")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_favorite");
+
                     b.Property<string>("Note")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)")
@@ -2680,6 +2697,10 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("daily_goal_minutes");
 
+                    b.Property<Guid?>("LearningPathId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("learning_path_id");
+
                     b.Property<bool>("NotificationsEnabled")
                         .HasColumnType("boolean")
                         .HasColumnName("notifications_enabled");
@@ -2692,7 +2713,15 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("LearningPathId");
 
                     b.HasIndex("UiLanguageId");
 
@@ -5356,6 +5385,11 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("LanguagePlatform.Domain.Identity.UserPreference", b =>
                 {
+                    b.HasOne("LanguagePlatform.Domain.Catalog.LearningPath", null)
+                        .WithMany()
+                        .HasForeignKey("LearningPathId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("LanguagePlatform.Domain.Catalog.Language", null)
                         .WithMany()
                         .HasForeignKey("UiLanguageId")

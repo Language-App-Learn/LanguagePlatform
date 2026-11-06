@@ -21,8 +21,9 @@ public sealed class LessonPublicationService(ILessonPublicationStore store, ICur
             throw new PermissionDeniedException();
         Guard.Against(versionId == Guid.Empty, "Lesson version is required.");
         var version = await store.FindAsync(versionId, cancellationToken)
-            ?? throw new DomainException("Lesson version was not found.");
-        Guard.Against(version.Version != expectedVersion, "The lesson version has changed; reload before publishing.");
+            ?? throw new ResourceNotFoundException();
+        if (version.Version != expectedVersion)
+            throw new StateConflictException("The lesson version has changed; reload before publishing.");
         var stages = await store.StagesAsync(versionId, cancellationToken);
         version.Publish(stages, DateTime.UtcNow);
         await store.SavePublicationAsync(version, actorId, cancellationToken);

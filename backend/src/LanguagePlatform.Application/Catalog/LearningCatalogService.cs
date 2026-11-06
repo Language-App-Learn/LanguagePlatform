@@ -31,17 +31,32 @@ public sealed class LearningCatalogService(ILearningCatalogRepository repository
             program.IsActive)).ToArray();
     }
 
-    public async Task<IReadOnlyList<CourseDto>> GetCoursesAsync(CancellationToken cancellationToken)
+    public async Task<CoursePage> GetCoursesAsync(CourseQuery query, CancellationToken cancellationToken)
     {
-        var courses = await repository.GetCoursesAsync(cancellationToken);
-        return courses.Select(course => new CourseDto(
-            course.Id,
-            course.LearningPathId,
-            course.LearningProgramId,
-            course.Slug,
-            course.Title,
-            course.Description,
-            course.Status.ToString())).ToArray();
+        query = query.Validate();
+        var courses = await repository.GetCoursesAsync(query, cancellationToken);
+        var items = courses.Take(query.Limit).Select(course => Localize(course, query.Locale)).ToArray();
+        return new CoursePage(items, courses.Count > query.Limit ? items[^1].Slug : null);
+    }
+
+    public async Task<CourseDto?> FindCourseAsync(Guid id, string? locale, CancellationToken cancellationToken)
+    {
+        var query = new CourseQuery(Locale: locale).Validate();
+        var course = await repository.FindCourseAsync(id, cancellationToken);
+        return course is null ? null : Localize(course, query.Locale);
+    }
+
+    private static CourseDto Localize(CourseDto course, string? locale)
+    {
+        var parent = locale?.Split('-')[0];
+        var candidates = new[] { locale, parent, "en" }.Distinct(StringComparer.Ordinal);
+        var translations = candidates.Select(code => course.Localizations.FirstOrDefault(x => x.Locale == code))
+            .OfType<CourseTranslationDto>().ToArray();
+        return course with
+        {
+            Title = translations.FirstOrDefault()?.Title ?? course.Title,
+            Description = translations.FirstOrDefault(x => x.Description is not null)?.Description ?? course.Description
+        };
     }
 
     private static LanguageDto MapLanguage(Language language) =>

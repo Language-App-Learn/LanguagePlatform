@@ -8,5 +8,6 @@ public sealed class StudentSavedWord : PlatformEntity
     public required Guid DictionaryEntryId { get; init; }
     public required DateTime SavedAtUtc { get; init; }
     public string? Note { get; init; }
+    public bool IsFavorite { get; init; } = true;
 }
 
