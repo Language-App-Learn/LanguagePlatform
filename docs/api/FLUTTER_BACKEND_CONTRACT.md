@@ -1,6 +1,6 @@
 # LanguagePlatform Flutter backend contract
 
-This document describes the implemented ASP.NET Core v1 API and the Flutter integration boundary verified against `origin/Flutter` at `4981d3eb3f109d98d644010ecc455b30e4a13e2d`. Flutter files were inspected through Git without checking out or merging the Flutter branch.
+This document describes the implemented ASP.NET Core v1 API. The latest Flutter contract review used `origin/Flutter` at `d64c2e342320db721384b57f76f8c6be9d68c2b4`. See the [five-stage lesson contract](FIVE_STAGE_LESSON_CONTRACT.md) for the initial student release, stage states and publication availability.
 
 ## Transport, identifiers and errors
 
@@ -26,7 +26,7 @@ All routes in this section are implemented and public. `GET /health` returns 200
 | GET `/api/v1/courses/{courseId}/lessons` | Course UUID, optional `offset` 0–100000 (default 0) and `limit` 1–100 (default 50) | 200 `{items,nextOffset}`. Each item has `id, versionId, versionNumber, title, levelId, levelCode, moduleId, moduleTitle, unitId, unitTitle, order`. Order is level → module → unit → lesson. 404 if course is not public. 400 on invalid paging. |
 | GET `/api/v1/courses/{courseId}/lessons/{lessonId}` | Course and lesson UUID | 200 `{id,courseId,versionId,versionNumber,title,targetLanguageCode,order,passingScore,localizations,stages}`. 404 for a hidden or mismatched lesson. |
 
-A course has `id, learningPathId, learningProgramId` (UUID), `slug, title, status, sourceLanguageCode, targetLanguageCode` (strings), `description` (nullable string), `localizations` (array of `{locale,title,description}`), and `levels` (array of `{id,code,order}`). Existing scalar fields remain. For each scalar title/description use requested locale → base language → English → base stored value. Titles and descriptions fall back independently. `localizations` contains explicit translations only. A course must be published and its path, program and both languages active.
+A course has `id, learningPathId, learningProgramId` (UUID), `slug, title, status, sourceLanguageCode, targetLanguageCode` (strings), `description` (nullable string), `localizations` (array of `{locale,title,description}`), and `levels` (array of `{id,code,order}`). Existing scalar fields remain. For each scalar title/description use requested locale → base language → English → base stored value. Titles and descriptions fall back independently. `localizations` contains explicit translations only. A course must be published and its path, program and both languages active. The default release shows Turkish-to-Arabic five-stage courses in the Modern Language program. An empty course list is valid while five-stage publication is gated.
 
 The outline has integer order/version fields and nullable integer `nextOffset`. Lesson translation entries contain `locale,title,description`. Stages are ordered. Each has `id, stageType, order, isRequired, weight, minimumScore, maximumAttempts, estimatedDurationSeconds, texts, assessmentId`. `texts` is an array of `{locale,text}`. `assessmentId` is a nullable UUID for a published assessment. Only the latest published, non-withdrawn lesson version is visible. Drafts and archived lessons are excluded. The outline title uses the stored version title. Lesson detail exposes explicit translations for client-side fallback. Private storage keys, answer keys, arbitrary settings JSON and media URLs are excluded.
 
@@ -73,6 +73,7 @@ All of the following routes require a valid bearer session. The backend derives 
 | GET `/api/v1/me/courses/{courseId}/progress` | No body | 200 `{enrollment,completedLessons,continueFrom}`. Count is integer. Resume record is nullable. 404 if not enrolled. |
 | GET `/api/v1/me/courses/{courseId}/lessons/progress` | Optional `completedOnly` bool, `offset`, `limit` as in outline | 200 `{items,nextOffset}`. 400 invalid paging, 404 absent enrollment. |
 | PUT `/api/v1/me/courses/{courseId}/lessons/{lessonId}/start` | No body | 200 lesson progress. Repeats preserve state and record activity once. 400 unmet prerequisites, 404 unavailable lesson/enrollment. |
+| GET `/api/v1/me/courses/{courseId}/lessons/{lessonId}/curriculum-progress` | No body | 200 five-stage state and result. 404 unavailable lesson or enrollment. See the [five-stage lesson contract](FIVE_STAGE_LESSON_CONTRACT.md). |
 | POST `/api/v1/me/courses/{courseId}/lessons/{lessonId}/assessments/{assessmentId}/attempts` | `{idempotencyKey}` nonempty string, max 128 | 200 attempt. Reuse the same key on retry, use a new key for a deliberate new attempt. 404 for inaccessible assessment, 409 for missing start, conflicting key, unsupported questions or attempt limit. |
 | POST `/api/v1/me/courses/{courseId}/lessons/{lessonId}/assessments/{assessmentId}/attempts/{attemptId}/submit` | `{answers:[{questionId,optionId,value}]}` | 200 stored result. 400 invalid or duplicate/missing answers. 404 inaccessible attempt. 409 deadline or concurrent state. Completed replay returns the first stored result. |
 | GET `/api/v1/me/assessment-attempts/{attemptId}/result` | No body | 200 stored result or 404 when unavailable to this learner. |
@@ -81,7 +82,7 @@ All of the following routes require a valid bearer session. The backend derives 
 | PUT `/api/v1/me/vocabulary/{id}/favorite` | `{isFavorite:true}` or false | 204, 404 unknown/inactive-language entry. Updates only own favorite. |
 | POST `/api/v1/admin/lesson-versions/{versionId}/publish` | `{expectedVersion}` uint32 concurrency token | 204 with `content.publish` permission. 400 invalid publication, 401 missing session, 403 missing permission, 404 missing version, 409 stale version. Not a Flutter student operation. |
 
-Lesson progress has `lessonId,lessonVersionId,score,isPassed,updatedAtUtc`. A list/detail GET has no effect on activity. `continueFrom` refers to the most recently updated progress version. Completion is derived from saved server scoring, not opening the lesson.
+Lesson progress has `lessonId,lessonVersionId,score,isPassed,updatedAtUtc`. The five-stage `score` is null until all five required stages have graded results. A list/detail GET has no effect on activity. `continueFrom` refers to the most recently updated progress version. Completion is derived from saved server scoring.
 
 An attempt has `id,assessmentId,attemptNumber,startedAtUtc,deadlineUtc,questions`. Question `id` is the attempt snapshot UUID, and fields are `kind,prompt,maximumScore,options`. Options have `id,text`. Supported kinds are `MultipleChoice` (one correct option) and `TrueFalse` (boolean). True/false labels are localized by the UI. Submit exactly one answer for each snapshot. Set `optionId` for choice or `value` for true/false. The unused field can be omitted or null. Example:
 

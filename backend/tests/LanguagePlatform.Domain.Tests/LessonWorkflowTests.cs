@@ -66,6 +66,39 @@ public sealed class LessonWorkflowTests
         Assert.True(LessonScoringPolicy.CanUnlock([first, second], new HashSet<Guid> { first, second }));
     }
 
+    [Theory]
+    [InlineData(59.9999, 59.99, false)]
+    [InlineData(60, 60, true)]
+    [InlineData(61, 61, true)]
+    public void FiveStageLessonOnlyScoresAfterAllStagesFinish(decimal score, decimal expected, bool passed)
+    {
+        var version = FiveStageVersion(true);
+        var stages = FiveStages(version.Id);
+        version.SubmitForReview();
+        version.Publish(stages, DateTime.UtcNow);
+        var attempts = stages.Select(x => new StageScore(x.Id, 1, score, true)).ToArray();
+        var partial = LessonScoringPolicy.Evaluate(version, stages, attempts[..^1]);
+        Assert.Null(partial.Score);
+        Assert.False(partial.Passed);
+        Assert.Equal(stages[^1].Id, Assert.Single(partial.BlockingStages));
+        var complete = LessonScoringPolicy.Evaluate(version, stages, attempts);
+        Assert.Equal(expected, complete.Score);
+        Assert.Equal(passed, complete.Passed);
+    }
+
+    [Fact]
+    public void FiveStagePublicationRequiresApprovedWeightsAndCorrectStageOrder()
+    {
+        var unapproved = FiveStageVersion(false);
+        unapproved.SubmitForReview();
+        Assert.Throws<DomainException>(() => unapproved.Publish(FiveStages(unapproved.Id), DateTime.UtcNow));
+        var approved = FiveStageVersion(true);
+        var stages = FiveStages(approved.Id);
+        stages[0] = Stage(approved.Id, 1, 20, true, kind: "speaking");
+        approved.SubmitForReview();
+        Assert.Throws<DomainException>(() => approved.Publish(stages, DateTime.UtcNow));
+    }
+
     [Fact]
     public void AssessmentSubmissionAndCompletionAreSingleTransitions()
     {
@@ -90,9 +123,19 @@ public sealed class LessonWorkflowTests
         PassingScore = 60, AttemptSelection = selection
     };
 
-    private static LessonStage Stage(Guid version, int order, decimal weight, bool required, decimal minimum = 0) => new()
+    private static LessonVersion FiveStageVersion(bool weightsApproved) => new()
     {
-        LessonVersionId = version, DisplayOrder = order, StageType = "Reading", Weight = weight,
+        LessonId = Guid.NewGuid(), VersionNumber = 1, Title = "Tanışma", PassingScore = 60,
+        AttemptSelection = AttemptSelection.Best, UsesFiveStageCurriculum = true, WeightsApproved = weightsApproved
+    };
+
+    private static LessonStage[] FiveStages(Guid versionId) => FiveStageCurriculum.Stages
+        .Select((kind, index) => Stage(versionId, index + 1, 20, true, kind: kind)).ToArray();
+
+    private static LessonStage Stage(Guid version, int order, decimal weight, bool required, decimal minimum = 0,
+        string kind = "Reading") => new()
+    {
+        LessonVersionId = version, DisplayOrder = order, StageType = kind, Weight = weight,
         IsRequired = required, MinimumScore = minimum, MaximumAttempts = 3, EstimatedDurationSeconds = 60,
         SettingsSchemaVersion = 1, SettingsJson = "{}", IsActive = true
     };

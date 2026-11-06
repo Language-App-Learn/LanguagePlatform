@@ -36,6 +36,7 @@ public sealed partial class Course
     public string Title { get; private set; } = string.Empty;
     public string? Description { get; private set; }
     public CourseStatus Status { get; private set; }
+    public bool UsesFiveStageCurriculum { get; private set; }
     public LearningPath LearningPath { get; private set; } = null!;
     public LearningProgram LearningProgram { get; private set; } = null!;
 
@@ -52,6 +53,12 @@ public sealed partial class Course
     }
 
     public void Archive() => Status = CourseStatus.Archived;
+
+    public void EnableFiveStageCurriculum()
+    {
+        Guard.Against(Status != CourseStatus.Draft, "Only a draft course can adopt a curriculum.");
+        UsesFiveStageCurriculum = true;
+    }
 
     public static Course Create(
         Guid learningPathId,

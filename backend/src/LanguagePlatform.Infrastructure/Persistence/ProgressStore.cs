@@ -28,7 +28,7 @@ public sealed class ProgressStore(LanguagePlatformDbContext db) : IProgressStore
     public async Task SaveAsync(Guid lessonProgressId, LessonScore result, CancellationToken cancellationToken)
     {
         var progress = db.Set<LessonProgress>().Local.Single(x => x.Id == lessonProgressId);
-        progress.RecordScore(result.Score, result.Passed, DateTime.UtcNow);
+        progress.RecordScore(result.Score ?? 0m, result.Passed, DateTime.UtcNow);
         await db.SaveChangesAsync(cancellationToken);
     }
 }

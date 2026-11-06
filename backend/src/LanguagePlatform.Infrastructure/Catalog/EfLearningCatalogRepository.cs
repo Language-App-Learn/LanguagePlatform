@@ -14,8 +14,7 @@ public sealed class EfLearningCatalogRepository(LanguagePlatformDbContext dbCont
             .ToListAsync(cancellationToken);
 
     public async Task<IReadOnlyList<LearningPath>> GetLearningPathsAsync(CancellationToken cancellationToken) =>
-        await dbContext.LearningPaths
-            .AsNoTracking()
+        await dbContext.EligiblePaths()
             .Include(path => path.SourceLanguage)
             .Include(path => path.TargetLanguage)
             .OrderBy(path => path.SourceLanguage.Code)
@@ -25,6 +24,7 @@ public sealed class EfLearningCatalogRepository(LanguagePlatformDbContext dbCont
     public async Task<IReadOnlyList<LearningProgram>> GetProgramsAsync(CancellationToken cancellationToken) =>
         await dbContext.LearningPrograms
             .AsNoTracking()
+            .Where(program => dbContext.IncludeLegacyContent || (program.IsActive && program.Code == "modern-language"))
             .OrderBy(program => program.Code)
             .ToListAsync(cancellationToken);
 

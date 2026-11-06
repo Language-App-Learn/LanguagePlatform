@@ -170,7 +170,7 @@ public sealed class ObjectiveAssessmentService(LanguagePlatformDbContext db, IPu
             ? sameStage.Max(x => x.Score!.Value)
             : sameStage.OrderByDescending(x => x.AttemptNumber).First().Score!.Value;
         stageProgress.RecordScore(selected, now);
-        progress.RecordScore(lessonScore.Score, lessonScore.Passed, now);
+        progress.RecordScore(lessonScore.Score ?? 0m, lessonScore.Passed, now);
         db.AddRange(stageAttempt,
             new AssessmentResult { AssessmentAttemptId = attempt.Id, StageAttemptId = stageAttempt.Id, RecordedAtUtc = now },
             new LearningActivity
@@ -192,6 +192,22 @@ public sealed class ObjectiveAssessmentService(LanguagePlatformDbContext db, IPu
                 && enrollment.Status == "Active" && progress.LessonVersionId == versionId
             select progress.Id).AnyAsync(ct);
         if (!started) throw new StateConflictException("Start the lesson before taking its assessment.");
+        var locked = await (
+            from assessment in db.Set<AssessmentEntity>()
+            join stage in db.Set<LessonStage>() on assessment.LessonStageId equals stage.Id
+            join version in db.Set<LessonVersion>() on stage.LessonVersionId equals version.Id
+            where assessment.Id == assessmentId && assessment.IsPublished && stage.IsActive && stage.LessonVersionId == versionId
+                && version.UsesFiveStageCurriculum
+                && db.Set<LessonStage>().Any(previous => previous.LessonVersionId == version.Id
+                    && previous.DisplayOrder < stage.DisplayOrder
+                    && !(from result in db.Set<StageProgress>()
+                         join progress in db.Set<LessonProgress>() on result.LessonProgressId equals progress.Id
+                         join enrollment in db.Set<Enrollment>() on progress.EnrollmentId equals enrollment.Id
+                         where enrollment.StudentId == userId && enrollment.CourseId == courseId
+                             && result.LessonStageId == previous.Id && result.IsCompleted
+                         select result.Id).Any())
+            select assessment.Id).AnyAsync(ct);
+        if (locked) throw new StateConflictException("Complete the earlier stages first.");
         return await (from assessment in db.Set<AssessmentEntity>().AsNoTracking()
             join stage in db.Set<LessonStage>() on assessment.LessonStageId equals stage.Id
             where assessment.Id == assessmentId && assessment.IsPublished && stage.IsActive && stage.LessonVersionId == versionId

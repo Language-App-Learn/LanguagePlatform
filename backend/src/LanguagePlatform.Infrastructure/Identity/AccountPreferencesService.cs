@@ -3,6 +3,7 @@ using LanguagePlatform.Domain.Catalog;
 using LanguagePlatform.Domain.Common;
 using LanguagePlatform.Domain.Identity;
 using LanguagePlatform.Infrastructure.Persistence;
+using LanguagePlatform.Infrastructure.Catalog;
 using Microsoft.EntityFrameworkCore;
 
 namespace LanguagePlatform.Infrastructure.Identity;
@@ -25,8 +26,7 @@ public sealed class AccountPreferencesService(LanguagePlatformDbContext db)
         LearningPath? path = null;
         if (request.LearningPathId is { } id)
         {
-            path = await db.LearningPaths.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id && x.IsActive
-                && x.SourceLanguage.IsActive && x.TargetLanguage.IsActive, cancellationToken);
+            path = await db.EligiblePaths().SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
             Guard.Against(path is null, "The learning path is not active.");
         }
         var preference = await db.Set<UserPreference>().SingleOrDefaultAsync(x => x.UserId == userId, cancellationToken);

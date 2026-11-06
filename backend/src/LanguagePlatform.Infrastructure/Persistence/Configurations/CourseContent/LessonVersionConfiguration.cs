@@ -24,6 +24,8 @@ public sealed class LessonVersionConfiguration : IEntityTypeConfiguration<Lesson
         builder.ToTable(t => t.HasCheckConstraint("ck_lesson_versions_1", "version_number > 0"));
         builder.ToTable(t => t.HasCheckConstraint("ck_lesson_versions_2", "passing_score BETWEEN 0 AND 100"));
         builder.ToTable(t => t.HasCheckConstraint("ck_lesson_versions_3", "(status = 'Published') = (published_at_utc IS NOT NULL)"));
+        builder.ToTable(t => t.HasCheckConstraint("ck_lesson_versions_five_stage",
+            "NOT uses_five_stage_curriculum OR (passing_score = 60 AND (status <> 'Published' OR weights_approved))"));
 
     }
 }

@@ -39,7 +39,7 @@ internal static class PostgreSqlTestSchema
             connection.SearchPath = schema;
             var options = new DbContextOptionsBuilder<LanguagePlatformDbContext>()
                 .UseNpgsql(connection.ConnectionString).Options;
-            await using var context = new LanguagePlatformDbContext(options);
+            await using var context = new LanguagePlatformDbContext(options, new Infrastructure.Catalog.StudentReleaseOptions(true));
             await context.Database.MigrateAsync();
             await test(connection.ConnectionString, context);
         }

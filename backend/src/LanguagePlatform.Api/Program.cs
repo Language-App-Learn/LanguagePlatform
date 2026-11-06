@@ -16,6 +16,10 @@ using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddSingleton(services =>
+    new StudentReleaseOptions((builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing"))
+        && services.GetRequiredService<IConfiguration>().GetValue<bool>("StudentRelease:IncludeLegacyContent")));
+
 builder.Services.AddDbContext<LanguagePlatformDbContext>((services, options) =>
     options.UseNpgsql(
         services.GetRequiredService<IConfiguration>().GetConnectionString("LanguagePlatform")
@@ -33,6 +37,8 @@ builder.Services.AddScoped<ObjectiveAssessmentService>();
 builder.Services.AddScoped<VocabularyService>();
 builder.Services.AddScoped<ILessonPublicationStore, LessonPublicationStore>();
 builder.Services.AddScoped<LessonPublicationService>();
+builder.Services.AddScoped<CurriculumAuthoringService>();
+builder.Services.AddScoped<CurriculumQueries>();
 
 builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
     context.ProblemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier);
@@ -68,6 +74,7 @@ app.MapStudentLearningEndpoints();
 app.MapObjectiveAssessmentEndpoints();
 app.MapVocabularyEndpoints();
 app.MapAdminPublicationEndpoints();
+app.MapFiveStageEndpoints();
 
 await InitializeDatabaseWhenRequestedAsync(app);
 await app.RunAsync();

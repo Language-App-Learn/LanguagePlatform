@@ -61,7 +61,7 @@ public sealed class PublishedContentQueries(LanguagePlatformDbContext db) : IPub
         VisibleLessons(courseId).Where(x => x.Lesson.Id == lessonId)
             .Select(x => (Guid?)x.Version.Id).SingleOrDefaultAsync(cancellationToken);
 
-    private IQueryable<VisibleLesson> VisibleLessons(Guid courseId) =>
+    internal IQueryable<VisibleLesson> VisibleLessons(Guid courseId) =>
         from course in db.PublishedCourses()
         where course.Id == courseId
         join level in db.Set<CourseLevel>().AsNoTracking() on course.Id equals level.CourseId
@@ -70,6 +70,8 @@ public sealed class PublishedContentQueries(LanguagePlatformDbContext db) : IPub
         join lesson in db.Set<Lesson>() on unit.Id equals lesson.CourseUnitId
         join version in db.Set<LessonVersion>() on lesson.Id equals version.LessonId
         where !lesson.IsArchived && version.Status == PublicationState.Published
+            && (!course.UsesFiveStageCurriculum || (version.UsesFiveStageCurriculum
+                && lesson.CurriculumLevelId == level.Id && lesson.CurriculumPosition != null))
             && !db.Set<LessonVersion>().Any(x => x.LessonId == lesson.Id && x.Status == PublicationState.Published
                 && x.VersionNumber > version.VersionNumber)
             && !db.Set<ContentPublication>().Any(x => x.LessonVersionId == version.Id && x.WithdrawnAtUtc != null)
@@ -78,7 +80,7 @@ public sealed class PublishedContentQueries(LanguagePlatformDbContext db) : IPub
             Course = course, Level = level, Module = module, Unit = unit, Lesson = lesson, Version = version
         };
 
-    private sealed class VisibleLesson
+    internal sealed class VisibleLesson
     {
         public required Course Course { get; init; }
         public required CourseLevel Level { get; init; }

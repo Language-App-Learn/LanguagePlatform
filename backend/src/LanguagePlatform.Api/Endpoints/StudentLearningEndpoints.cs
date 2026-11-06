@@ -36,6 +36,13 @@ public static class StudentLearningEndpoints
             if (actor.UserId is not { } id) return Results.Unauthorized();
             return Present(await service.StartAsync(id, courseId, lessonId, ct));
         }).Produces<LessonProgressDto>().ProducesProblem(400).ProducesProblem(401).ProducesProblem(404);
+
+        group.MapGet("/lessons/{lessonId:guid}/curriculum-progress", async (Guid courseId, Guid lessonId,
+            ICurrentActor actor, StudentLearningService service, CancellationToken ct) =>
+        {
+            if (actor.UserId is not { } id) return Results.Unauthorized();
+            return Present(await service.GetCurriculumProgressAsync(id, courseId, lessonId, ct));
+        }).Produces<CurriculumProgressDto>().ProducesProblem(401).ProducesProblem(404);
     }
 
     private static IResult Present<T>(T? value) where T : class =>

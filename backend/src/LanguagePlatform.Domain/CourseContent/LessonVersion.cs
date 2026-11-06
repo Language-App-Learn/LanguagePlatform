@@ -9,6 +9,8 @@ public sealed class LessonVersion : PlatformEntity
     public required int VersionNumber { get; init; }
     public required string Title { get; init; }
     public required decimal PassingScore { get; init; }
+    public bool UsesFiveStageCurriculum { get; init; }
+    public bool WeightsApproved { get; init; }
     public AttemptSelection AttemptSelection { get; init; } = AttemptSelection.Best;
     public PublicationState Status { get; private set; } = PublicationState.Draft;
     public DateTime CreatedAtUtc { get; init; } = DateTime.UtcNow;
@@ -29,6 +31,8 @@ public sealed class LessonVersion : PlatformEntity
         Guard.Against(Status != PublicationState.InReview, "A lesson must be reviewed before publication.");
         Guard.Against(nowUtc.Kind != DateTimeKind.Utc, "Publication time must be UTC.");
         LessonScoringPolicy.ValidateStages(Id, stages);
+        if (UsesFiveStageCurriculum)
+            FiveStageCurriculum.ValidatePublication(PassingScore, WeightsApproved, stages);
         Status = PublicationState.Published;
         PublishedAtUtc = nowUtc;
     }

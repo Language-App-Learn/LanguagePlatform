@@ -4,9 +4,13 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using LanguagePlatform.Api.Endpoints;
 using LanguagePlatform.Application.Assessment;
+using LanguagePlatform.Application.Catalog;
+using LanguagePlatform.Application.CourseContent;
 using LanguagePlatform.Application.Dictionary;
 using LanguagePlatform.Application.Identity;
 using LanguagePlatform.Application.StudentProgress;
+using LanguagePlatform.Domain.Catalog;
+using LanguagePlatform.Domain.Common;
 using LanguagePlatform.Domain.CourseContent;
 using LanguagePlatform.Domain.LessonEngine;
 using LanguagePlatform.Domain.Platform;
@@ -35,7 +39,7 @@ public sealed class PostgreSqlStudentLearningTests
             .Select(x => x.Id).SingleAsync();
         var lessonId = await db.Set<Lesson>().Select(x => x.Id).SingleAsync();
         await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-            builder.UseEnvironment("Testing").ConfigureAppConfiguration((_, config) =>
+            builder.UseEnvironment("Testing").UseSetting("StudentRelease:IncludeLegacyContent", "true").ConfigureAppConfiguration((_, config) =>
                 config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:LanguagePlatform"] = connection })));
         using var first = factory.CreateClient();
         using var second = factory.CreateClient();
@@ -140,7 +144,7 @@ public sealed class PostgreSqlStudentLearningTests
         });
         await db.SaveChangesAsync();
         await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-            builder.UseEnvironment("Testing").ConfigureAppConfiguration((_, config) =>
+            builder.UseEnvironment("Testing").UseSetting("StudentRelease:IncludeLegacyContent", "true").ConfigureAppConfiguration((_, config) =>
                 config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:LanguagePlatform"] = connection })));
         using var student = factory.CreateClient();
         using var publisher = factory.CreateClient();
@@ -159,6 +163,155 @@ public sealed class PostgreSqlStudentLearningTests
         Assert.Equal(1, await db.Set<ContentPublication>().CountAsync(x => x.LessonVersionId == version.Id));
         Assert.Equal(1, await db.Set<OutboxMessage>().CountAsync(x => x.EventType == "LessonPublished"));
         Assert.Equal(1, await db.Set<AuditLog>().CountAsync(x => x.EntityId == version.Id));
+    });
+
+    [PostgreSqlFact]
+    public Task FiveStageDraftsArePrivateAndCurriculumProgressIsSequential() => PostgreSqlTestSchema.RunAsync(async (connection, db) =>
+    {
+        await new DevelopmentContentSeeder(db).SeedAsync(CancellationToken.None);
+        await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+            builder.UseEnvironment("Testing").ConfigureAppConfiguration((_, config) =>
+                config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:LanguagePlatform"] = connection })));
+        using var student = factory.CreateClient();
+        using var author = factory.CreateClient();
+        using var publisher = factory.CreateClient();
+        var paths = await student.GetFromJsonAsync<LearningPathDto[]>("/api/v1/catalog/learning-paths");
+        Assert.Equal(CatalogSeedIds.TurkishToArabic, Assert.Single(paths!).Id);
+        var legacyId = await db.Courses.Where(x => x.Slug == DevelopmentContentSeeder.PublishedSlug).Select(x => x.Id).SingleAsync();
+        using var legacy = await student.GetAsync($"/api/v1/catalog/courses/{legacyId}");
+        Assert.Equal(HttpStatusCode.NotFound, legacy.StatusCode);
+
+        const string courses = "/api/v1/admin/five-stage/courses";
+        var create = new CreateCurriculumCourse("arabic-five-stage", "Arapça", null);
+        using var unauthorized = await student.PostAsJsonAsync(courses, create);
+        Assert.Equal(HttpStatusCode.Unauthorized, unauthorized.StatusCode);
+        await LoginAsync(factory, student, "curriculum-learner@example.test");
+        await LoginAsync(factory, author, "curriculum-author@example.test", Permissions.ContentEdit);
+        await LoginAsync(factory, publisher, "curriculum-publisher@example.test", Permissions.ContentPublish);
+        using var forbidden = await student.PostAsJsonAsync(courses, create);
+        Assert.Equal(HttpStatusCode.Forbidden, forbidden.StatusCode);
+        using var created = await author.PostAsJsonAsync(courses, create);
+        created.EnsureSuccessStatusCode();
+        var curriculum = (await created.Content.ReadFromJsonAsync<CurriculumCourseDto>())!;
+        Assert.Equal(FiveStageCurriculum.Levels, curriculum.Levels.Select(x => x.Code));
+        var level = curriculum.Levels[0];
+        var slotsUrl = courses + $"/{curriculum.CourseId}/levels/{level.Id}/slots";
+        var slots = (await author.GetFromJsonAsync<CurriculumSlotDto[]>(slotsUrl))!;
+        Assert.Equal(Enumerable.Range(1, 20), slots.Select(x => x.Position));
+        Assert.All(slots, slot => Assert.Null(slot.LessonId));
+        var publicUrl = $"/api/v1/courses/{curriculum.CourseId}/curriculum";
+        using var draftCourse = await student.GetAsync(publicUrl + "/levels");
+        Assert.Equal(HttpStatusCode.NotFound, draftCourse.StatusCode);
+
+        var questions = Enumerable.Range(1, 10).Select(i => new DraftQuestion("TrueFalse", $"سؤال {i}", null, true)).ToArray();
+        DraftQuestion[] translation = [new("MultipleChoice", "السَّلَامُ عَلَيْكُمْ",
+            [new("Selamünaleyküm", true), new("Teşekkürler", false)], null)];
+        var stages = FiveStageCurriculum.Stages.Select(kind => new DraftStage(kind, 20, 3,
+            kind == "reading" ? "السَّلَامُ عَلَيْكُمْ" : null, null,
+            kind == "reading" ? questions : kind == "translation" ? translation : null)).ToArray();
+        var request = new CreateCurriculumVersion("Selamlaşma", true, AttemptSelection.Best, stages);
+        using var badWeights = await author.PostAsJsonAsync(slotsUrl + "/1/versions", request with { Stages = stages[..^1] });
+        Assert.Equal(HttpStatusCode.BadRequest, badWeights.StatusCode);
+        using var draftResponse = await author.PostAsJsonAsync(slotsUrl + "/1/versions", request);
+        draftResponse.EnsureSuccessStatusCode();
+        var first = (await draftResponse.Content.ReadFromJsonAsync<CurriculumDraftDto>())!;
+        using var secondResponse = await author.PostAsJsonAsync(slotsUrl + "/2/versions", request);
+        secondResponse.EnsureSuccessStatusCode();
+        var second = (await secondResponse.Content.ReadFromJsonAsync<CurriculumDraftDto>())!;
+        var editedSlots = (await author.GetFromJsonAsync<CurriculumSlotDto[]>(slotsUrl))!;
+        Assert.Equal(first.VersionId, editedSlots[0].DraftVersionId);
+        Assert.Null(editedSlots[0].PublishedVersionId);
+        var reviewUrl = $"/api/v1/admin/five-stage/versions/{first.VersionId}/review";
+        using var reviewResponse = await author.PostAsJsonAsync(reviewUrl, new ReviewCurriculumVersion(first.Revision));
+        reviewResponse.EnsureSuccessStatusCode();
+        var reviewed = (await reviewResponse.Content.ReadFromJsonAsync<CurriculumDraftDto>())!;
+        using var publishBlocked = await publisher.PostAsJsonAsync($"/api/v1/admin/lesson-versions/{first.VersionId}/publish",
+            new PublishLessonRequest(reviewed.Revision));
+        Assert.Equal(HttpStatusCode.BadRequest, publishBlocked.StatusCode);
+        Assert.Equal(PublicationState.InReview, await db.Set<LessonVersion>().Where(x => x.Id == first.VersionId)
+            .Select(x => x.Status).SingleAsync());
+        Assert.Empty(await db.Set<ContentPublication>().Where(x => x.LessonVersionId == first.VersionId).ToListAsync());
+
+        // Synthetic published fixtures exercise the learner contract while media publication is gated.
+        var course = await db.Courses.SingleAsync(x => x.Id == curriculum.CourseId);
+        course.SubmitForReview();
+        course.Publish();
+        var firstStages = await PublishFixtureAsync(first.VersionId);
+        var publicSlotsUrl = publicUrl + $"/levels/{level.Id}/slots";
+        await PublishFixtureAsync(second.VersionId);
+        await db.SaveChangesAsync();
+        var readingStageId = firstStages.Single(x => x.StageType == "reading").Id;
+        var translationStageId = firstStages.Single(x => x.StageType == "translation").Id;
+        var fixtureAssessments = db.Set<AssessmentEntity>().Where(x => x.LessonStageId == readingStageId || x.LessonStageId == translationStageId);
+        await fixtureAssessments.ExecuteUpdateAsync(x => x.SetProperty(a => a.IsPublished, true));
+        var assessments = await fixtureAssessments.ToDictionaryAsync(x => x.LessonStageId, x => x.Id);
+        Assert.Equal("السَّلَامُ عَلَيْكُمْ", await db.Set<LessonStageContent>().Where(x => x.LessonStageId == readingStageId)
+            .Select(x => x.Body).SingleAsync());
+        var studentSlots = (await student.GetFromJsonAsync<CurriculumSlotDto[]>(publicSlotsUrl))!;
+        Assert.Equal(first.VersionId, studentSlots[0].PublishedVersionId);
+        Assert.All(studentSlots, slot => Assert.Null(slot.DraftVersionId));
+        Assert.Null(studentSlots[2].LessonId);
+        var learner = $"/api/v1/me/courses/{course.Id}";
+        using var enrollmentResponse = await student.PutAsync(learner + "/enrollment", null);
+        enrollmentResponse.EnsureSuccessStatusCode();
+        var firstLesson = learner + $"/lessons/{first.LessonId}";
+        var secondLesson = learner + $"/lessons/{second.LessonId}";
+        using var locked = await student.PutAsync(secondLesson + "/start", null);
+        Assert.Equal(HttpStatusCode.BadRequest, locked.StatusCode);
+        using var started = await student.PutAsync(firstLesson + "/start", null);
+        started.EnsureSuccessStatusCode();
+        Assert.Null((await started.Content.ReadFromJsonAsync<LessonProgressDto>())!.Score);
+        var stateUrl = firstLesson + "/curriculum-progress";
+        var initial = (await student.GetFromJsonAsync<CurriculumProgressDto>(stateUrl))!;
+        Assert.Equal("available", initial.Stages[0].Status);
+        Assert.All(initial.Stages.Skip(1), stage => Assert.Equal("locked", stage.Status));
+        Assert.Null(initial.FinalScore);
+        var readingUrl = firstLesson + $"/assessments/{assessments[readingStageId]}/attempts";
+        var translationUrl = firstLesson + $"/assessments/{assessments[translationStageId]}/attempts";
+        using var lockedStage = await student.PostAsJsonAsync(translationUrl, new StartObjectiveAttempt("translation-too-early"));
+        Assert.Equal(HttpStatusCode.Conflict, lockedStage.StatusCode);
+        using var quiz = await student.PostAsJsonAsync(readingUrl, new StartObjectiveAttempt("curriculum-reading"));
+        quiz.EnsureSuccessStatusCode();
+        Assert.DoesNotContain("correct", await quiz.Content.ReadAsStringAsync(), StringComparison.OrdinalIgnoreCase);
+        var attempt = (await quiz.Content.ReadFromJsonAsync<ObjectiveAttemptDto>())!;
+        Assert.Equal(10, attempt.Questions.Count);
+        using var graded = await student.PostAsJsonAsync(readingUrl + $"/{attempt.Id}/submit",
+            new SubmitObjectiveAttempt(attempt.Questions.Select((q, index) => new ObjectiveAnswer(q.Id, null, index < 6)).ToArray()));
+        graded.EnsureSuccessStatusCode();
+        Assert.Equal(60, (await graded.Content.ReadFromJsonAsync<ObjectiveResultDto>())!.Percentage);
+        var partial = (await student.GetFromJsonAsync<CurriculumProgressDto>(stateUrl))!;
+        Assert.Equal(60, partial.Stages[0].Score);
+        Assert.Equal(1, partial.Stages[0].Attempts);
+        Assert.Equal("available", partial.Stages[1].Status);
+        Assert.Null(partial.FinalScore);
+        var progress = await db.Set<LessonProgress>().SingleAsync(x => x.LessonVersionId == first.VersionId);
+        var now = DateTime.UtcNow;
+        foreach (var stage in firstStages.Where(x => x.Id != readingStageId))
+        {
+            var stageProgress = new StageProgress
+            {
+                LessonStageId = stage.Id, LessonProgressId = progress.Id, LessonVersionId = first.VersionId
+            };
+            stageProgress.RecordScore(60, now);
+            db.Add(stageProgress);
+        }
+        progress.RecordScore(60, true, now);
+        await db.SaveChangesAsync();
+        var complete = (await student.GetFromJsonAsync<CurriculumProgressDto>(stateUrl))!;
+        Assert.True(complete.Passed);
+        Assert.Equal(60, complete.FinalScore);
+        Assert.Equal(second.LessonId, complete.NextLessonId);
+        using var unlocked = await student.PutAsync(secondLesson + "/start", null);
+        unlocked.EnsureSuccessStatusCode();
+
+        async Task<List<LessonStage>> PublishFixtureAsync(Guid versionId)
+        {
+            var version = await db.Set<LessonVersion>().SingleAsync(x => x.Id == versionId);
+            var lessonStages = await db.Set<LessonStage>().Where(x => x.LessonVersionId == versionId).ToListAsync();
+            if (version.Status == PublicationState.Draft) version.SubmitForReview();
+            version.Publish(lessonStages, DateTime.UtcNow);
+            return lessonStages;
+        }
     });
 
     private static async Task LoginAsync(WebApplicationFactory<Program> factory, HttpClient client, string email, string? permission = null)

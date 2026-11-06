@@ -30,7 +30,7 @@ public sealed class PostgreSqlCatalogApiTests
         await db.SaveChangesAsync();
 
         await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-            builder.UseEnvironment("Development").ConfigureAppConfiguration((_, config) =>
+            builder.UseEnvironment("Development").UseSetting("StudentRelease:IncludeLegacyContent", "true").ConfigureAppConfiguration((_, config) =>
                 config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:LanguagePlatform"] = connection })));
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost") });
 
@@ -64,5 +64,11 @@ public sealed class PostgreSqlCatalogApiTests
         Assert.Equal("bearer", spec.RootElement.GetProperty("components").GetProperty("securitySchemes")
             .GetProperty("Bearer").GetProperty("scheme").GetString());
         Assert.True(paths.GetProperty("/api/v1/me").GetProperty("get").GetProperty("security")[0].TryGetProperty("Bearer", out _));
+        Assert.False(paths.GetProperty("/api/v1/courses/{courseId}/curriculum/levels").GetProperty("get")
+            .TryGetProperty("security", out _));
+        Assert.True(paths.GetProperty("/api/v1/admin/five-stage/courses").GetProperty("post")
+            .GetProperty("security")[0].TryGetProperty("Bearer", out _));
+        Assert.True(paths.GetProperty("/api/v1/me/courses/{courseId}/lessons/{lessonId}/curriculum-progress").GetProperty("get")
+            .GetProperty("security")[0].TryGetProperty("Bearer", out _));
     });
 }

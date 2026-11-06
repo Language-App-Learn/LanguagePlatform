@@ -4,7 +4,7 @@ using LanguagePlatform.Domain.CourseContent;
 namespace LanguagePlatform.Domain.LessonEngine;
 
 public sealed record StageScore(Guid StageId, int AttemptNumber, decimal? Score, bool Completed);
-public sealed record LessonScore(decimal Score, bool Passed, IReadOnlyList<Guid> BlockingStages);
+public sealed record LessonScore(decimal? Score, bool Passed, IReadOnlyList<Guid> BlockingStages);
 
 public static class LessonScoringPolicy
 {
@@ -30,10 +30,12 @@ public static class LessonScoringPolicy
     {
         Guard.Against(version.Status != PublicationState.Published, "Only published lessons can be scored.");
         ValidateStages(version.Id, stages);
+        if (version.UsesFiveStageCurriculum)
+            FiveStageCurriculum.ValidatePublication(version.PassingScore, version.WeightsApproved, stages);
         Guard.Against(attempts.Any(x => !stages.Any(s => s.Id == x.StageId)), "Unknown stage attempt.");
         Guard.Against(attempts.GroupBy(x => new { x.StageId, x.AttemptNumber }).Any(x => x.Count() > 1), "Duplicate stage attempt.");
         var blockers = new List<Guid>();
-        decimal total = 0;
+        var contributions = new List<(decimal Score, decimal Weight)>(stages.Count);
         foreach (var stage in stages.Where(x => x.IsActive))
         {
             var candidates = attempts.Where(x => x.StageId == stage.Id).ToArray();
@@ -48,13 +50,18 @@ public static class LessonScoringPolicy
                 ? completed.OrderByDescending(x => x.Score).ThenByDescending(x => x.AttemptNumber).FirstOrDefault()
                 : completed.OrderByDescending(x => x.AttemptNumber).FirstOrDefault();
             var score = chosen?.Score ?? 0;
-            total += score * stage.Weight / 100;
+            contributions.Add((score, stage.Weight));
             if ((stage.IsRequired && chosen == null) || (chosen != null && score < stage.MinimumScore))
                 blockers.Add(stage.Id);
         }
-        // Compare unrounded value so 59.995 does not pass a threshold of 60.
-        return new LessonScore(decimal.Round(total, 2, MidpointRounding.AwayFromZero),
-            total >= version.PassingScore && blockers.Count == 0, blockers);
+        if (version.UsesFiveStageCurriculum && blockers.Count != 0)
+            return new LessonScore(null, false, blockers);
+        var total = contributions.Sum(x => x.Score * x.Weight / 100m);
+        // The new curriculum truncates display precision so a failing score never displays as 60.
+        var displayScore = decimal.Round(total, 2,
+            version.UsesFiveStageCurriculum ? MidpointRounding.ToZero : MidpointRounding.AwayFromZero);
+        var decisionScore = version.UsesFiveStageCurriculum ? total : displayScore;
+        return new LessonScore(displayScore, decisionScore >= version.PassingScore && blockers.Count == 0, blockers);
     }
 
     public static bool CanUnlock(IEnumerable<Guid> prerequisites, IReadOnlySet<Guid> passedLessons) =>

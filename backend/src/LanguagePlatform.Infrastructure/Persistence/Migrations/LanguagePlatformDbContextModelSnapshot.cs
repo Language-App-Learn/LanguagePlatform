@@ -1680,6 +1680,10 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("title");
 
+                    b.Property<bool>("UsesFiveStageCurriculum")
+                        .HasColumnType("boolean")
+                        .HasColumnName("uses_five_stage_curriculum");
+
                     b.HasKey("Id")
                         .HasName("pk_courses");
 
@@ -2094,6 +2098,14 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("course_unit_id");
 
+                    b.Property<Guid?>("CurriculumLevelId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("curriculum_level_id");
+
+                    b.Property<int?>("CurriculumPosition")
+                        .HasColumnType("integer")
+                        .HasColumnName("curriculum_position");
+
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer")
                         .HasColumnName("display_order");
@@ -2116,9 +2128,14 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                     b.HasIndex("CourseUnitId", "Slug")
                         .IsUnique();
 
+                    b.HasIndex("CurriculumLevelId", "CurriculumPosition")
+                        .IsUnique();
+
                     b.ToTable("lessons", null, t =>
                         {
                             t.HasCheckConstraint("ck_lessons_1", "display_order > 0");
+
+                            t.HasCheckConstraint("ck_lessons_curriculum_slot", "(curriculum_level_id IS NULL AND curriculum_position IS NULL) OR (curriculum_level_id IS NOT NULL AND curriculum_position IS NOT NULL AND curriculum_position BETWEEN 1 AND 20)");
                         });
                 });
 
@@ -2255,6 +2272,10 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("title");
 
+                    b.Property<bool>("UsesFiveStageCurriculum")
+                        .HasColumnType("boolean")
+                        .HasColumnName("uses_five_stage_curriculum");
+
                     b.Property<uint>("Version")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -2264,6 +2285,10 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                     b.Property<int>("VersionNumber")
                         .HasColumnType("integer")
                         .HasColumnName("version_number");
+
+                    b.Property<bool>("WeightsApproved")
+                        .HasColumnType("boolean")
+                        .HasColumnName("weights_approved");
 
                     b.HasKey("Id");
 
@@ -2277,6 +2302,8 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("ck_lesson_versions_2", "passing_score BETWEEN 0 AND 100");
 
                             t.HasCheckConstraint("ck_lesson_versions_3", "(status = 'Published') = (published_at_utc IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_lesson_versions_five_stage", "NOT uses_five_stage_curriculum OR (passing_score = 60 AND (status <> 'Published' OR weights_approved))");
                         });
                 });
 
@@ -5206,6 +5233,11 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                         .HasForeignKey("CourseUnitId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("LanguagePlatform.Domain.Catalog.CourseLevel", null)
+                        .WithMany()
+                        .HasForeignKey("CurriculumLevelId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("LanguagePlatform.Domain.CourseContent.LessonLocalization", b =>

@@ -16,6 +16,11 @@ public sealed class LessonConfiguration : IEntityTypeConfiguration<Lesson>
         builder.HasOne<LanguagePlatform.Domain.CourseContent.CourseUnit>().WithMany().HasForeignKey(x => x.CourseUnitId).OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(x => new { x.CourseUnitId, x.Slug }).IsUnique();
         builder.HasIndex(x => new { x.CourseUnitId, x.DisplayOrder }).IsUnique();
+        builder.HasOne<LanguagePlatform.Domain.Catalog.CourseLevel>().WithMany()
+            .HasForeignKey(x => x.CurriculumLevelId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(x => new { x.CurriculumLevelId, x.CurriculumPosition }).IsUnique();
+        builder.ToTable(t => t.HasCheckConstraint("ck_lessons_curriculum_slot",
+            "(curriculum_level_id IS NULL AND curriculum_position IS NULL) OR (curriculum_level_id IS NOT NULL AND curriculum_position IS NOT NULL AND curriculum_position BETWEEN 1 AND 20)"));
         builder.ToTable(t => t.HasCheckConstraint("ck_lessons_1", "display_order > 0"));
 
     }

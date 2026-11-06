@@ -4,7 +4,7 @@
 
 Use `language_platform_dev` for development and a separate, disposable `language_platform_test` for tests. The API reads `ConnectionStrings:LanguagePlatform` from configuration (User Secrets in Development or `ConnectionStrings__LanguagePlatform`). The EF design-time factory reads `LANGUAGEPLATFORM_DESIGN_CONNECTION` separately. Configure these outside Git. Avoid printing passwords, connection strings and protected credentials.
 
-The system PostgreSQL service was stopped during this task and no development credentials were available. The live verification used a separate, temporary PostgreSQL 18.6 instance bound to loopback with a generated password. No changes were applied to `language_platform_dev`. The temporary instance was stopped after verification.
+Verification used a separate, temporary PostgreSQL 18.6 instance bound to loopback with a generated password. The temporary instance was stopped after verification. The development database was outside the test run.
 
 ## Migration review and application
 
@@ -12,6 +12,7 @@ The chain preserves `InitialLearningCatalog`, `AddIdentityAndMediaFoundation`, `
 
 - `AddLearningPathPreference`: nullable directional path FK, a matching index and EF concurrency mapping to PostgreSQL's existing system `xmin` column.
 - `AddObjectiveAssessmentAndFavorites`: nullable attempt deadline and pass threshold snapshots with a check constraint. Existing attempts stay readable to existing stores but lack the snapshot required by the new objective API. Existing saved words are initialized as favorites. The SQL uses a boolean default.
+- `AddFiveStageCurriculum`: nullable lesson level and position, with a foreign key, a paired range check and a unique level/position index. Adds course/version curriculum flags and a version weight-approval flag. Existing records default to the legacy policy. The version check requires a threshold of 60 and explicit weight approval when published under the new policy.
 
 From the repository root, restore/build, then use the following read-only EF checks:
 

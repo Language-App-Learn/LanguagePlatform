@@ -3,6 +3,7 @@ using LanguagePlatform.Application.StudentProgress;
 using LanguagePlatform.Domain.Catalog;
 using LanguagePlatform.Domain.Common;
 using LanguagePlatform.Domain.CourseContent;
+using LanguagePlatform.Domain.LessonEngine;
 using LanguagePlatform.Domain.StudentProgress;
 using LanguagePlatform.Infrastructure.Catalog;
 using LanguagePlatform.Infrastructure.Persistence;
@@ -64,6 +65,8 @@ public sealed class StudentLearningService(LanguagePlatformDbContext db, IPublis
         if (enrollment?.Status != "Active") return null;
         var versionId = await content.FindVersionIdAsync(courseId, lessonId, ct);
         if (versionId is null) return null;
+        Guard.Against(!await IsCurriculumSlotUnlockedAsync(enrollment.Id, courseId, lessonId, ct),
+            "The previous curriculum lesson has not been passed.");
         var blocked = await db.Set<LessonPrerequisite>().AnyAsync(x => x.LessonId == lessonId &&
             !Progress(enrollment.Id).Any(p => p.LessonId == x.RequiredLessonId && p.IsPassed), ct);
         Guard.Against(blocked, "Lesson prerequisites have not been completed.");
@@ -85,6 +88,93 @@ public sealed class StudentLearningService(LanguagePlatformDbContext db, IPublis
             .SingleAsync(ct);
     }
 
+    public async Task<CurriculumProgressDto?> GetCurriculumProgressAsync(Guid studentId, Guid courseId, Guid lessonId,
+        CancellationToken ct)
+    {
+        var enrollment = await FindEnrollmentAsync(studentId, courseId, ct);
+        if (enrollment is null) return null;
+        var versionId = await content.FindVersionIdAsync(courseId, lessonId, ct);
+        if (versionId is not { } publishedVersionId ||
+            !await db.Set<LessonVersion>().AnyAsync(x => x.Id == publishedVersionId && x.UsesFiveStageCurriculum, ct))
+            return null;
+
+        var progress = await db.Set<LessonProgress>().AsNoTracking()
+            .Where(x => x.EnrollmentId == enrollment.Id && x.LessonVersionId == versionId)
+            .Select(x => new
+            {
+                x.Score, x.IsPassed,
+                Stages = db.Set<StageProgress>().Where(stage => stage.LessonProgressId == x.Id)
+                    .Select(stage => new
+                    {
+                        stage.LessonStageId, stage.IsCompleted, stage.Score,
+                        Attempts = db.Set<StageAttempt>().Count(a => a.StageProgressId == stage.Id)
+                    }).ToList()
+            }).SingleOrDefaultAsync(ct);
+        var stages = await db.Set<LessonStage>().AsNoTracking().Where(x => x.LessonVersionId == versionId && x.IsActive)
+            .OrderBy(x => x.DisplayOrder).ToListAsync(ct);
+        var stageProgress = progress?.Stages.ToDictionary(x => x.LessonStageId);
+
+        var available = enrollment.Status == "Active"
+            && await IsCurriculumSlotUnlockedAsync(enrollment.Id, courseId, lessonId, ct);
+        var states = new List<StageStateDto>(stages.Count);
+        foreach (var stage in stages)
+        {
+            var state = stageProgress?.GetValueOrDefault(stage.Id);
+            var complete = state?.IsCompleted == true;
+            states.Add(new StageStateDto(stage.Id, stage.StageType, stage.DisplayOrder,
+                complete ? "completed" : available ? "available" : "locked",
+                complete ? state!.Score : null, state?.Attempts ?? 0));
+            available &= complete;
+        }
+
+        var final = states.Count == FiveStageCurriculum.Stages.Count && states.All(x => x.Status == "completed");
+        var passed = final && progress?.IsPassed == true;
+        Guid? nextLessonId = null;
+        if (passed)
+        {
+            var slot = await FindSlotAsync(courseId, lessonId, ct);
+            if (slot is not null)
+            {
+                var next = await Slots(courseId).Where(x => x.Ordinal == slot.Ordinal + 1)
+                    .Select(x => (Guid?)x.LessonId).SingleOrDefaultAsync(ct);
+                if (next is { } nextId && await content.FindVersionIdAsync(courseId, nextId, ct) is not null)
+                    nextLessonId = nextId;
+            }
+        }
+
+        return new CurriculumProgressDto(publishedVersionId, states, final ? progress?.Score : null,
+            FiveStageCurriculum.PassingScore, passed, nextLessonId);
+    }
+
+    private async Task<bool> IsCurriculumSlotUnlockedAsync(Guid enrollmentId, Guid courseId, Guid lessonId,
+        CancellationToken ct)
+    {
+        var slot = await FindSlotAsync(courseId, lessonId, ct);
+        if (slot is null || slot.Ordinal == 1) return true;
+        return await Slots(courseId).Where(x => x.Ordinal == slot.Ordinal - 1)
+            .AnyAsync(x => Progress(enrollmentId).Any(p => p.LessonId == x.LessonId && p.IsPassed), ct);
+    }
+
+    private Task<CurriculumSlot?> FindSlotAsync(Guid courseId, Guid lessonId, CancellationToken ct) =>
+        Slots(courseId).SingleOrDefaultAsync(x => x.LessonId == lessonId, ct);
+
+    private IQueryable<CurriculumSlot> Slots(Guid courseId) =>
+        from level in db.Set<CourseLevel>()
+        where level.CourseId == courseId
+        join lesson in db.Set<Lesson>() on (Guid?)level.Id equals lesson.CurriculumLevelId
+        where lesson.CurriculumPosition != null
+        select new CurriculumSlot
+        {
+            LessonId = lesson.Id,
+            Ordinal = (level.DisplayOrder - 1) * FiveStageCurriculum.SlotsPerLevel + lesson.CurriculumPosition!.Value
+        };
+
+    private sealed class CurriculumSlot
+    {
+        public Guid LessonId { get; init; }
+        public int Ordinal { get; init; }
+    }
+
     private Task<EnrollmentDto?> FindEnrollmentAsync(Guid studentId, Guid courseId, CancellationToken ct) =>
         db.Set<Enrollment>().AsNoTracking().Where(x => x.StudentId == studentId && x.CourseId == courseId)
             .Select(x => new EnrollmentDto(x.Id, x.CourseId, x.Status, x.EnrolledAtUtc)).SingleOrDefaultAsync(ct);
@@ -96,14 +186,17 @@ public sealed class StudentLearningService(LanguagePlatformDbContext db, IPublis
         select new ProgressRow
         {
             LessonId = version.LessonId, LessonVersionId = version.Id,
-            Score = progress.Score, IsPassed = progress.IsPassed, UpdatedAtUtc = progress.UpdatedAtUtc
+            Score = !version.UsesFiveStageCurriculum || db.Set<StageProgress>().Count(stage =>
+                stage.LessonProgressId == progress.Id && stage.IsCompleted) == FiveStageCurriculum.Stages.Count
+                ? progress.Score : null,
+            IsPassed = progress.IsPassed, UpdatedAtUtc = progress.UpdatedAtUtc
         };
 
     private sealed class ProgressRow
     {
         public Guid LessonId { get; init; }
         public Guid LessonVersionId { get; init; }
-        public decimal Score { get; init; }
+        public decimal? Score { get; init; }
         public bool IsPassed { get; init; }
         public DateTime UpdatedAtUtc { get; init; }
     }

@@ -31,7 +31,7 @@ public sealed class PostgreSqlPublishedContentTests
         var query = new PublishedContentQueries(db);
         Assert.Single((await query.ListAsync(course.Id, new OutlineQuery(), CancellationToken.None))!.Items);
         await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-            builder.UseEnvironment("Testing").ConfigureAppConfiguration((_, config) =>
+            builder.UseEnvironment("Testing").UseSetting("StudentRelease:IncludeLegacyContent", "true").ConfigureAppConfiguration((_, config) =>
                 config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:LanguagePlatform"] = connection })));
         using var client = factory.CreateClient();
         var outline = (await client.GetFromJsonAsync<LessonOutlinePage>($"/api/v1/courses/{course.Id}/lessons"))!;
