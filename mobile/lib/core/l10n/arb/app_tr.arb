@@ -351,5 +351,24 @@
 ,
   "homeRemoteNotice": "Dersleriniz ve resmî sonuçlarınız hesabınızdan gelir. Kelime, tekrar ve etkinlik özetleri hesabınıza bağlandığında burada görünecek.",
   "localPracticeNotice": "Bu veriler yalnızca bu cihazda saklanan alıştırma verileridir. Hesabınıza bağlı değildir ve resmî sonuç sayılmaz."
+,
+  "authenticatorCodeLabel": "Doğrulayıcı kodu (yalnızca kullanıyorsanız)",
+  "deleteAccountTitle": "Hesabı sil",
+  "deleteAccountAction": "Hesap silme talebi gönder",
+  "deleteAccountIntro": "Silme talebi hesabınızı hemen devre dışı bırakır ve tüm cihazlardaki oturumlarınızı kapatır.",
+  "deleteAccountReview": "Talebiniz daha sonra hizmet işletmecisi tarafından incelenir. Verileriniz anında silinmez; kalıcı silme işlemini işletmeci tamamlar.",
+  "deleteAccountPermanent": "Bu hesapla bir daha giriş yapamazsınız.",
+  "deleteAccountReauth": "Sizin olduğunuzu doğrulamak için parolanızı girin.",
+  "deleteAccountUnderstand": "Anladım ve silme talebi göndermek istiyorum",
+  "deleteAccountDialogTitle": "Silme talebi gönderilsin mi?",
+  "deleteAccountDialogBody": "Hesabınız şimdi devre dışı bırakılacak. Bu işlem uygulamadan geri alınamaz.",
+  "deleteAccountDone": "Silme talebiniz alındı. Hesabınız devre dışı bırakıldı ve oturumunuz kapatıldı. Verilerinizin kalıcı silinmesini işletmeci tamamlar.",
+  "deleteAccountInvalid": "Parola veya kod geçerli değil."
+,
+  "mediaPlay": "Oynat",
+  "mediaPause": "Duraklat",
+  "mediaStop": "Durdur",
+  "mediaPlaybackFailed": "Medya oynatılamadı. Bağlantının süresi dolmuş olabilir veya çevrimdışı olabilirsiniz.",
+  "mediaListeningAudio": "Dinleme sesi"
 
 }

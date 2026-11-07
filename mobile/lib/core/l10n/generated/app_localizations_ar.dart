@@ -1210,4 +1210,62 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get localPracticeNotice =>
       'هذه بيانات تدريب محفوظة على هذا الجهاز فقط. وهي غير مرتبطة بحسابك وليست نتيجة رسمية.';
+
+  @override
+  String get authenticatorCodeLabel => 'رمز المصادقة (فقط إذا كنت تستخدمه)';
+
+  @override
+  String get deleteAccountTitle => 'حذف الحساب';
+
+  @override
+  String get deleteAccountAction => 'طلب حذف الحساب';
+
+  @override
+  String get deleteAccountIntro =>
+      'يؤدي طلب الحذف إلى تعطيل حسابك فورًا وتسجيل خروجك من جميع الأجهزة.';
+
+  @override
+  String get deleteAccountReview =>
+      'ثم يراجع مشغّل الخدمة طلبك. لا تُمحى بياناتك فورًا؛ يتولى المشغّل إتمام الإزالة النهائية.';
+
+  @override
+  String get deleteAccountPermanent =>
+      'لن تتمكن من تسجيل الدخول بهذا الحساب مرة أخرى.';
+
+  @override
+  String get deleteAccountReauth =>
+      'أدخل كلمة المرور للتأكد من أنك صاحب الحساب.';
+
+  @override
+  String get deleteAccountUnderstand => 'أفهم ذلك وأريد طلب الحذف';
+
+  @override
+  String get deleteAccountDialogTitle => 'طلب الحذف؟';
+
+  @override
+  String get deleteAccountDialogBody =>
+      'سيتم تعطيل حسابك الآن. لا يمكن التراجع عن ذلك من التطبيق.';
+
+  @override
+  String get deleteAccountDone =>
+      'تم استلام طلب الحذف. تم تعطيل حسابك وتسجيل خروجك. يتولى المشغّل إتمام الإزالة النهائية لبياناتك.';
+
+  @override
+  String get deleteAccountInvalid => 'كلمة المرور أو الرمز غير صالح.';
+
+  @override
+  String get mediaPlay => 'تشغيل';
+
+  @override
+  String get mediaPause => 'إيقاف مؤقت';
+
+  @override
+  String get mediaStop => 'إيقاف';
+
+  @override
+  String get mediaPlaybackFailed =>
+      'تعذّر تشغيل الوسائط. قد تكون صلاحية الرابط قد انتهت أو قد تكون غير متصل.';
+
+  @override
+  String get mediaListeningAudio => 'الاستماع الصوتي';
 }

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <Reference Include="LanguagePlatform.Application">
+      <HintPath>..\..\backend-src\backend\src\LanguagePlatform.Api\bin\Debug\net10.0\LanguagePlatform.Application.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

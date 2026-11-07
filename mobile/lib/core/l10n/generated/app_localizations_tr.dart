@@ -1204,4 +1204,64 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get localPracticeNotice =>
       'Bu veriler yalnızca bu cihazda saklanan alıştırma verileridir. Hesabınıza bağlı değildir ve resmî sonuç sayılmaz.';
+
+  @override
+  String get authenticatorCodeLabel =>
+      'Doğrulayıcı kodu (yalnızca kullanıyorsanız)';
+
+  @override
+  String get deleteAccountTitle => 'Hesabı sil';
+
+  @override
+  String get deleteAccountAction => 'Hesap silme talebi gönder';
+
+  @override
+  String get deleteAccountIntro =>
+      'Silme talebi hesabınızı hemen devre dışı bırakır ve tüm cihazlardaki oturumlarınızı kapatır.';
+
+  @override
+  String get deleteAccountReview =>
+      'Talebiniz daha sonra hizmet işletmecisi tarafından incelenir. Verileriniz anında silinmez; kalıcı silme işlemini işletmeci tamamlar.';
+
+  @override
+  String get deleteAccountPermanent =>
+      'Bu hesapla bir daha giriş yapamazsınız.';
+
+  @override
+  String get deleteAccountReauth =>
+      'Sizin olduğunuzu doğrulamak için parolanızı girin.';
+
+  @override
+  String get deleteAccountUnderstand =>
+      'Anladım ve silme talebi göndermek istiyorum';
+
+  @override
+  String get deleteAccountDialogTitle => 'Silme talebi gönderilsin mi?';
+
+  @override
+  String get deleteAccountDialogBody =>
+      'Hesabınız şimdi devre dışı bırakılacak. Bu işlem uygulamadan geri alınamaz.';
+
+  @override
+  String get deleteAccountDone =>
+      'Silme talebiniz alındı. Hesabınız devre dışı bırakıldı ve oturumunuz kapatıldı. Verilerinizin kalıcı silinmesini işletmeci tamamlar.';
+
+  @override
+  String get deleteAccountInvalid => 'Parola veya kod geçerli değil.';
+
+  @override
+  String get mediaPlay => 'Oynat';
+
+  @override
+  String get mediaPause => 'Duraklat';
+
+  @override
+  String get mediaStop => 'Durdur';
+
+  @override
+  String get mediaPlaybackFailed =>
+      'Medya oynatılamadı. Bağlantının süresi dolmuş olabilir veya çevrimdışı olabilirsiniz.';
+
+  @override
+  String get mediaListeningAudio => 'Dinleme sesi';
 }

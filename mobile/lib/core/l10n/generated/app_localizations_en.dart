@@ -1204,4 +1204,64 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get localPracticeNotice =>
       'This is practice data stored only on this device. It is not linked to your account and is not an official result.';
+
+  @override
+  String get authenticatorCodeLabel =>
+      'Authenticator code (only if you use one)';
+
+  @override
+  String get deleteAccountTitle => 'Delete account';
+
+  @override
+  String get deleteAccountAction => 'Request account deletion';
+
+  @override
+  String get deleteAccountIntro =>
+      'Requesting deletion deactivates your account right away and signs you out on every device.';
+
+  @override
+  String get deleteAccountReview =>
+      'Your request is then reviewed by the service operator. Your data is not erased instantly; the final removal is completed by the operator.';
+
+  @override
+  String get deleteAccountPermanent =>
+      'You will not be able to sign in with this account again.';
+
+  @override
+  String get deleteAccountReauth =>
+      'Enter your password to confirm that it is you.';
+
+  @override
+  String get deleteAccountUnderstand =>
+      'I understand and want to request deletion';
+
+  @override
+  String get deleteAccountDialogTitle => 'Request deletion?';
+
+  @override
+  String get deleteAccountDialogBody =>
+      'Your account will be deactivated now. This cannot be undone from the app.';
+
+  @override
+  String get deleteAccountDone =>
+      'Deletion request received. Your account is deactivated and you have been signed out. The final removal of your data is completed by the operator.';
+
+  @override
+  String get deleteAccountInvalid => 'The password or code is not valid.';
+
+  @override
+  String get mediaPlay => 'Play';
+
+  @override
+  String get mediaPause => 'Pause';
+
+  @override
+  String get mediaStop => 'Stop';
+
+  @override
+  String get mediaPlaybackFailed =>
+      'The media could not be played. The link may have expired or you may be offline.';
+
+  @override
+  String get mediaListeningAudio => 'Listening audio';
 }

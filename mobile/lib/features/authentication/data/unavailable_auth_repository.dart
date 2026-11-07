@@ -12,8 +12,11 @@ class UnavailableAuthRepository implements AuthRepository {
       Future.error(const ServiceUnavailableException(_service));
 
   @override
-  Future<void> signIn({required String email, required String password}) =>
-      _fail();
+  Future<void> signIn({
+    required String email,
+    required String password,
+    String? authenticatorCode,
+  }) => _fail();
 
   @override
   Future<void> register({
@@ -41,6 +44,12 @@ class UnavailableAuthRepository implements AuthRepository {
 
   @override
   Future<AccountInfo> currentAccount() => _fail();
+
+  @override
+  Future<void> requestAccountDeletion({
+    required String password,
+    String? authenticatorCode,
+  }) => _fail();
 
   @override
   Future<void> signOut() async {}

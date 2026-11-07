@@ -617,7 +617,7 @@ void main() {
       expect(find.textContaining('cannot save or open'), findsNothing);
     });
 
-    testWidgets('without a hand-over component the UI says so honestly', (
+    testWidgets('on a platform without a share sheet the UI says so honestly', (
       tester,
     ) async {
       useScreen(tester);
@@ -627,7 +627,7 @@ void main() {
       await pumpApp(
         tester,
         initialLocation: '/stages/$lesson/reading',
-        overrides: _remote(repo),
+        overrides: _remote(repo, delivery: const UnavailablePdfDelivery()),
       );
       await tester.ensureVisible(_key('pdf-download'));
       await tester.tap(_key('pdf-download'));
@@ -657,7 +657,7 @@ void main() {
       expect(find.textContaining("couldn't find"), findsOneWidget);
     });
 
-    testWidgets('media is shown as availability, never as a fake player', (
+    testWidgets('media players are offered; links are never displayed', (
       tester,
     ) async {
       useScreen(tester);
@@ -675,14 +675,9 @@ void main() {
       );
       expect(_key('media-panel'), findsOneWidget);
       expect(find.text('Teacher video: Dersin özeti'), findsOneWidget);
-      expect(_key('media-playback-unavailable'), findsOneWidget);
-      expect(
-        find.descendant(
-          of: _key('media-panel'),
-          matching: find.byIcon(Icons.play_arrow),
-        ),
-        findsNothing,
-      );
+      // Real players exist (lazy: nothing is fetched until Play) ...
+      expect(_key('audio-player'), findsOneWidget);
+      expect(_key('video-player'), findsOneWidget);
       // Signed URLs are never displayed.
       expect(find.textContaining('cdn.example.com'), findsNothing);
       expect(find.textContaining('sig='), findsNothing);

@@ -78,3 +78,10 @@ Result semantics: the objective result's `passed` uses a zero threshold, so the 
 Attempt lifecycle: `PendingAttemptStore` (`lp.attempts`, random 128-bit keys, no account data) keeps the idempotency key from start until submit succeeds; ambiguous failures and app restarts reuse it; a retake renews it; definitive rejections (400/401/403/404/409) release it; every identity change clears it.
 
 Open questions for the backend are in `docs/api-feedback/BACKEND_FEEDBACK.md`.
+
+## V8 additions (2026-11-07)
+
+* `POST /api/v1/me/privacy/deletion-request` `{password, authenticatorCode?}` - 202 only. Anything else (including 200) is not treated as a deletion. On 202 the local session is cleared. `GET /me/privacy/export` exists on the backend and is not used by the app.
+* `POST /auth/login` accepts an optional `authenticatorCode` (sent only when entered).
+* Stage media `status` (`available` / `unavailable` / `unconfigured`): only `available` produces players; blocked links are dropped. The API has no signed-media issuer or expiry contract; the app re-reads the metadata on a playback failure.
+* Verified end-to-end against the real backend; see `docs/testing/E2E_REAL_BACKEND.md` and `docs/api-feedback/BACKEND_FEEDBACK.md` (resolved / unresolved / new).

@@ -246,12 +246,20 @@ ReadingMaterial readingMaterialFrom(Object? json) {
 /// validates too, but a client must not trust a downloaded value blindly).
 StageMedia stageMediaFrom(Object? json) {
   final m = _map(json);
+  // `status`: available | unavailable | unconfigured (authored but blocked by
+  // the server host policy). Anything but "available" - including a missing
+  // status - means: show no media, never a blocked link.
+  final status = _optStr(m['status'])?.toLowerCase();
+  if (status != null && status != 'available') {
+    return StageMedia(status: status);
+  }
   final video = m['teacherVideo'];
   final videoMap = video is Map ? video.cast<String, Object?>() : null;
   return StageMedia(
     audioUrl: safeMediaUri(m['audioUrl']),
     videoUrl: safeMediaUri(videoMap?['url']),
     videoTitle: _optStr(videoMap?['title']),
+    status: status ?? 'available',
   );
 }
 

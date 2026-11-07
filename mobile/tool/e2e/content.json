@@ -1,0 +1,86 @@
+{
+  "lessons": [
+    {
+      "title": "Tanışma ve selamlaşma (sentetik)",
+      "arabicText": "مَرْحَبًا، أَنَا طَالِبٌ. هَذَا كِتَابٌ.",
+      "turkishText": "Merhaba, ben öğrenciyim. Bu bir kitap.",
+      "speakingPrompt": "قُلْ: مَرْحَبًا، أَنَا طَالِبٌ.",
+      "rubric": "Telaffuz, akıcılık ve doğru cümle kurma (sentetik ölçüt).",
+      "pdfLines": ["مَرْحَبًا، أَنَا طَالِبٌ.", "هَذَا كِتَابٌ.", "هَذَا قَلَمٌ."],
+      "reading": [
+        { "kind": "TrueFalse", "prompt": "Metinde konuşan kişi öğrencidir. (1)", "value": true },
+        { "kind": "TrueFalse", "prompt": "Metinde bir araba geçer. (2)", "value": false },
+        { "kind": "TrueFalse", "prompt": "Metinde bir kitap geçer. (3)", "value": true },
+        { "kind": "TrueFalse", "prompt": "Konuşan kişi öğretmendir. (4)", "value": false },
+        { "kind": "TrueFalse", "prompt": "Metin selamlaşma ile başlar. (5)", "value": true },
+        { "kind": "MultipleChoice", "prompt": "Konuşan kişi kimdir? (6)", "options": ["طَالِبٌ", "مُعَلِّمٌ", "طَبِيبٌ"], "correct": 0 },
+        { "kind": "MultipleChoice", "prompt": "Metinde hangi eşya geçer? (7)", "options": ["سَيَّارَةٌ", "كِتَابٌ", "بَابٌ"], "correct": 1 },
+        { "kind": "MultipleChoice", "prompt": "İlk kelime ne anlama gelir? (8)", "options": ["Merhaba", "Hoşça kal", "Teşekkürler"], "correct": 0 },
+        { "kind": "MultipleChoice", "prompt": "İkinci cümle ne söyler? (9)", "options": ["Bu bir kitap", "Bu bir kapı", "Bu bir ev"], "correct": 0 },
+        { "kind": "MultipleChoice", "prompt": "Metnin dili hangisidir? (10)", "options": ["Arapça", "Fransızca", "Rusça"], "correct": 0 }
+      ],
+      "listening": [
+        { "prompt": "هَذَا {{blank}} كَبِيرٌ.", "options": ["كِتَابٌ", "قَلَمٌ", "بَابٌ"], "correct": 0 },
+        { "prompt": "أَنَا {{blank}} فِي الصَّفِّ.", "options": ["طَالِبٌ", "طَبِيبٌ", "سَائِقٌ"], "correct": 0 },
+        { "prompt": "{{blank}} يَا صَدِيقِي.", "options": ["مَرْحَبًا", "شُكْرًا", "عَفْوًا"], "correct": 0 },
+        { "prompt": "هَذَا {{blank}} جَمِيلٌ.", "options": ["بَيْتٌ", "بَابٌ", "شَجَرٌ"], "correct": 0 },
+        { "prompt": "أَيْنَ {{blank}}؟", "options": ["الْمَدْرَسَةُ", "الْمَدْرَسَةَ", "مَدْرَسَةٌ"], "correct": 0 }
+      ],
+      "writing": [
+        { "kind": "FillBlank", "prompt": "أَنَا {{blank}} (öğrenci)", "answers": ["طَالِبٌ"] },
+        { "kind": "FillBlank", "prompt": "هَذَا {{blank}} (kitap)", "answers": ["كِتَابٌ"] },
+        { "kind": "FillBlank", "prompt": "هَذَا {{blank}} (kalem)", "answers": ["قَلَمٌ"] },
+        { "kind": "WordOrder", "prompt": "Cümleyi sırala: Ben öğrenciyim", "tokens": ["أَنَا", "طَالِبٌ"], "order": [0, 1] },
+        { "kind": "WordOrder", "prompt": "Cümleyi sırala: Bu bir kitap", "tokens": ["كِتَابٌ", "هَذَا"], "order": [1, 0] }
+      ],
+      "translation": [
+        { "kind": "ExactText", "prompt": "Merhaba", "answers": ["مَرْحَبًا"] },
+        { "kind": "ExactText", "prompt": "Kitap", "answers": ["كِتَابٌ"] },
+        { "kind": "ExactText", "prompt": "Öğrenci", "answers": ["طَالِبٌ"] },
+        { "kind": "MultipleChoice", "prompt": "Teşekkürler", "options": ["شُكْرًا", "عَفْوًا", "مَعَ السَّلَامَةِ"], "correct": 0 },
+        { "kind": "MultipleChoice", "prompt": "Hoşça kal", "options": ["مَرْحَبًا", "مَعَ السَّلَامَةِ", "صَبَاحُ الْخَيْرِ"], "correct": 1 }
+      ]
+    },
+    {
+      "title": "Eşyalar (sentetik, ikinci ders)",
+      "arabicText": "هَذَا بَابٌ. هَذَا بَيْتٌ.",
+      "turkishText": "Bu bir kapı. Bu bir ev.",
+      "speakingPrompt": "قُلْ: هَذَا بَيْتٌ.",
+      "rubric": "Telaffuz ve doğru cümle (sentetik ölçüt).",
+      "pdfLines": [],
+      "reading": [
+        { "kind": "TrueFalse", "prompt": "Bir kapı geçer. (1)", "value": true },
+        { "kind": "TrueFalse", "prompt": "Bir okul geçer. (2)", "value": false },
+        { "kind": "TrueFalse", "prompt": "Bir ev geçer. (3)", "value": true },
+        { "kind": "TrueFalse", "prompt": "Bir araba geçer. (4)", "value": false },
+        { "kind": "TrueFalse", "prompt": "Metin iki cümledir. (5)", "value": true },
+        { "kind": "MultipleChoice", "prompt": "Birinci eşya? (6)", "options": ["بَابٌ", "بَيْتٌ", "قَلَمٌ"], "correct": 0 },
+        { "kind": "MultipleChoice", "prompt": "İkinci eşya? (7)", "options": ["بَابٌ", "بَيْتٌ", "قَلَمٌ"], "correct": 1 },
+        { "kind": "MultipleChoice", "prompt": "Kapı hangisi? (8)", "options": ["بَيْتٌ", "بَابٌ", "كِتَابٌ"], "correct": 1 },
+        { "kind": "MultipleChoice", "prompt": "Ev hangisi? (9)", "options": ["بَيْتٌ", "بَابٌ", "كِتَابٌ"], "correct": 0 },
+        { "kind": "MultipleChoice", "prompt": "Metin hangi dilde? (10)", "options": ["Arapça", "İspanyolca", "Almanca"], "correct": 0 }
+      ],
+      "listening": [
+        { "prompt": "هَذَا {{blank}} صَغِيرٌ.", "options": ["بَابٌ", "كِتَابٌ", "قَلَمٌ"], "correct": 0 },
+        { "prompt": "هَذَا {{blank}} كَبِيرٌ.", "options": ["بَيْتٌ", "بَابٌ", "قَلَمٌ"], "correct": 0 },
+        { "prompt": "أَيْنَ {{blank}}؟", "options": ["الْبَابُ", "الْبَابَ", "بَابٌ"], "correct": 0 },
+        { "prompt": "هَذِهِ {{blank}}.", "options": ["مَدْرَسَةٌ", "مَدْرَسٌ", "مُدَرِّسٌ"], "correct": 0 },
+        { "prompt": "هُنَاكَ {{blank}}.", "options": ["شَجَرَةٌ", "شَجَرٌ", "أَشْجَارٌ"], "correct": 0 }
+      ],
+      "writing": [
+        { "kind": "FillBlank", "prompt": "هَذَا {{blank}} (kapı)", "answers": ["بَابٌ"] },
+        { "kind": "FillBlank", "prompt": "هَذَا {{blank}} (ev)", "answers": ["بَيْتٌ"] },
+        { "kind": "FillBlank", "prompt": "هَذِهِ {{blank}} (okul)", "answers": ["مَدْرَسَةٌ"] },
+        { "kind": "WordOrder", "prompt": "Sırala: Bu bir kapı", "tokens": ["بَابٌ", "هَذَا"], "order": [1, 0] },
+        { "kind": "WordOrder", "prompt": "Sırala: Bu bir ev", "tokens": ["بَيْتٌ", "هَذَا"], "order": [1, 0] }
+      ],
+      "translation": [
+        { "kind": "ExactText", "prompt": "Kapı", "answers": ["بَابٌ"] },
+        { "kind": "ExactText", "prompt": "Ev", "answers": ["بَيْتٌ"] },
+        { "kind": "ExactText", "prompt": "Okul", "answers": ["مَدْرَسَةٌ"] },
+        { "kind": "MultipleChoice", "prompt": "Günaydın", "options": ["صَبَاحُ الْخَيْرِ", "مَسَاءُ الْخَيْرِ", "شُكْرًا"], "correct": 0 },
+        { "kind": "MultipleChoice", "prompt": "İyi akşamlar", "options": ["صَبَاحُ الْخَيْرِ", "مَسَاءُ الْخَيْرِ", "عَفْوًا"], "correct": 1 }
+      ]
+    }
+  ]
+}

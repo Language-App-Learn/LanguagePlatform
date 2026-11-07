@@ -8,6 +8,7 @@ abstract final class AppRoutes {
   static const register = '/auth/register';
   static const forgotPassword = '/auth/forgot-password';
   static const confirmEmail = '/auth/confirm-email';
+  static const deleteAccount = '/delete-account';
 
   // Alt gezinme sekmeleri
   static const home = '/home';

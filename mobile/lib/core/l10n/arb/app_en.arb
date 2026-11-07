@@ -390,5 +390,24 @@
 ,
   "homeRemoteNotice": "Your lessons and official results come from your account. Vocabulary, review and activity summaries will appear here when they are connected to it.",
   "localPracticeNotice": "This is practice data stored only on this device. It is not linked to your account and is not an official result."
+,
+  "authenticatorCodeLabel": "Authenticator code (only if you use one)",
+  "deleteAccountTitle": "Delete account",
+  "deleteAccountAction": "Request account deletion",
+  "deleteAccountIntro": "Requesting deletion deactivates your account right away and signs you out on every device.",
+  "deleteAccountReview": "Your request is then reviewed by the service operator. Your data is not erased instantly; the final removal is completed by the operator.",
+  "deleteAccountPermanent": "You will not be able to sign in with this account again.",
+  "deleteAccountReauth": "Enter your password to confirm that it is you.",
+  "deleteAccountUnderstand": "I understand and want to request deletion",
+  "deleteAccountDialogTitle": "Request deletion?",
+  "deleteAccountDialogBody": "Your account will be deactivated now. This cannot be undone from the app.",
+  "deleteAccountDone": "Deletion request received. Your account is deactivated and you have been signed out. The final removal of your data is completed by the operator.",
+  "deleteAccountInvalid": "The password or code is not valid."
+,
+  "mediaPlay": "Play",
+  "mediaPause": "Pause",
+  "mediaStop": "Stop",
+  "mediaPlaybackFailed": "The media could not be played. The link may have expired or you may be offline.",
+  "mediaListeningAudio": "Listening audio"
 
 }

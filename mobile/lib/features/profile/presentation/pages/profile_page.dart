@@ -110,9 +110,10 @@ class ProfilePage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
-              NoticeBanner(message: l10n.accountIntegrationPending),
+              if (!isAccount)
+                NoticeBanner(message: l10n.accountIntegrationPending),
               const SizedBox(height: AppSpacing.xl),
-              if (isAccount)
+              if (isAccount) ...[
                 OutlinedButton(
                   key: const ValueKey('sign-out'),
                   onPressed: () async {
@@ -120,8 +121,17 @@ class ProfilePage extends ConsumerWidget {
                     if (context.mounted) context.go(AppRoutes.login);
                   },
                   child: Text(l10n.signOut),
-                )
-              else if (isDemo)
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                TextButton(
+                  key: const ValueKey('delete-account'),
+                  onPressed: () => context.push(AppRoutes.deleteAccount),
+                  style: TextButton.styleFrom(
+                    foregroundColor: theme.colorScheme.error,
+                  ),
+                  child: Text(l10n.deleteAccountTitle),
+                ),
+              ] else if (isDemo)
                 OutlinedButton(
                   key: const ValueKey('exit-demo'),
                   onPressed: () {

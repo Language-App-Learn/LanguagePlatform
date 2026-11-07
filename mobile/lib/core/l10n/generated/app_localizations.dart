@@ -2187,6 +2187,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This is practice data stored only on this device. It is not linked to your account and is not an official result.'**
   String get localPracticeNotice;
+
+  /// No description provided for @authenticatorCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticator code (only if you use one)'**
+  String get authenticatorCodeLabel;
+
+  /// No description provided for @deleteAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get deleteAccountTitle;
+
+  /// No description provided for @deleteAccountAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Request account deletion'**
+  String get deleteAccountAction;
+
+  /// No description provided for @deleteAccountIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Requesting deletion deactivates your account right away and signs you out on every device.'**
+  String get deleteAccountIntro;
+
+  /// No description provided for @deleteAccountReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Your request is then reviewed by the service operator. Your data is not erased instantly; the final removal is completed by the operator.'**
+  String get deleteAccountReview;
+
+  /// No description provided for @deleteAccountPermanent.
+  ///
+  /// In en, this message translates to:
+  /// **'You will not be able to sign in with this account again.'**
+  String get deleteAccountPermanent;
+
+  /// No description provided for @deleteAccountReauth.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your password to confirm that it is you.'**
+  String get deleteAccountReauth;
+
+  /// No description provided for @deleteAccountUnderstand.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand and want to request deletion'**
+  String get deleteAccountUnderstand;
+
+  /// No description provided for @deleteAccountDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request deletion?'**
+  String get deleteAccountDialogTitle;
+
+  /// No description provided for @deleteAccountDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account will be deactivated now. This cannot be undone from the app.'**
+  String get deleteAccountDialogBody;
+
+  /// No description provided for @deleteAccountDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Deletion request received. Your account is deactivated and you have been signed out. The final removal of your data is completed by the operator.'**
+  String get deleteAccountDone;
+
+  /// No description provided for @deleteAccountInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The password or code is not valid.'**
+  String get deleteAccountInvalid;
+
+  /// No description provided for @mediaPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get mediaPlay;
+
+  /// No description provided for @mediaPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get mediaPause;
+
+  /// No description provided for @mediaStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get mediaStop;
+
+  /// No description provided for @mediaPlaybackFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The media could not be played. The link may have expired or you may be offline.'**
+  String get mediaPlaybackFailed;
+
+  /// No description provided for @mediaListeningAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening audio'**
+  String get mediaListeningAudio;
 }
 
 class _AppLocalizationsDelegate

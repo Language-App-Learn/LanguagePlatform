@@ -318,11 +318,19 @@ class ReadingMaterial {
 /// permitted URL; nothing here is a player.
 @immutable
 class StageMedia {
-  const StageMedia({this.audioUrl, this.videoUrl, this.videoTitle});
+  const StageMedia({
+    this.audioUrl,
+    this.videoUrl,
+    this.videoTitle,
+    this.status = 'available',
+  });
 
   final Uri? audioUrl;
   final Uri? videoUrl;
   final String? videoTitle;
+
+  /// Server status: `available`, `unavailable` or `unconfigured`.
+  final String status;
 
   bool get hasAudio => audioUrl != null;
   bool get hasVideo => videoUrl != null;

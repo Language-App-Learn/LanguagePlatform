@@ -11,9 +11,13 @@ import '../../lessons/application/lesson_providers.dart';
 import '../../lessons/domain/lesson.dart';
 import '../data/api_five_stage_repository.dart';
 import '../data/demo_stage_content.dart';
+import '../data/just_audio_playback.dart';
 import '../data/local_stage_store.dart';
+import '../data/share_pdf_delivery.dart';
+import '../data/video_player_playback.dart';
 import '../domain/five_stage_repository.dart';
 import '../domain/learning_track.dart';
+import '../domain/media_playback.dart';
 import '../domain/pdf_delivery.dart';
 import '../domain/lesson_outcome.dart';
 import '../domain/lesson_stage.dart';
@@ -201,9 +205,7 @@ final stageMediaProvider =
     });
 
 /// How a downloaded PDF reaches the user (see `PdfDelivery`).
-final pdfDeliveryProvider = Provider<PdfDelivery>(
-  (ref) => const UnavailablePdfDelivery(),
-);
+final pdfDeliveryProvider = Provider<PdfDelivery>((ref) => SharePdfDelivery());
 
 /// Server-side stage state of the signed-in learner for a lesson; `null`
 /// when signed out or not enrolled/started.
@@ -329,3 +331,15 @@ final levelOverviewsProvider = FutureProvider<List<LevelOverview>>((ref) async {
   }
   return result;
 });
+
+/// Factories for the media players (replaced by fakes in tests). Each player
+/// widget creates its own instance and disposes it when it leaves the screen.
+final audioPlaybackFactoryProvider = Provider<AudioPlayback Function()>(
+  (ref) =>
+      () => JustAudioPlayback(),
+);
+
+final videoPlaybackFactoryProvider = Provider<VideoPlayback Function()>(
+  (ref) =>
+      () => VideoPlayerPlayback(),
+);

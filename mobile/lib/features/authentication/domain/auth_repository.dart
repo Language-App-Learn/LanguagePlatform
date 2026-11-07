@@ -16,7 +16,12 @@ class AccountInfo {
 /// never fabricate success: when a feature needs server-side delivery (email)
 /// that is not configured, they throw `ServiceUnavailableException`.
 abstract interface class AuthRepository {
-  Future<void> signIn({required String email, required String password});
+  /// [authenticatorCode] is only needed for accounts with MFA enabled.
+  Future<void> signIn({
+    required String email,
+    required String password,
+    String? authenticatorCode,
+  });
 
   /// The registration contract takes only email and password; [name] is
   /// accepted for the form but is not sent.
@@ -37,6 +42,16 @@ abstract interface class AuthRepository {
     required String email,
     required String code,
     required String newPassword,
+  });
+
+  /// `POST /api/v1/me/privacy/deletion-request`: re-authenticates with the
+  /// password (and an authenticator code if the account uses one). On 202 the
+  /// server has deactivated the account and ended its sessions; the local
+  /// session is cleared too. This is an ACCEPTED REQUEST: the final purge of
+  /// the data is an operator task, not something the app can confirm.
+  Future<void> requestAccountDeletion({
+    required String password,
+    String? authenticatorCode,
   });
 
   /// `GET /api/v1/me` (requires a session).

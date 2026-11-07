@@ -1,16 +1,40 @@
 # PROJECT_STATUS — Mobile (Flutter)
 
-> Update after every milestone. Keep short. Last update: 2026-11-07 (V7: production integration, security, release prep)
+> Update after every milestone. Keep short. Last update: 2026-11-07 (V8: approved packages, secure storage, account deletion, real end-to-end run)
 
-Release verdict: **NO-GO** — see `docs/release/RELEASE_READINESS.md` (DONE/PARTIAL/BLOCKED/NOT VERIFIED per area), `docs/security/MASVS_FINDINGS.md`, `docs/architecture/DEPENDENCY_REQUESTS.md`, `docs/api-feedback/BACKEND_FEEDBACK.md`, `docs/ci/flutter-ci.yml.example`.
+Release verdict: **NO-GO for store release**, but a real A1 lesson now works end-to-end against the real backend (see `docs/testing/E2E_REAL_BACKEND.md`). Details: `docs/release/RELEASE_READINESS.md`, `docs/security/MASVS_FINDINGS.md`, `docs/api-feedback/BACKEND_FEEDBACK.md`, `docs/architecture/DEPENDENCY_REQUESTS.md`.
 
 ## Git state
-- Branch `Flutter`; `HEAD` = `origin/Flutter` = `d64c2e3`; `origin/Backend-Database` = `1c7378c` (read-only). All V6 + V7 work is **uncommitted and unpushed** (awaiting owner approval). The 7 `generated_plugin*` files are line-ending noise: keep them out of commits.
+- Branch `Flutter`; `HEAD` = `origin/Flutter` = `b7ff409`; `origin/Backend-Database` = `dd09853` (read-only). All V8 work is **uncommitted and unpushed** (awaiting owner approval). The 7 `generated_plugin*` files are line-ending noise: keep them out of commits.
 
-## Quality gates (V7)
-- `dart format`: clean. `flutter analyze`: **No issues found**. `flutter test`: **565 passed, 0 failed** (458 at session start).
-- Android: plain `flutter build apk --debug` still fails on this machine in `:shared_preferences_android:compileDebugKotlin` (Kotlin 2.4.0 incremental-cache bug, "Storage … is already registered"); it passed once after a clean non-daemon run, but release failed plain and non-daemon. `-Pkotlin.incremental=false` builds both debug and release (release APK inspected: `INTERNET`, targetSdk 36, backup off, no cleartext config).
-- iOS: not built (needs macOS/Xcode). TalkBack/VoiceOver: not tested on devices. **No live backend was reachable**: HTTP is tested against a local loopback server and contract-shaped fixtures only.
+## Quality gates (V8)
+- `dart format`: clean. `flutter analyze`: **No issues found**. `flutter test` (offline): **596 passed, 0 failed, 2 skipped** (the two real-backend files skip without `E2E_DIR`). Real-backend run (`E2E_DIR` set): **25 repository-level + 3 UI-level tests passed** against local ASP.NET Core + a disposable PostgreSQL 18 cluster.
+- Android: builds with the new plugins were verified only in scratch copies of the project (see below); **no Gradle build was run after `just_audio` / `video_player` were added** - pending.
+- iOS not built (needs macOS/Xcode). No device/emulator run. TalkBack/VoiceOver untested.
+
+## Dependencies (owner-approved on 2026-11-07, installed incrementally)
+`flutter_secure_storage ^11.2.0` (Keychain / Keystore session), `path_provider ^2.1.6`, `share_plus ^13.3.1` (PDF hand-over), `just_audio ^0.10.6` (listening audio), `video_player ^2.14.1` (teacher video). pub.dev listed no advisories for any of them (that feed is not exhaustive; re-check at each upgrade). NOT installed: `record`, `permission_handler`, AI/analytics/crash SDKs.
+
+## V8 — what changed
+| Area | Status |
+|---|---|
+| Secure session: `PlatformSecretStore` (Android Keystore-wrapped AES-GCM / iOS Keychain `first_unlock_this_device`), single-entry atomic pair, corrupt-entry recovery, iOS reinstall guard (install marker), restore at startup | done; unit tests with the plugin's mock + real-backend restart test |
+| Account deletion: `POST /me/privacy/deletion-request` with password + optional authenticator code, explicit acknowledgement + final dialog, honest "accepted request / operator completes removal" wording, local session cleared on 202 | done; 9 widget tests + verified on the real backend |
+| Login: optional authenticator code (MFA) | done |
+| Media: `status` handling (only `available` is shown), lazy `just_audio` / `video_player` players, pause on background, dispose on leave, HTTPS-only, URL-free errors, retry re-reads metadata | done with fake players (8 tests); **real playback NOT verified** (no reachable media host) |
+| PDF: authenticated download -> app-private cache -> OS share sheet (`SharePdfDelivery`), stale files purged | done (6 tests); share sheet **not verified on a device** |
+| Real end-to-end: 20-step student journey (50/100 fails and locks lesson 2; exactly 60/100 passes and unlocks it; speaking via teacher evaluation; isolation; revocation; deletion) | done; harness in `tool/e2e/`, guide in `docs/testing/E2E_REAL_BACKEND.md` |
+| Backend feedback re-based on the newest contract (resolved / unresolved / new) | done |
+
+## Blocked / needs owner
+1. Final Android application ID / label, iOS bundle ID / team, upload keystore, Play App Signing (separate release decision).
+2. Reachable HTTPS media host + teacher materials to verify audio/video playback; verified link format for email confirmation (U-1).
+3. Privacy policy / terms / data-safety content; crash-reporting vendor decision.
+4. Android: confirm the full build after the last two plugins; Kotlin cache issue (below).
+5. Enable CI (template in `docs/ci/`; workflow location is outside `mobile/`).
+
+## Kotlin incremental-cache issue (investigation log)
+Plain `flutter build apk --debug` in `D:\Projeler\...\mobile` fails the first time any Kotlin module is compiled (`:shared_preferences_android`, later `:share_plus`) with Kotlin 2.4.0 "Storage ... is already registered". In **scratch copies of the same project on drive C:** (same drive as the pub cache) a completely clean plain build succeeds with Kotlin 2.4.0 *and* 2.4.21. A pub cache moved to D: did not fix the D: project (but that run started from already-poisoned build output). Leading hypothesis: cross-drive path handling in Kotlin's incremental caches (project on D:, plugin sources on C:). Not yet proven: needs one clean build of a copy on D: with the pub cache on D: (and one with the default cache). Safe workarounds: `-Pkotlin.incremental=false`, or move the project/pub cache onto one drive. No daemon was killed and no caches were deleted in the real project.
 
 ## V7 — what changed
 | Area | Status |
@@ -28,7 +52,7 @@ Release verdict: **NO-GO** — see `docs/release/RELEASE_READINESS.md` (DONE/PAR
 | Courses tab / Home for real accounts: server course only, demo sections hidden, "local practice" notices on Vocabulary/Progress | done + tests |
 | Android: `INTERNET` in main manifest, backup off, debug-only localhost cleartext config, signing scaffold (`key.properties`, bundleRelease guard), no IDs changed | done; **owner: final application ID + keystore** |
 
-## Blocked / needs owner
+## V7 list (superseded by the V8 list above)
 1. Approve packages (order): `flutter_secure_storage` → `share_plus`/`open_filex` (+`path_provider`) → `just_audio` → `video_player`; `record`+`permission_handler` only when a capture contract exists.
 2. Final Android application ID / app label, iOS bundle ID/team, upload keystore, Play App Signing.
 3. Backend: account-deletion route, email link format, pending-vs-unknown result signalling, provider status, idempotency confirmations (see feedback doc), a development environment for the real end-to-end run.
@@ -100,7 +124,7 @@ The V6 blockers were largely resolved or re-scoped in V7; the current list is **
 `docs/architecture/`: OVERVIEW, STATE_MANAGEMENT, DATA_AND_PERSISTENCE, API_INTEGRATION, TESTING (kept accurate; unchanged contracts).
 
 ## Packages
-flutter_riverpod 3.4, go_router 18, flutter_localizations, intl, shared_preferences 2.5. **No dependency changes in V6** (HTTP via `dart:io`). Approval pending for secure token storage.
+flutter_riverpod 3.4, go_router 18, flutter_localizations, intl, shared_preferences 2.5, flutter_secure_storage 11.2, path_provider 2.1, share_plus 13.3, just_audio 0.10, video_player 2.14 (all owner-approved; see "Dependencies" above). HTTP uses dart:io (no Dio).
 
 ## Known issues / limitations
 - Plain Android debug build fails on this machine (above).

@@ -25,17 +25,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
+  final _code = TextEditingController();
 
   @override
   void dispose() {
     _email.dispose();
     _password.dispose();
+    _code.dispose();
     super.dispose();
   }
 
   void _submit() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    ref.read(authActionProvider.notifier).signIn(_email.text, _password.text);
+    ref
+        .read(authActionProvider.notifier)
+        .signIn(_email.text, _password.text, authenticatorCode: _code.text);
   }
 
   void _enterDemo() {
@@ -69,6 +73,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 textInputAction: TextInputAction.done,
                 onSubmitted: _submit,
                 validator: (v) => AuthValidators.requiredText(v)?.message(l10n),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              TextFormField(
+                key: const ValueKey('login-authenticator'),
+                controller: _code,
+                keyboardType: TextInputType.number,
+                textDirection: TextDirection.ltr,
+                autocorrect: false,
+                enableSuggestions: false,
+                textInputAction: TextInputAction.done,
+                onFieldSubmitted: (_) => _submit(),
+                decoration: InputDecoration(
+                  labelText: l10n.authenticatorCodeLabel,
+                  prefixIcon: const Icon(Icons.pin_outlined),
+                ),
               ),
             ],
           ),

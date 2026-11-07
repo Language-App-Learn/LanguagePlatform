@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/assessment/presentation/pages/quiz_page.dart';
 import '../../features/authentication/presentation/pages/confirm_email_page.dart';
+import '../../features/authentication/presentation/pages/delete_account_page.dart';
 import '../../features/authentication/presentation/pages/forgot_password_page.dart';
 import '../../features/authentication/presentation/pages/login_page.dart';
 import '../../features/authentication/presentation/pages/register_page.dart';
@@ -130,6 +131,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         path: AppRoutes.settings,
         builder: (context, state) => const SettingsPage(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.deleteAccount,
+        builder: (context, state) => const DeleteAccountPage(),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,

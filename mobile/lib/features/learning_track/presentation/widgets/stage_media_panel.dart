@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/design_system/widgets/app_card.dart';
 import '../../../../core/design_system/widgets/notice_banner.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../application/track_providers.dart';
 import '../../domain/remote_models.dart';
+import 'media_players.dart';
 
-/// What audio / teacher video the server published for a stage. This is an
-/// honest availability panel, NOT a player: there is no fake play control.
-/// Playback needs an audio/video component that is pending dependency
-/// approval; media URLs are never displayed or logged.
+/// Audio / teacher video the server published for a stage.
+///
+/// A player is shown ONLY when the server reports `available` media with a
+/// valid HTTPS link; otherwise nothing playable is rendered (no fake play
+/// control). Nothing is downloaded until the learner presses play, links are
+/// never displayed or logged, and a failed playback re-reads the metadata so
+/// an expired link can be replaced.
 class StageMediaPanel extends ConsumerWidget {
   const StageMediaPanel({
     super.key,
@@ -30,11 +33,10 @@ class StageMediaPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final media = ref.watch(
-      stageMediaProvider((lessonId: lessonId, stageId: stageId)),
-    );
+    final provider = stageMediaProvider((lessonId: lessonId, stageId: stageId));
+    final media = ref.watch(provider);
     final StageMedia? data = media.value;
-    if (media.isLoading) return const SizedBox.shrink();
+    if (media.isLoading && data == null) return const SizedBox.shrink();
     if (data == null || data.isEmpty) {
       return expectsMedia
           ? NoticeBanner(
@@ -43,49 +45,22 @@ class StageMediaPanel extends ConsumerWidget {
             )
           : const SizedBox.shrink();
     }
-    final theme = Theme.of(context);
-    return AppCard(
+    void refresh() => ref.invalidate(provider);
+    return Column(
       key: const ValueKey('media-panel'),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (data.hasAudio)
-            _Row(
-              icon: Icons.headphones_outlined,
-              text: l10n.mediaAudioAvailable,
-            ),
-          if (data.hasVideo)
-            _Row(
-              icon: Icons.videocam_outlined,
-              text: l10n.mediaVideoAvailable(data.videoTitle ?? ''),
-            ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            l10n.mediaPlaybackUnavailable,
-            key: const ValueKey('media-playback-unavailable'),
-            style: theme.textTheme.bodySmall,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (data.audioUrl != null)
+          StageAudioPlayer(url: data.audioUrl!, onRefreshLink: refresh),
+        if (data.audioUrl != null && data.videoUrl != null)
+          const SizedBox(height: AppSpacing.md),
+        if (data.videoUrl != null)
+          TeacherVideoPlayer(
+            url: data.videoUrl!,
+            title: data.videoTitle ?? '',
+            onRefreshLink: refresh,
           ),
-        ],
-      ),
+      ],
     );
   }
-}
-
-class _Row extends StatelessWidget {
-  const _Row({required this.icon, required this.text});
-
-  final IconData icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsetsDirectional.only(bottom: AppSpacing.xs),
-    child: Row(
-      children: [
-        Icon(icon),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(child: Text(text)),
-      ],
-    ),
-  );
 }

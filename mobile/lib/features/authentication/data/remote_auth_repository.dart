@@ -20,12 +20,21 @@ class RemoteAuthRepository implements AuthRepository {
   static const _base = '/api/v1/auth';
 
   @override
-  Future<void> signIn({required String email, required String password}) async {
+  Future<void> signIn({
+    required String email,
+    required String password,
+    String? authenticatorCode,
+  }) async {
     final response = await _api.send(
       ApiRequest(
         HttpMethod.post,
         '$_base/login',
-        body: {'email': email, 'password': password},
+        body: {
+          'email': email,
+          'password': password,
+          if (authenticatorCode != null && authenticatorCode.isNotEmpty)
+            'authenticatorCode': authenticatorCode,
+        },
       ),
     );
     final pair = response.unwrap((json) {
@@ -112,6 +121,32 @@ class RemoteAuthRepository implements AuthRepository {
       ),
     );
     response.ensureSuccess();
+  }
+
+  @override
+  Future<void> requestAccountDeletion({
+    required String password,
+    String? authenticatorCode,
+  }) async {
+    final response = await _api.send(
+      ApiRequest(
+        HttpMethod.post,
+        '/api/v1/me/privacy/deletion-request',
+        requiresAuth: true,
+        body: {
+          'password': password,
+          if (authenticatorCode != null && authenticatorCode.isNotEmpty)
+            'authenticatorCode': authenticatorCode,
+        },
+      ),
+    );
+    // 202 = accepted: the account is deactivated and its sessions are
+    // invalidated on the server. Anything else is NOT a deletion.
+    if (response.statusCode != 202) {
+      response.ensureSuccess();
+      throw const UnexpectedResponseFailure();
+    }
+    await _tokens.clear();
   }
 
   @override

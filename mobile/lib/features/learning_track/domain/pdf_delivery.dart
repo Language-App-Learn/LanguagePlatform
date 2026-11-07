@@ -10,11 +10,10 @@ enum PdfDeliveryOutcome {
 
 /// Hands a downloaded PDF to the operating system (open / save / share).
 ///
-/// STATUS: needs a platform component (e.g. `path_provider` + `open_filex` /
-/// `share_plus`) that is not installed - new dependencies require approval
-/// (CLAUDE.md). Until then [UnavailablePdfDelivery] is used and the UI says
-/// so honestly. The bytes live in memory only and are never written to a
-/// shared/public location by the app.
+/// Implementation: `SharePdfDelivery` (path_provider + share_plus). The
+/// bytes are written only to the app-private cache; nothing goes to shared
+/// or public storage. [UnavailablePdfDelivery] remains for platforms and
+/// tests without a share sheet.
 abstract interface class PdfDelivery {
   Future<PdfDeliveryOutcome> deliver(
     Uint8List bytes, {

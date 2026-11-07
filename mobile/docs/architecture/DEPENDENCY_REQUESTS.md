@@ -1,6 +1,6 @@
 # Dependency requests (approval required per CLAUDE.md)
 
-**None of these is installed.** Version/date/score data was read from the pub.dev API on 2026-11-07; compatibility must still be confirmed with `flutter pub add` + analyze/test/build at install time. Recommended order: 1 → 2 → 3 → 4.
+**Approved by the owner on 2026-11-07 and installed incrementally:** `flutter_secure_storage`, `path_provider`, `share_plus`, `just_audio`, `video_player` (see PROJECT_STATUS). Still NOT approved/installed: `record`, `permission_handler`, `open_filex`, AI / analytics / crash-reporting SDKs. Version/date/score data below was read from the pub.dev API on 2026-11-07.
 
 | # | Package | Why (what it unblocks) | pub.dev snapshot | Platform notes |
 |---|---|---|---|---|
@@ -13,3 +13,15 @@
 | — | Crash reporting | **Not requested**: vendor/privacy decision first | — | — |
 
 Security history: no specific advisories were looked up for these packages in this session (no advisory database was queried); run `dart pub outdated` and check GitHub advisories as part of approval.
+
+## Platform requirements of the installed packages (V8)
+
+| Package | Android | iOS | Notes |
+|---|---|---|---|
+| `flutter_secure_storage` 11.2.0 | minSdk 24 (project) is enough; AES-GCM data key wrapped by an RSA key in the Android Keystore; `resetOnError` wipes an unreadable store (handled as "signed out"). App backups are disabled in the manifest so the ciphertext never leaves the device | Keychain, `first_unlock_this_device`, no iCloud sync; no entitlement needed for the default access group. Keychain survives uninstall: the install marker guard wipes a stale session | No SharedPreferences fallback, ever |
+| `path_provider` 2.1.6 | cache directory (app-private) | caches directory | Only the cache is used (shared PDFs) |
+| `share_plus` 13.3.1 | FileProvider declared by the plugin; the shared file lives in the app cache; no storage permission | system share sheet; iPad needs a `sharePositionOrigin` if the sheet is launched from a popover (not used) | The PDF is the only thing ever shared |
+| `just_audio` 0.10.6 | ExoPlayer; https only (release has no cleartext); no foreground service (no background playback) | AVPlayer; no `UIBackgroundModes` (no background playback) | Player is created lazily, paused when the app leaves the foreground, disposed with the screen |
+| `video_player` 2.14.1 | ExoPlayer texture view; https only | AVPlayer; ATS default (https) | No auth headers are sent to media hosts |
+
+Every plugin adds Gradle/Kotlin modules to the Android build; the project's known Kotlin incremental-cache issue (PROJECT_STATUS) shows up on their first compile in the D: project. `record` / `permission_handler` (microphone) remain NOT installed.

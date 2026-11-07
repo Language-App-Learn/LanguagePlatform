@@ -194,6 +194,10 @@ class AuthStatusBanner extends StatelessWidget {
         ),
         AuthOutcome.passwordChanged => (l10n.resetDone, NoticeTone.info),
         AuthOutcome.emailConfirmed => (l10n.confirmEmailDone, NoticeTone.info),
+        AuthOutcome.deletionRequested => (
+          l10n.deleteAccountDone,
+          NoticeTone.info,
+        ),
         _ => null,
       };
     }

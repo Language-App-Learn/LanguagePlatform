@@ -142,6 +142,7 @@ enum AuthOutcome {
   confirmationResent,
   passwordChanged,
   emailConfirmed,
+  deletionRequested,
 }
 
 /// State of a sign-in / register / reset request (disposed with the page).
@@ -150,12 +151,36 @@ class AuthActionController extends AsyncNotifier<AuthOutcome?> {
   @override
   AuthOutcome? build() => null;
 
-  Future<void> signIn(String email, String password) => _run(() async {
+  Future<void> signIn(
+    String email,
+    String password, {
+    String? authenticatorCode,
+  }) => _run(() async {
     await ref
         .read(authRepositoryProvider)
-        .signIn(email: email.trim(), password: password);
+        .signIn(
+          email: email.trim(),
+          password: password,
+          authenticatorCode: authenticatorCode?.trim(),
+        );
     ref.read(sessionProvider.notifier).authenticated();
     return AuthOutcome.signedIn;
+  });
+
+  /// Account deletion REQUEST (re-authenticated). On acceptance the local
+  /// session ends as well; the data purge itself is an operator task.
+  Future<void> requestAccountDeletion(
+    String password, {
+    String? authenticatorCode,
+  }) => _run(() async {
+    await ref
+        .read(authRepositoryProvider)
+        .requestAccountDeletion(
+          password: password,
+          authenticatorCode: authenticatorCode?.trim(),
+        );
+    ref.read(sessionProvider.notifier).signOut();
+    return AuthOutcome.deletionRequested;
   });
 
   Future<void> register(String name, String email, String password) => _run(
