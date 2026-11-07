@@ -16,6 +16,7 @@ import '../../application/track_providers.dart';
 import '../../domain/lesson_outcome.dart';
 import '../../domain/lesson_stage.dart';
 import '../widgets/stage_widgets.dart';
+import 'remote_lesson_pages.dart';
 
 /// The five-stage overview of a lesson plus the overall lesson status.
 ///
@@ -28,6 +29,9 @@ class LessonOverviewPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (ref.watch(contentModeProvider) == ContentMode.remote) {
+      return RemoteLessonOverviewPage(lessonId: lessonId);
+    }
     final lesson = ref.watch(lessonProvider(lessonId));
     return Scaffold(
       appBar: AppBar(
@@ -94,7 +98,7 @@ class _Body extends ConsumerWidget {
               },
             ),
           const SizedBox(height: AppSpacing.sm),
-          _OverallPanel(
+          OverallPanel(
             outcome: outcome,
             server: server,
             hasDemoScore: hasDemoScore,
@@ -106,8 +110,9 @@ class _Body extends ConsumerWidget {
   }
 }
 
-class _OverallPanel extends StatelessWidget {
-  const _OverallPanel({
+class OverallPanel extends StatelessWidget {
+  const OverallPanel({
+    super.key,
     required this.outcome,
     required this.server,
     required this.hasDemoScore,
@@ -136,7 +141,7 @@ class _OverallPanel extends StatelessWidget {
           Text(
             server == null
                 ? l10n.overallScoreNone
-                : '${server!.finalScore}/100'.isolateLtr,
+                : '${formatScore(server!.finalScore)}/100'.isolateLtr,
             key: const ValueKey('overall-score'),
             style: theme.textTheme.titleMedium,
           ),

@@ -25,6 +25,7 @@ class ProfilePage extends ConsumerWidget {
     final prefs = ref.watch(learningPreferencesProvider);
     final interface = AppLanguage.fromCode(context.languageCode);
     final isDemo = session == SessionStatus.demo;
+    final isAccount = session == SessionStatus.authenticated;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.profileTitle)),
@@ -52,6 +53,8 @@ class ProfilePage extends ConsumerWidget {
                           Text(
                             isDemo
                                 ? l10n.profileDemoName
+                                : isAccount
+                                ? l10n.profileAccountSubtitle
                                 : l10n.profileGuestName,
                             style: theme.textTheme.titleMedium,
                           ),
@@ -109,7 +112,16 @@ class ProfilePage extends ConsumerWidget {
               const SizedBox(height: AppSpacing.md),
               NoticeBanner(message: l10n.accountIntegrationPending),
               const SizedBox(height: AppSpacing.xl),
-              if (isDemo)
+              if (isAccount)
+                OutlinedButton(
+                  key: const ValueKey('sign-out'),
+                  onPressed: () async {
+                    await signOutOfAccount(ref);
+                    if (context.mounted) context.go(AppRoutes.login);
+                  },
+                  child: Text(l10n.signOut),
+                )
+              else if (isDemo)
                 OutlinedButton(
                   key: const ValueKey('exit-demo'),
                   onPressed: () {

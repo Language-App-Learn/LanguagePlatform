@@ -7,6 +7,7 @@ abstract final class AppRoutes {
   static const login = '/auth/login';
   static const register = '/auth/register';
   static const forgotPassword = '/auth/forgot-password';
+  static const confirmEmail = '/auth/confirm-email';
 
   // Alt gezinme sekmeleri
   static const home = '/home';

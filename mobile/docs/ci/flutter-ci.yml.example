@@ -1,0 +1,87 @@
+# TEMPLATE - not active. GitHub only runs workflows from the repository's
+# root `.github/workflows/`, which is outside `mobile/` (the Flutter agent
+# scope). To enable: copy to `.github/workflows/flutter-ci.yml` after owner
+# review. Nothing here deploys, publishes or pushes.
+#
+# Recommended required checks before merging into `Flutter`:
+#   * format + analyze + test (job "quality")
+#   * android-debug build (job "android")
+# Keep backend and mobile changes in separate PRs; path filters below stop
+# mobile CI from running on backend-only changes and vice versa.
+name: Flutter CI
+
+on:
+  pull_request:
+    paths:
+      - "mobile/**"
+      - ".github/workflows/flutter-ci.yml"
+  push:
+    branches: [Flutter]
+    paths:
+      - "mobile/**"
+
+# Least privilege: the workflow can only read the repository.
+permissions:
+  contents: read
+
+concurrency:
+  group: flutter-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: mobile
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      # Pin third-party actions to a full commit SHA before enabling.
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: dart format --output=none --set-exit-if-changed lib test
+      - run: flutter analyze
+      - run: flutter test --coverage
+      - name: Outdated / vulnerable dependency report (informational)
+        run: dart pub outdated || true
+      - name: No embedded secrets
+        run: |
+          ! grep -rnE "(api[_-]?key|secret|password)\s*[:=]\s*['\"][A-Za-z0-9/+_-]{12,}" lib \
+            || (echo "possible embedded secret" && exit 1)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: mobile/coverage/lcov.info
+
+  android:
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      # Known Kotlin 2.4.0 incremental-cache issue on some machines: keep the
+      # per-invocation workaround until the toolchain is updated.
+      - run: flutter build apk --debug -Pkotlin.incremental=false
+
+  # Signed release builds are intentionally NOT part of PR CI: the upload
+  # keystore must never be exposed to untrusted pull requests. Run releases
+  # from a protected environment/branch with secrets scoped to that
+  # environment, and write android/key.properties at job time only.

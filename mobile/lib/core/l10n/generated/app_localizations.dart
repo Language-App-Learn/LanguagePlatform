@@ -1785,6 +1785,408 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Practice recorded on this device (demo).'**
   String get practiceRecorded;
+
+  /// No description provided for @authInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Email or password is incorrect, or the account is not confirmed yet.'**
+  String get authInvalidCredentials;
+
+  /// No description provided for @registerAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration request sent. Check your email to confirm your account.'**
+  String get registerAccepted;
+
+  /// No description provided for @resetRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'If this address belongs to an account, reset instructions will be sent.'**
+  String get resetRequested;
+
+  /// No description provided for @signOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get signOut;
+
+  /// No description provided for @profileAccountSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in to your account'**
+  String get profileAccountSubtitle;
+
+  /// No description provided for @remoteSignInPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to see and save your progress.'**
+  String get remoteSignInPrompt;
+
+  /// No description provided for @remoteNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'The learning server is not configured in this build.'**
+  String get remoteNotConfigured;
+
+  /// No description provided for @remoteBeginLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Begin this lesson'**
+  String get remoteBeginLesson;
+
+  /// No description provided for @remoteNoCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'No Turkish-to-Arabic course is published yet.'**
+  String get remoteNoCourse;
+
+  /// No description provided for @stageAttempts.
+  ///
+  /// In en, this message translates to:
+  /// **'Attempts: {count}'**
+  String stageAttempts(int count);
+
+  /// No description provided for @stageWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight: {weight}%'**
+  String stageWeight(String weight);
+
+  /// No description provided for @remoteStageNoAssessment.
+  ///
+  /// In en, this message translates to:
+  /// **'No graded activity is published for this stage yet.'**
+  String get remoteStageNoAssessment;
+
+  /// No description provided for @remoteStageTextTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Stage text'**
+  String get remoteStageTextTitle;
+
+  /// No description provided for @startAssessment.
+  ///
+  /// In en, this message translates to:
+  /// **'Start graded activity'**
+  String get startAssessment;
+
+  /// No description provided for @submitAnswers.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit answers'**
+  String get submitAnswers;
+
+  /// No description provided for @officialResultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Official result'**
+  String get officialResultTitle;
+
+  /// No description provided for @officialResultScore.
+  ///
+  /// In en, this message translates to:
+  /// **'{score} of {max}'**
+  String officialResultScore(String score, String max);
+
+  /// No description provided for @attemptPassed.
+  ///
+  /// In en, this message translates to:
+  /// **'Passed'**
+  String get attemptPassed;
+
+  /// No description provided for @attemptNotPassed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not passed'**
+  String get attemptNotPassed;
+
+  /// No description provided for @nextLessonAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to the next lesson'**
+  String get nextLessonAction;
+
+  /// No description provided for @unsupportedQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'This question type is not supported in this version of the app.'**
+  String get unsupportedQuestion;
+
+  /// No description provided for @errorConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'This action isn\'t available right now. The stage may be locked, or the attempt limit may be reached.'**
+  String get errorConflict;
+
+  /// No description provided for @errorRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many requests. Please wait a moment and try again.'**
+  String get errorRateLimited;
+
+  /// No description provided for @errorTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'The file is too large.'**
+  String get errorTooLarge;
+
+  /// No description provided for @errorUnsupportedMedia.
+  ///
+  /// In en, this message translates to:
+  /// **'This file type is not supported.'**
+  String get errorUnsupportedMedia;
+
+  /// No description provided for @readingMaterialTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher-approved Arabic text'**
+  String get readingMaterialTitle;
+
+  /// No description provided for @readingMaterialEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'The reading text has not been published yet.'**
+  String get readingMaterialEmpty;
+
+  /// No description provided for @readingPdfDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download original PDF'**
+  String get readingPdfDownload;
+
+  /// No description provided for @readingPdfDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading…'**
+  String get readingPdfDownloading;
+
+  /// No description provided for @readingPdfReady.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF downloaded ({size})'**
+  String readingPdfReady(String size);
+
+  /// No description provided for @readingPdfHandoffUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This build cannot save or open PDF files yet.'**
+  String get readingPdfHandoffUnavailable;
+
+  /// No description provided for @readingLineLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Line {number}'**
+  String readingLineLabel(int number);
+
+  /// No description provided for @mediaAudioAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening audio is available.'**
+  String get mediaAudioAvailable;
+
+  /// No description provided for @mediaVideoAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher video: {title}'**
+  String mediaVideoAvailable(String title);
+
+  /// No description provided for @mediaPlaybackUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback is not enabled in this build yet.'**
+  String get mediaPlaybackUnavailable;
+
+  /// No description provided for @mediaNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No audio or video has been published for this stage.'**
+  String get mediaNone;
+
+  /// No description provided for @speakingStartAttempt.
+  ///
+  /// In en, this message translates to:
+  /// **'Start speaking attempt'**
+  String get speakingStartAttempt;
+
+  /// No description provided for @speakingWaitingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for evaluation'**
+  String get speakingWaitingTitle;
+
+  /// No description provided for @speakingWaitingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'An authorized evaluator scores your speaking. Your result appears here once it is recorded.'**
+  String get speakingWaitingBody;
+
+  /// No description provided for @speakingCheckResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Check result'**
+  String get speakingCheckResult;
+
+  /// No description provided for @speakingStillPending.
+  ///
+  /// In en, this message translates to:
+  /// **'No result yet.'**
+  String get speakingStillPending;
+
+  /// No description provided for @speakingAiUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'AI conversation practice is not available yet.'**
+  String get speakingAiUnavailable;
+
+  /// No description provided for @rqTypeAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer'**
+  String get rqTypeAnswer;
+
+  /// No description provided for @rqArabicHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type in Arabic'**
+  String get rqArabicHint;
+
+  /// No description provided for @rqWordBank.
+  ///
+  /// In en, this message translates to:
+  /// **'Available words'**
+  String get rqWordBank;
+
+  /// No description provided for @rqYourOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Your order'**
+  String get rqYourOrder;
+
+  /// No description provided for @rqUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get rqUndo;
+
+  /// No description provided for @rqReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get rqReset;
+
+  /// No description provided for @rqBlank.
+  ///
+  /// In en, this message translates to:
+  /// **'blank'**
+  String get rqBlank;
+
+  /// No description provided for @rqChooseWord.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the word for the blank'**
+  String get rqChooseWord;
+
+  /// No description provided for @rqNoQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'This activity has no questions yet.'**
+  String get rqNoQuestions;
+
+  /// No description provided for @attemptRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Your unfinished attempt was restored.'**
+  String get attemptRestored;
+
+  /// No description provided for @attemptSubmitUnsure.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t confirm the submission. Your answers are kept; try again.'**
+  String get attemptSubmitUnsure;
+
+  /// No description provided for @resendConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend confirmation email'**
+  String get resendConfirmation;
+
+  /// No description provided for @confirmationResent.
+  ///
+  /// In en, this message translates to:
+  /// **'If this address needs confirmation, a new email will be sent.'**
+  String get confirmationResent;
+
+  /// No description provided for @resetCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Code from the email'**
+  String get resetCodeLabel;
+
+  /// No description provided for @newPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get newPasswordLabel;
+
+  /// No description provided for @resetConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get resetConfirmAction;
+
+  /// No description provided for @resetDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Password changed. You can sign in now.'**
+  String get resetDone;
+
+  /// No description provided for @confirmEmailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirming your email'**
+  String get confirmEmailTitle;
+
+  /// No description provided for @confirmEmailDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Email confirmed. You can sign in now.'**
+  String get confirmEmailDone;
+
+  /// No description provided for @confirmEmailFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The confirmation link is invalid or expired.'**
+  String get confirmEmailFailed;
+
+  /// No description provided for @passwordPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Use at least 12 characters with upper and lower case letters, a digit and a symbol.'**
+  String get passwordPolicy;
+
+  /// No description provided for @authInvalidInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check the details you entered.'**
+  String get authInvalidInput;
+
+  /// No description provided for @attemptRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Result recorded. Your lesson result is updated on the lesson page.'**
+  String get attemptRecorded;
+
+  /// No description provided for @homeRemoteNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Your lessons and official results come from your account. Vocabulary, review and activity summaries will appear here when they are connected to it.'**
+  String get homeRemoteNotice;
+
+  /// No description provided for @localPracticeNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'This is practice data stored only on this device. It is not linked to your account and is not an official result.'**
+  String get localPracticeNotice;
 }
 
 class _AppLocalizationsDelegate

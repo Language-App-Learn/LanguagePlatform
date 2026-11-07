@@ -9,6 +9,7 @@ import '../../../../core/design_system/widgets/choice_group.dart';
 import '../../../../core/design_system/widgets/content_width.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
+import '../../../learning_track/presentation/widgets/local_practice_notice.dart';
 import '../../../language_selection/application/content_language.dart';
 import '../../../progress/application/progress_providers.dart';
 import '../../application/review_session.dart';
@@ -78,6 +79,17 @@ class _VocabularyPageState extends ConsumerState<VocabularyPage> {
         child: ContentWidth(
           child: CustomScrollView(
             slivers: [
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    0,
+                  ),
+                  child: LocalPracticeNotice(),
+                ),
+              ),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsetsDirectional.fromSTEB(

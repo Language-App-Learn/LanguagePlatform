@@ -17,26 +17,28 @@ import '../widgets/stage_widgets.dart';
 
 /// Dispatches to the purpose-built screen of one stage. Direct URL access to
 /// a stage that is locked or has no content shows an explanatory state.
-class StagePage extends ConsumerStatefulWidget {
-  const StagePage({super.key, required this.lessonId, required this.stage});
+class DemoStagePage extends ConsumerStatefulWidget {
+  const DemoStagePage({super.key, required this.lessonId, required this.stage});
 
   final String lessonId;
   final String stage;
 
   @override
-  ConsumerState<StagePage> createState() => _StagePageState();
+  ConsumerState<DemoStagePage> createState() => _StagePageState();
 }
 
-class _StagePageState extends ConsumerState<StagePage> {
+class _StagePageState extends ConsumerState<DemoStagePage> {
   LessonStage? get _stage => LessonStage.values.asNameMap()[widget.stage];
 
-  @override
-  void initState() {
-    super.initState();
-    // Mark the stage as started (never completes it).
+  bool _started = false;
+
+  /// Records "started" only AFTER the access check passed, once. A locked or
+  /// unavailable stage opened by URL must not write any progress.
+  void _markStartedOnce(LessonStage stage) {
+    if (_started) return;
+    _started = true;
     Future.microtask(() {
-      final stage = _stage;
-      if (!mounted || stage == null) return;
+      if (!mounted) return;
       ref.read(stageRecordsProvider.notifier).start(widget.lessonId, stage);
     });
   }
@@ -90,6 +92,7 @@ class _StagePageState extends ConsumerState<StagePage> {
             : null,
       );
     }
+    _markStartedOnce(stage);
     final body = switch (stage) {
       LessonStage.reading => ReadingStageBody(
         content: content!.reading!,

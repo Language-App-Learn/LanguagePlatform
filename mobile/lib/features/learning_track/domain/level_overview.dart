@@ -1,26 +1,33 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/l10n/localized_text.dart';
 import '../../courses/domain/course.dart';
 import '../../lessons/domain/lesson.dart';
 import 'learning_track.dart';
 
-/// One of the 20 lesson positions of a level. [lesson] is `null` while the
-/// position has no published lesson.
+/// One of the 20 lesson positions of a level. [lessonId] is `null` while the
+/// position has no published lesson. Demo positions also carry the demo
+/// [lesson]; server positions only carry the opaque server id and title.
 @immutable
 class LessonPosition {
-  const LessonPosition({
+  LessonPosition({
     required this.level,
     required this.number,
     this.lesson,
-  });
+    String? lessonId,
+    LocalizedText? title,
+  }) : lessonId = lessonId ?? lesson?.id,
+       title = title ?? lesson?.title;
 
   final CourseLevel level;
 
   /// 1..[lessonsPerLevel].
   final int number;
   final Lesson? lesson;
+  final String? lessonId;
+  final LocalizedText? title;
 
-  bool get isPublished => lesson != null;
+  bool get isPublished => lessonId != null;
 }
 
 /// Level card data: real counts only.

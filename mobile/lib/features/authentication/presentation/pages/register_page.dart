@@ -72,7 +72,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               PasswordField(
                 controller: _password,
                 label: l10n.passwordLabel,
-                validator: (v) => AuthValidators.password(v)?.message(l10n),
+                validator: (v) => AuthValidators.newPassword(v)?.message(l10n),
               ),
               const SizedBox(height: AppSpacing.lg),
               PasswordField(
@@ -94,6 +94,17 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           isLoading: action.isLoading,
           onPressed: _submit,
         ),
+        if (action.value == AuthOutcome.registrationAccepted ||
+            action.value == AuthOutcome.confirmationResent) ...[
+          const SizedBox(height: AppSpacing.md),
+          OutlinedButton(
+            key: const ValueKey('resend-confirmation'),
+            onPressed: () => ref
+                .read(authActionProvider.notifier)
+                .resendConfirmation(_email.text),
+            child: Text(l10n.resendConfirmation),
+          ),
+        ],
         const SizedBox(height: AppSpacing.md),
         Wrap(
           alignment: WrapAlignment.center,

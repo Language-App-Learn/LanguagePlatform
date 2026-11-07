@@ -1,8 +1,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The app talks to the LanguagePlatform API: release builds need this
+         (it used to exist only in the debug/profile manifests, so a release
+         build could not reach any server). No other permission is requested;
+         the microphone is NOT declared until voice features exist. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:label="musab_hoca_arapca"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules">
         <activity
             android:name=".MainActivity"
             android:exported="true"

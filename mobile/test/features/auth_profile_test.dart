@@ -115,8 +115,8 @@ void main() {
       WidgetTester tester, {
       String name = 'Ayşe',
       String email = 'a@b.co',
-      String password = 'password1',
-      String confirm = 'password1',
+      String password = 'Password1!abcd',
+      String confirm = 'Password1!abcd',
     }) async {
       await tester.enterText(_field('Name'), name);
       await tester.enterText(_field('Email'), email);
@@ -132,7 +132,7 @@ void main() {
     testWidgets('şifreler eşleşmezse uyarı', (tester) async {
       useScreen(tester, height: 1400);
       await pumpApp(tester, initialLocation: AppRoutes.register);
-      await fill(tester, confirm: 'different1');
+      await fill(tester, confirm: 'Different1!abcd');
       expect(find.text('Passwords do not match'), findsOneWidget);
       expect(_key('auth-status'), findsNothing);
     });
@@ -142,7 +142,9 @@ void main() {
       await pumpApp(tester, initialLocation: AppRoutes.register);
       await fill(tester, password: 'short', confirm: 'short');
       expect(
-        find.text('Password must be at least 8 characters'),
+        find.text(
+          'Use at least 12 characters with upper and lower case letters, a digit and a symbol.',
+        ),
         findsOneWidget,
       );
     });

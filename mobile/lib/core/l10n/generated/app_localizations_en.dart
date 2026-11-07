@@ -970,4 +970,238 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get practiceRecorded => 'Practice recorded on this device (demo).';
+
+  @override
+  String get authInvalidCredentials =>
+      'Email or password is incorrect, or the account is not confirmed yet.';
+
+  @override
+  String get registerAccepted =>
+      'Registration request sent. Check your email to confirm your account.';
+
+  @override
+  String get resetRequested =>
+      'If this address belongs to an account, reset instructions will be sent.';
+
+  @override
+  String get signOut => 'Sign out';
+
+  @override
+  String get profileAccountSubtitle => 'Signed in to your account';
+
+  @override
+  String get remoteSignInPrompt => 'Sign in to see and save your progress.';
+
+  @override
+  String get remoteNotConfigured =>
+      'The learning server is not configured in this build.';
+
+  @override
+  String get remoteBeginLesson => 'Begin this lesson';
+
+  @override
+  String get remoteNoCourse => 'No Turkish-to-Arabic course is published yet.';
+
+  @override
+  String stageAttempts(int count) {
+    return 'Attempts: $count';
+  }
+
+  @override
+  String stageWeight(String weight) {
+    return 'Weight: $weight%';
+  }
+
+  @override
+  String get remoteStageNoAssessment =>
+      'No graded activity is published for this stage yet.';
+
+  @override
+  String get remoteStageTextTitle => 'Stage text';
+
+  @override
+  String get startAssessment => 'Start graded activity';
+
+  @override
+  String get submitAnswers => 'Submit answers';
+
+  @override
+  String get officialResultTitle => 'Official result';
+
+  @override
+  String officialResultScore(String score, String max) {
+    return '$score of $max';
+  }
+
+  @override
+  String get attemptPassed => 'Passed';
+
+  @override
+  String get attemptNotPassed => 'Not passed';
+
+  @override
+  String get nextLessonAction => 'Go to the next lesson';
+
+  @override
+  String get unsupportedQuestion =>
+      'This question type is not supported in this version of the app.';
+
+  @override
+  String get errorConflict =>
+      'This action isn\'t available right now. The stage may be locked, or the attempt limit may be reached.';
+
+  @override
+  String get errorRateLimited =>
+      'Too many requests. Please wait a moment and try again.';
+
+  @override
+  String get errorTooLarge => 'The file is too large.';
+
+  @override
+  String get errorUnsupportedMedia => 'This file type is not supported.';
+
+  @override
+  String get readingMaterialTitle => 'Teacher-approved Arabic text';
+
+  @override
+  String get readingMaterialEmpty =>
+      'The reading text has not been published yet.';
+
+  @override
+  String get readingPdfDownload => 'Download original PDF';
+
+  @override
+  String get readingPdfDownloading => 'Downloading…';
+
+  @override
+  String readingPdfReady(String size) {
+    return 'PDF downloaded ($size)';
+  }
+
+  @override
+  String get readingPdfHandoffUnavailable =>
+      'This build cannot save or open PDF files yet.';
+
+  @override
+  String readingLineLabel(int number) {
+    return 'Line $number';
+  }
+
+  @override
+  String get mediaAudioAvailable => 'Listening audio is available.';
+
+  @override
+  String mediaVideoAvailable(String title) {
+    return 'Teacher video: $title';
+  }
+
+  @override
+  String get mediaPlaybackUnavailable =>
+      'Playback is not enabled in this build yet.';
+
+  @override
+  String get mediaNone =>
+      'No audio or video has been published for this stage.';
+
+  @override
+  String get speakingStartAttempt => 'Start speaking attempt';
+
+  @override
+  String get speakingWaitingTitle => 'Waiting for evaluation';
+
+  @override
+  String get speakingWaitingBody =>
+      'An authorized evaluator scores your speaking. Your result appears here once it is recorded.';
+
+  @override
+  String get speakingCheckResult => 'Check result';
+
+  @override
+  String get speakingStillPending => 'No result yet.';
+
+  @override
+  String get speakingAiUnavailable =>
+      'AI conversation practice is not available yet.';
+
+  @override
+  String get rqTypeAnswer => 'Your answer';
+
+  @override
+  String get rqArabicHint => 'Type in Arabic';
+
+  @override
+  String get rqWordBank => 'Available words';
+
+  @override
+  String get rqYourOrder => 'Your order';
+
+  @override
+  String get rqUndo => 'Undo';
+
+  @override
+  String get rqReset => 'Reset';
+
+  @override
+  String get rqBlank => 'blank';
+
+  @override
+  String get rqChooseWord => 'Choose the word for the blank';
+
+  @override
+  String get rqNoQuestions => 'This activity has no questions yet.';
+
+  @override
+  String get attemptRestored => 'Your unfinished attempt was restored.';
+
+  @override
+  String get attemptSubmitUnsure =>
+      'We couldn\'t confirm the submission. Your answers are kept; try again.';
+
+  @override
+  String get resendConfirmation => 'Resend confirmation email';
+
+  @override
+  String get confirmationResent =>
+      'If this address needs confirmation, a new email will be sent.';
+
+  @override
+  String get resetCodeLabel => 'Code from the email';
+
+  @override
+  String get newPasswordLabel => 'New password';
+
+  @override
+  String get resetConfirmAction => 'Change password';
+
+  @override
+  String get resetDone => 'Password changed. You can sign in now.';
+
+  @override
+  String get confirmEmailTitle => 'Confirming your email';
+
+  @override
+  String get confirmEmailDone => 'Email confirmed. You can sign in now.';
+
+  @override
+  String get confirmEmailFailed =>
+      'The confirmation link is invalid or expired.';
+
+  @override
+  String get passwordPolicy =>
+      'Use at least 12 characters with upper and lower case letters, a digit and a symbol.';
+
+  @override
+  String get authInvalidInput => 'Please check the details you entered.';
+
+  @override
+  String get attemptRecorded =>
+      'Result recorded. Your lesson result is updated on the lesson page.';
+
+  @override
+  String get homeRemoteNotice =>
+      'Your lessons and official results come from your account. Vocabulary, review and activity summaries will appear here when they are connected to it.';
+
+  @override
+  String get localPracticeNotice =>
+      'This is practice data stored only on this device. It is not linked to your account and is not an official result.';
 }

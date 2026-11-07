@@ -1,6 +1,6 @@
 # API integration readiness (ASP.NET Core backend)
 
-No endpoint is assumed to exist. `core/network/api_client.dart` only defines the transport boundary (`ApiClient`, `ApiRequest`, `ApiResponse.unwrap`, `failureForStatus`). Dio will be added together with the first confirmed contract.
+Status (V6): the documented contracts (`FLUTTER_BACKEND_CONTRACT.md`, `FIVE_STAGE_LESSON_CONTRACT.md` on `origin/Backend-Database`) are integrated for catalog, auth, lessons, learner progress and objective assessments. Only documented routes are used; none is assumed. Transport is `dart:io` (`HttpApiClient`), so no HTTP package was added. The checklist below is the older pre-integration readiness table; the V6 section at the end is current.
 
 ## Failure model (`core/errors/app_failure.dart`)
 
@@ -35,10 +35,46 @@ Legend: LOCAL = model exists in the app; BOUNDARY = proposed client boundary; OP
 
 The backend project present in this workspace (`backend/`, branch `Flutter`) contains only the template route `GET /weatherforecast`; none of the catalog routes (`/api/v1/catalog/languages|learning-paths|programs|courses`) mentioned by the backend team could be verified here, so no API adapter or DTO was written. To implement the first adapter, the mobile team needs from the backend branch: the OpenAPI/route list, JSON field names and types for languages, learning paths, programs and courses, the id type, pagination and error body format, and how a course relates to lessons. The stable language identifiers used on the client are ISO 639-1 codes (`en`, `tr`, `ar`).
 
-## Five-stage lesson track (V5)
+## Real backend integration (V6)
 
-Existing backend contract (`FLUTTER_BACKEND_CONTRACT.md` on `origin/Backend-Database`, read-only): catalog (languages, learning paths, programs, courses), published lesson outline/read, auth (register/login/refresh/logout/reset), preferences, enrollment, lesson start, assessment attempts + result, progress, vocabulary + favorites. The five-stage contract (`FIVE_STAGE_LESSON_CONTRACT.md`) is NOT published yet.
+Layers (under `mobile/lib`):
+- `core/config/api_config.dart`: `API_BASE_URL` via `--dart-define`; https, or http only for local / private hosts. Unset means demo mode only.
+- `core/network/`: `ApiClient` boundary (`requiresAuth`, `headers`, `ensureSuccess`), `HttpApiClient`, `AuthenticatedApiClient` (bearer, single-flight refresh `POST /api/v1/auth/refresh`, one retry, session-expiry callback), `TokenStore` (in memory; secure storage pending approval).
+- `features/authentication/data/remote_auth_repository.dart`: `/api/v1/auth/{login,register,password-reset/request,logout}`.
+- `features/learning_track/data/`: `five_stage_dto.dart` (strict on ids, tolerant on optional fields, unknown CEFR codes skipped, unknown stage status becomes locked) and `ApiFiveStageRepository`:
 
-Client side already prepared: `ServerLessonResult` (final score, server pass flag, stage scores, optional weights) and `serverLessonResultProvider` are the only entry points for official results; the UI never recomputes pass/fail. Demo stage content (`demoStageContent`, one lesson) and local practice scores (`lp.stages`) are clearly labeled and never uploaded.
+| Purpose | Route |
+|---|---|
+| Course | `GET /api/v1/catalog/courses` (optional `locale`) |
+| Levels / slots | `GET /api/v1/courses/{id}/curriculum/levels`, `.../levels/{levelId}/slots` |
+| Lesson | `GET /api/v1/courses/{id}/lessons/{lessonId}` |
+| Passed lessons | `GET /api/v1/me/courses/{id}/lessons/progress?completedOnly=true` (paged) |
+| Enrol / start | `PUT /api/v1/me/courses/{id}/enrollment`, `PUT .../lessons/{lessonId}/start` |
+| Stage progress + official result | `GET /api/v1/me/courses/{id}/lessons/{lessonId}/curriculum-progress` |
+| Attempt start / submit | `POST .../lessons/{lessonId}/assessments/{assessmentId}/attempts`, `.../attempts/{attemptId}/submit` (idempotency key on start) |
 
-Needed from the five-stage contract: stage content DTOs (reading segments with stable ids + audio references, questions without answer keys, dialogue, listening blanks + word bank, writing items, translation items + accepted alternatives), attempt/submit endpoints per stage, final result shape (score, pass flag, weights, retry/next-lesson eligibility), media/PDF download URL lifetime, TTS/STT/AI provider availability signalling.
+Learner routes send `requiresAuth: true`. `contentModeProvider` is remote only when the API is configured and the session is not demo; demo ids and practice scores are never sent and never shown for real accounts.
+
+Rules kept: pass decision, final score, per-stage scores and weights come from the server; the client never recomputes pass/fail and never invents weights; questions carry no answer keys.
+
+Open items: secure token storage, media (audio / PDF / video), server content for listening / writing / translation / speaking, display name at registration, live-server smoke test (see PROJECT_STATUS.md).
+
+## V7 additions (2026-11-07)
+
+Additional documented routes now used by `ApiFiveStageRepository` / `RemoteAuthRepository`:
+
+| Purpose | Route |
+|---|---|
+| Reading lines | `GET /api/v1/me/courses/{id}/lessons/{lessonId}/reading-material` (404 = none) |
+| Original PDF | `GET .../reading-material/original` (binary, `Content-Type: application/pdf` enforced, `%PDF-` checked, 10 MiB cap) |
+| Stage media metadata | `GET .../stages/{stageId}/media` (https URLs only) |
+| Attempt result | `GET /api/v1/me/assessment-attempts/{attemptId}/result` (404 = pending) |
+| Account | `POST /auth/confirm-email`, `/auth/confirm-email/resend`, `/auth/password-reset/confirm`, `GET /api/v1/me` |
+
+Transport rules (`HttpApiClient`): redirects are never followed; only GET is retried (network/timeout/502/503/504, 2 retries); 409 → `ConflictFailure`, 413 → `PayloadTooLargeFailure`, 415 → `UnsupportedMediaFailure`, 429 → `RateLimitedFailure(retryAfter)`; `X-Correlation-Id` on every request; ProblemDetails is parsed for diagnostics but never shown.
+
+Result semantics: the objective result's `passed` uses a zero threshold, so the app shows only score/maximum for an attempt. The lesson pass/fail, final score, stage scores, attempts and `nextLessonId` come from `curriculum-progress` and are displayed truncated to two decimals (like the server) - never rounded.
+
+Attempt lifecycle: `PendingAttemptStore` (`lp.attempts`, random 128-bit keys, no account data) keeps the idempotency key from start until submit succeeds; ambiguous failures and app restarts reuse it; a retake renews it; definitive rejections (400/401/403/404/409) release it; every identity change clears it.
+
+Open questions for the backend are in `docs/api-feedback/BACKEND_FEEDBACK.md`.

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/assessment/presentation/pages/quiz_page.dart';
+import '../../features/authentication/presentation/pages/confirm_email_page.dart';
 import '../../features/authentication/presentation/pages/forgot_password_page.dart';
 import '../../features/authentication/presentation/pages/login_page.dart';
 import '../../features/authentication/presentation/pages/register_page.dart';
@@ -13,7 +14,7 @@ import '../../features/language_selection/presentation/pages/language_selection_
 import '../../features/learning_track/presentation/pages/lesson_overview_page.dart';
 import '../../features/learning_track/presentation/pages/level_lessons_page.dart';
 import '../../features/learning_track/presentation/pages/level_selection_page.dart';
-import '../../features/learning_track/presentation/pages/stage_page.dart';
+import '../../features/learning_track/presentation/pages/stage_router_page.dart';
 import '../../features/lessons/presentation/pages/lesson_page.dart';
 import '../../features/onboarding/presentation/pages/onboarding_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
@@ -71,6 +72,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.forgotPassword,
         builder: (context, state) => const ForgotPasswordPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.confirmEmail,
+        builder: (context, state) => ConfirmEmailPage(
+          userId: state.uri.queryParameters['userId'],
+          code: state.uri.queryParameters['code'],
+        ),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => MainShell(navigationShell: shell),

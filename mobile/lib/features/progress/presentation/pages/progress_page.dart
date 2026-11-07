@@ -13,6 +13,7 @@ import '../../../../core/design_system/widgets/section_header.dart';
 import '../../../../core/design_system/widgets/stat_tile.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
+import '../../../learning_track/presentation/widgets/local_practice_notice.dart';
 import '../../../../core/utils/bidi.dart';
 import '../../../courses/application/course_providers.dart';
 import '../../application/progress_providers.dart';
@@ -42,6 +43,7 @@ class ProgressPage extends ConsumerWidget {
           child: ListView(
             padding: AppSpacing.page,
             children: [
+              const LocalPracticeNotice(),
               NoticeBanner(message: l10n.progressDemoNotice),
               const SizedBox(height: AppSpacing.lg),
               Row(

@@ -969,4 +969,239 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get practiceRecorded => 'Alıştırma bu cihazda kaydedildi (demo).';
+
+  @override
+  String get authInvalidCredentials =>
+      'E-posta veya şifre hatalı ya da hesap henüz onaylanmamış.';
+
+  @override
+  String get registerAccepted =>
+      'Kayıt isteği gönderildi. Hesabını onaylamak için e-postanı kontrol et.';
+
+  @override
+  String get resetRequested =>
+      'Bu adres bir hesaba aitse sıfırlama yönergeleri gönderilecek.';
+
+  @override
+  String get signOut => 'Çıkış yap';
+
+  @override
+  String get profileAccountSubtitle => 'Hesabına giriş yapıldı';
+
+  @override
+  String get remoteSignInPrompt =>
+      'İlerlemeni görmek ve kaydetmek için giriş yap.';
+
+  @override
+  String get remoteNotConfigured =>
+      'Bu sürümde öğrenme sunucusu yapılandırılmamış.';
+
+  @override
+  String get remoteBeginLesson => 'Bu derse başla';
+
+  @override
+  String get remoteNoCourse =>
+      'Henüz yayınlanmış bir Türkçeden Arapçaya kurs yok.';
+
+  @override
+  String stageAttempts(int count) {
+    return 'Deneme: $count';
+  }
+
+  @override
+  String stageWeight(String weight) {
+    return 'Ağırlık: %$weight';
+  }
+
+  @override
+  String get remoteStageNoAssessment =>
+      'Bu aşama için henüz puanlanan bir etkinlik yayınlanmadı.';
+
+  @override
+  String get remoteStageTextTitle => 'Aşama metni';
+
+  @override
+  String get startAssessment => 'Puanlı etkinliği başlat';
+
+  @override
+  String get submitAnswers => 'Cevapları gönder';
+
+  @override
+  String get officialResultTitle => 'Resmî sonuç';
+
+  @override
+  String officialResultScore(String score, String max) {
+    return '$max üzerinden $score';
+  }
+
+  @override
+  String get attemptPassed => 'Geçti';
+
+  @override
+  String get attemptNotPassed => 'Geçemedi';
+
+  @override
+  String get nextLessonAction => 'Sonraki derse git';
+
+  @override
+  String get unsupportedQuestion =>
+      'Bu soru türü uygulamanın bu sürümünde desteklenmiyor.';
+
+  @override
+  String get errorConflict =>
+      'Bu işlem şu anda yapılamıyor. Aşama kilitli olabilir veya deneme hakkı dolmuş olabilir.';
+
+  @override
+  String get errorRateLimited =>
+      'Çok fazla istek gönderildi. Lütfen biraz bekleyip tekrar deneyin.';
+
+  @override
+  String get errorTooLarge => 'Dosya çok büyük.';
+
+  @override
+  String get errorUnsupportedMedia => 'Bu dosya türü desteklenmiyor.';
+
+  @override
+  String get readingMaterialTitle => 'Öğretmen onaylı Arapça metin';
+
+  @override
+  String get readingMaterialEmpty => 'Okuma metni henüz yayınlanmadı.';
+
+  @override
+  String get readingPdfDownload => 'Orijinal PDF\'i indir';
+
+  @override
+  String get readingPdfDownloading => 'İndiriliyor…';
+
+  @override
+  String readingPdfReady(String size) {
+    return 'PDF indirildi ($size)';
+  }
+
+  @override
+  String get readingPdfHandoffUnavailable =>
+      'Bu sürüm PDF dosyalarını henüz kaydedemiyor veya açamıyor.';
+
+  @override
+  String readingLineLabel(int number) {
+    return 'Satır $number';
+  }
+
+  @override
+  String get mediaAudioAvailable => 'Dinleme sesi hazır.';
+
+  @override
+  String mediaVideoAvailable(String title) {
+    return 'Öğretmen videosu: $title';
+  }
+
+  @override
+  String get mediaPlaybackUnavailable =>
+      'Oynatma bu sürümde henüz etkin değil.';
+
+  @override
+  String get mediaNone => 'Bu aşama için ses veya video yayınlanmadı.';
+
+  @override
+  String get speakingStartAttempt => 'Konuşma denemesini başlat';
+
+  @override
+  String get speakingWaitingTitle => 'Değerlendirme bekleniyor';
+
+  @override
+  String get speakingWaitingBody =>
+      'Konuşmanız yetkili bir değerlendirmeci tarafından puanlanır. Sonuç kaydedilince burada görünür.';
+
+  @override
+  String get speakingCheckResult => 'Sonucu kontrol et';
+
+  @override
+  String get speakingStillPending => 'Henüz sonuç yok.';
+
+  @override
+  String get speakingAiUnavailable =>
+      'Yapay zekâ ile konuşma pratiği henüz kullanılamıyor.';
+
+  @override
+  String get rqTypeAnswer => 'Cevabınız';
+
+  @override
+  String get rqArabicHint => 'Arapça yazın';
+
+  @override
+  String get rqWordBank => 'Kullanılabilir kelimeler';
+
+  @override
+  String get rqYourOrder => 'Sıralamanız';
+
+  @override
+  String get rqUndo => 'Geri al';
+
+  @override
+  String get rqReset => 'Sıfırla';
+
+  @override
+  String get rqBlank => 'boşluk';
+
+  @override
+  String get rqChooseWord => 'Boşluğa uygun kelimeyi seçin';
+
+  @override
+  String get rqNoQuestions => 'Bu etkinlikte henüz soru yok.';
+
+  @override
+  String get attemptRestored => 'Yarım kalan denemeniz geri yüklendi.';
+
+  @override
+  String get attemptSubmitUnsure =>
+      'Gönderim doğrulanamadı. Cevaplarınız saklandı, tekrar deneyin.';
+
+  @override
+  String get resendConfirmation => 'Onay e-postasını yeniden gönder';
+
+  @override
+  String get confirmationResent =>
+      'Bu adres onay bekliyorsa yeni bir e-posta gönderilecek.';
+
+  @override
+  String get resetCodeLabel => 'E-postadaki kod';
+
+  @override
+  String get newPasswordLabel => 'Yeni parola';
+
+  @override
+  String get resetConfirmAction => 'Parolayı değiştir';
+
+  @override
+  String get resetDone => 'Parola değiştirildi. Şimdi giriş yapabilirsiniz.';
+
+  @override
+  String get confirmEmailTitle => 'E-postanız onaylanıyor';
+
+  @override
+  String get confirmEmailDone =>
+      'E-posta onaylandı. Şimdi giriş yapabilirsiniz.';
+
+  @override
+  String get confirmEmailFailed =>
+      'Onay bağlantısı geçersiz veya süresi dolmuş.';
+
+  @override
+  String get passwordPolicy =>
+      'En az 12 karakter; büyük ve küçük harf, rakam ve sembol kullanın.';
+
+  @override
+  String get authInvalidInput => 'Lütfen girdiğiniz bilgileri kontrol edin.';
+
+  @override
+  String get attemptRecorded =>
+      'Sonuç kaydedildi. Ders sonucu ders sayfasında güncellenir.';
+
+  @override
+  String get homeRemoteNotice =>
+      'Dersleriniz ve resmî sonuçlarınız hesabınızdan gelir. Kelime, tekrar ve etkinlik özetleri hesabınıza bağlandığında burada görünecek.';
+
+  @override
+  String get localPracticeNotice =>
+      'Bu veriler yalnızca bu cihazda saklanan alıştırma verileridir. Hesabınıza bağlı değildir ve resmî sonuç sayılmaz.';
 }

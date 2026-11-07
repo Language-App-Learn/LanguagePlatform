@@ -43,7 +43,7 @@ class LevelLessonsPage extends ConsumerWidget {
       body: SafeArea(
         child: AsyncValueView<List<LessonPosition>>(
           value: ref.watch(levelPositionsProvider(level)),
-          onRetry: () => ref.invalidate(levelPositionsProvider(level)),
+          onRetry: () => reloadTrackCatalog(ref),
           data: (positions) => ContentWidth(
             // Lazy list of the fixed 20 positions.
             child: ListView.separated(
@@ -69,19 +69,20 @@ class _PositionTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final lesson = position.lesson;
-    final records = lesson == null
+    final lessonId = position.lessonId;
+    final demo = ref.watch(contentModeProvider) == ContentMode.demo;
+    final records = lessonId == null
         ? const <LessonStage, StageRecord>{}
-        : ref.watch(stageRecordsProvider.select((m) => m[lesson.id])) ??
+        : ref.watch(stageRecordsProvider.select((m) => m[lessonId])) ??
               const {};
     final done = records.values.where((r) => r.completed).length;
     final allDone = done == LessonStage.values.length;
 
     return AppCard(
       key: ValueKey('position:${position.number}'),
-      onTap: lesson == null
+      onTap: lessonId == null
           ? null
-          : () => context.push(AppRoutes.stagesOf(lesson.id)),
+          : () => context.push(AppRoutes.stagesOf(lessonId)),
       child: Row(
         children: [
           CircleAvatar(
@@ -98,20 +99,20 @@ class _PositionTile extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  lesson == null
+                  lessonId == null
                       ? l10n.lessonNumber(position.number)
-                      : lesson.title.resolve(context.languageCode),
+                      : position.title!.resolve(context.languageCode),
                   style: theme.textTheme.titleSmall,
                 ),
                 Text(
-                  lesson == null
+                  lessonId == null
                       ? l10n.lessonInPreparation
                       : "$done/${LessonStage.values.length}".isolateLtr,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
-                if (lesson != null)
+                if (lessonId != null && demo)
                   const Padding(
                     padding: EdgeInsetsDirectional.only(top: AppSpacing.xs),
                     child: DemoBadge(),
@@ -119,7 +120,7 @@ class _PositionTile extends ConsumerWidget {
               ],
             ),
           ),
-          if (lesson != null) const Icon(Icons.chevron_right),
+          if (lessonId != null) const Icon(Icons.chevron_right),
         ],
       ),
     );

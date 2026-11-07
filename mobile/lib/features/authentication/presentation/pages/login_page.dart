@@ -47,6 +47,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final action = ref.watch(authActionProvider);
+    // A real sign-in (tokens received) continues to the app.
+    ref.listen(authActionProvider, (previous, next) {
+      if (next.value == AuthOutcome.signedIn) context.go(AppRoutes.home);
+    });
 
     return AuthScaffold(
       title: l10n.loginTitle,

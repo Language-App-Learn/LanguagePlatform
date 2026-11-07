@@ -8,7 +8,9 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../../courses/application/course_providers.dart';
 import '../../../courses/presentation/widgets/course_card.dart';
 import '../../application/catalog_filter.dart';
+import '../../../learning_track/application/track_providers.dart';
 import '../widgets/catalog_filters.dart';
+import '../widgets/remote_catalog_view.dart';
 
 /// Kurs kataloğu: arama, dil ve seviye filtreleri, kurs kartları.
 class CatalogPage extends ConsumerWidget {
@@ -17,6 +19,12 @@ class CatalogPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    if (ref.watch(contentModeProvider) == ContentMode.remote) {
+      return Scaffold(
+        appBar: AppBar(title: Text(l10n.coursesTitle)),
+        body: const SafeArea(child: ContentWidth(child: RemoteCatalogView())),
+      );
+    }
     final courses = ref.watch(filteredCoursesProvider);
 
     return Scaffold(

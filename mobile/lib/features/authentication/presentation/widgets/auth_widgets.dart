@@ -6,6 +6,9 @@ import '../../../../core/design_system/widgets/brand_mark.dart';
 import '../../../../core/design_system/widgets/content_width.dart';
 import '../../../../core/design_system/widgets/notice_banner.dart';
 import '../../../../core/errors/app_exceptions.dart';
+import '../../../../core/errors/app_failure.dart';
+import '../../../../core/design_system/widgets/state_views.dart';
+import '../../application/auth_providers.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../domain/auth_validators.dart';
@@ -68,6 +71,7 @@ extension AuthFieldErrorText on AuthFieldError {
   String message(AppLocalizations l10n) => switch (this) {
     AuthFieldError.required => l10n.fieldRequired,
     AuthFieldError.invalidEmail => l10n.invalidEmail,
+    AuthFieldError.passwordPolicy => l10n.passwordPolicy,
     AuthFieldError.passwordTooShort => l10n.passwordTooShort(
       AuthValidators.minPasswordLength,
     ),
@@ -151,29 +155,57 @@ class _PasswordFieldState extends State<PasswordField> {
   }
 }
 
-/// Backend yokken ya da hata olduğunda gösterilen, dürüst durum mesajı.
+/// Honest status of the last auth request: errors by failure kind (never raw
+/// server text) and the generic "request accepted" notices.
 class AuthStatusBanner extends StatelessWidget {
   const AuthStatusBanner({super.key, required this.action});
 
-  final AsyncValue<void> action;
+  final AsyncValue<AuthOutcome?> action;
 
   @override
   Widget build(BuildContext context) {
-    final error = action.error;
-    if (error == null) return const SizedBox.shrink();
     final l10n = context.l10n;
+    final error = action.error;
+    final (String message, NoticeTone tone)? content;
+    if (error != null) {
+      final failure = failureOf(error);
+      content = (
+        error is ServiceUnavailableException
+            ? l10n.authUnavailable
+            : failure is UnauthorizedFailure
+            ? l10n.authInvalidCredentials
+            : failure is ValidationFailure
+            ? l10n.authInvalidInput
+            : failure.message(l10n),
+        error is ServiceUnavailableException
+            ? NoticeTone.warning
+            : NoticeTone.info,
+      );
+    } else {
+      content = switch (action.value) {
+        AuthOutcome.registrationAccepted => (
+          l10n.registerAccepted,
+          NoticeTone.info,
+        ),
+        AuthOutcome.resetRequested => (l10n.resetRequested, NoticeTone.info),
+        AuthOutcome.confirmationResent => (
+          l10n.confirmationResent,
+          NoticeTone.info,
+        ),
+        AuthOutcome.passwordChanged => (l10n.resetDone, NoticeTone.info),
+        AuthOutcome.emailConfirmed => (l10n.confirmEmailDone, NoticeTone.info),
+        _ => null,
+      };
+    }
+    if (content == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsetsDirectional.only(bottom: AppSpacing.lg),
       child: Semantics(
         liveRegion: true,
         child: NoticeBanner(
           key: const ValueKey('auth-status'),
-          tone: error is ServiceUnavailableException
-              ? NoticeTone.warning
-              : NoticeTone.info,
-          message: error is ServiceUnavailableException
-              ? l10n.authUnavailable
-              : l10n.errorGeneric,
+          tone: content.$2,
+          message: content.$1,
         ),
       ),
     );

@@ -978,4 +978,236 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get practiceRecorded => 'تم حفظ التدريب على هذا الجهاز (تجريبي).';
+
+  @override
+  String get authInvalidCredentials =>
+      'البريد الإلكتروني أو كلمة المرور غير صحيحة، أو لم يتم تأكيد الحساب بعد.';
+
+  @override
+  String get registerAccepted =>
+      'تم إرسال طلب التسجيل. تحقق من بريدك الإلكتروني لتأكيد حسابك.';
+
+  @override
+  String get resetRequested =>
+      'إذا كان هذا العنوان يخص حسابًا فسيتم إرسال تعليمات إعادة التعيين.';
+
+  @override
+  String get signOut => 'تسجيل الخروج';
+
+  @override
+  String get profileAccountSubtitle => 'تم تسجيل الدخول إلى حسابك';
+
+  @override
+  String get remoteSignInPrompt => 'سجّل الدخول لعرض تقدّمك وحفظه.';
+
+  @override
+  String get remoteNotConfigured => 'خادم التعلّم غير مُعدّ في هذه النسخة.';
+
+  @override
+  String get remoteBeginLesson => 'ابدأ هذا الدرس';
+
+  @override
+  String get remoteNoCourse =>
+      'لا توجد دورة منشورة من التركية إلى العربية بعد.';
+
+  @override
+  String stageAttempts(int count) {
+    return 'المحاولات: $count';
+  }
+
+  @override
+  String stageWeight(String weight) {
+    return 'الوزن: $weight%';
+  }
+
+  @override
+  String get remoteStageNoAssessment =>
+      'لا يوجد نشاط مُقيَّم منشور لهذه المرحلة بعد.';
+
+  @override
+  String get remoteStageTextTitle => 'نص المرحلة';
+
+  @override
+  String get startAssessment => 'ابدأ النشاط المُقيَّم';
+
+  @override
+  String get submitAnswers => 'إرسال الإجابات';
+
+  @override
+  String get officialResultTitle => 'النتيجة الرسمية';
+
+  @override
+  String officialResultScore(String score, String max) {
+    return '$score من $max';
+  }
+
+  @override
+  String get attemptPassed => 'ناجح';
+
+  @override
+  String get attemptNotPassed => 'لم تنجح';
+
+  @override
+  String get nextLessonAction => 'انتقل إلى الدرس التالي';
+
+  @override
+  String get unsupportedQuestion =>
+      'نوع هذا السؤال غير مدعوم في هذا الإصدار من التطبيق.';
+
+  @override
+  String get errorConflict =>
+      'هذا الإجراء غير متاح الآن. قد تكون المرحلة مقفلة أو قد تم استنفاد عدد المحاولات.';
+
+  @override
+  String get errorRateLimited =>
+      'تم إرسال طلبات كثيرة. يرجى الانتظار قليلًا ثم المحاولة مرة أخرى.';
+
+  @override
+  String get errorTooLarge => 'الملف كبير جدًا.';
+
+  @override
+  String get errorUnsupportedMedia => 'نوع الملف هذا غير مدعوم.';
+
+  @override
+  String get readingMaterialTitle => 'النص العربي المعتمد من المعلم';
+
+  @override
+  String get readingMaterialEmpty => 'لم يتم نشر نص القراءة بعد.';
+
+  @override
+  String get readingPdfDownload => 'تنزيل ملف PDF الأصلي';
+
+  @override
+  String get readingPdfDownloading => 'جارٍ التنزيل…';
+
+  @override
+  String readingPdfReady(String size) {
+    return 'تم تنزيل الملف ($size)';
+  }
+
+  @override
+  String get readingPdfHandoffUnavailable =>
+      'لا يمكن لهذا الإصدار حفظ ملفات PDF أو فتحها بعد.';
+
+  @override
+  String readingLineLabel(int number) {
+    return 'السطر $number';
+  }
+
+  @override
+  String get mediaAudioAvailable => 'الملف الصوتي للاستماع متاح.';
+
+  @override
+  String mediaVideoAvailable(String title) {
+    return 'فيديو المعلم: $title';
+  }
+
+  @override
+  String get mediaPlaybackUnavailable =>
+      'التشغيل غير مفعّل في هذا الإصدار بعد.';
+
+  @override
+  String get mediaNone => 'لم يتم نشر صوت أو فيديو لهذه المرحلة.';
+
+  @override
+  String get speakingStartAttempt => 'ابدأ محاولة التحدث';
+
+  @override
+  String get speakingWaitingTitle => 'بانتظار التقييم';
+
+  @override
+  String get speakingWaitingBody =>
+      'يقيّم مقيّم معتمد حديثك. ستظهر النتيجة هنا بمجرد تسجيلها.';
+
+  @override
+  String get speakingCheckResult => 'تحقق من النتيجة';
+
+  @override
+  String get speakingStillPending => 'لا توجد نتيجة بعد.';
+
+  @override
+  String get speakingAiUnavailable =>
+      'ممارسة المحادثة بالذكاء الاصطناعي غير متاحة بعد.';
+
+  @override
+  String get rqTypeAnswer => 'إجابتك';
+
+  @override
+  String get rqArabicHint => 'اكتب بالعربية';
+
+  @override
+  String get rqWordBank => 'الكلمات المتاحة';
+
+  @override
+  String get rqYourOrder => 'ترتيبك';
+
+  @override
+  String get rqUndo => 'تراجع';
+
+  @override
+  String get rqReset => 'إعادة ضبط';
+
+  @override
+  String get rqBlank => 'فراغ';
+
+  @override
+  String get rqChooseWord => 'اختر الكلمة المناسبة للفراغ';
+
+  @override
+  String get rqNoQuestions => 'لا توجد أسئلة في هذا النشاط بعد.';
+
+  @override
+  String get attemptRestored => 'تمت استعادة محاولتك غير المكتملة.';
+
+  @override
+  String get attemptSubmitUnsure =>
+      'تعذّر تأكيد الإرسال. إجاباتك محفوظة، حاول مرة أخرى.';
+
+  @override
+  String get resendConfirmation => 'إعادة إرسال رسالة التأكيد';
+
+  @override
+  String get confirmationResent =>
+      'إذا كان هذا العنوان بحاجة إلى تأكيد فسيتم إرسال رسالة جديدة.';
+
+  @override
+  String get resetCodeLabel => 'الرمز الموجود في البريد';
+
+  @override
+  String get newPasswordLabel => 'كلمة المرور الجديدة';
+
+  @override
+  String get resetConfirmAction => 'تغيير كلمة المرور';
+
+  @override
+  String get resetDone => 'تم تغيير كلمة المرور. يمكنك تسجيل الدخول الآن.';
+
+  @override
+  String get confirmEmailTitle => 'جارٍ تأكيد بريدك الإلكتروني';
+
+  @override
+  String get confirmEmailDone =>
+      'تم تأكيد البريد الإلكتروني. يمكنك تسجيل الدخول الآن.';
+
+  @override
+  String get confirmEmailFailed => 'رابط التأكيد غير صالح أو منتهي الصلاحية.';
+
+  @override
+  String get passwordPolicy =>
+      'استخدم 12 حرفًا على الأقل مع أحرف كبيرة وصغيرة ورقم ورمز.';
+
+  @override
+  String get authInvalidInput => 'يرجى التحقق من البيانات التي أدخلتها.';
+
+  @override
+  String get attemptRecorded =>
+      'تم تسجيل النتيجة. يتم تحديث نتيجة الدرس في صفحة الدرس.';
+
+  @override
+  String get homeRemoteNotice =>
+      'دروسك ونتائجك الرسمية تأتي من حسابك. ستظهر ملخصات المفردات والمراجعة والنشاط هنا عند ربطها بحسابك.';
+
+  @override
+  String get localPracticeNotice =>
+      'هذه بيانات تدريب محفوظة على هذا الجهاز فقط. وهي غير مرتبطة بحسابك وليست نتيجة رسمية.';
 }

@@ -53,6 +53,39 @@ final class NotFoundFailure extends AppFailure {
   bool get isRecoverable => false;
 }
 
+/// 409: the resource is in a state that forbids the action (locked stage,
+/// exhausted attempts, expired attempt, concurrent change).
+final class ConflictFailure extends AppFailure {
+  const ConflictFailure();
+
+  @override
+  bool get isRecoverable => false;
+}
+
+/// 429: the learner or device is sending too many requests.
+final class RateLimitedFailure extends AppFailure {
+  const RateLimitedFailure({this.retryAfter});
+
+  /// From `Retry-After` when the server sent a delay in seconds.
+  final Duration? retryAfter;
+}
+
+/// 413: an upload was larger than the server accepts.
+final class PayloadTooLargeFailure extends AppFailure {
+  const PayloadTooLargeFailure();
+
+  @override
+  bool get isRecoverable => false;
+}
+
+/// 415: the server does not accept this file type.
+final class UnsupportedMediaFailure extends AppFailure {
+  const UnsupportedMediaFailure();
+
+  @override
+  bool get isRecoverable => false;
+}
+
 final class ServerFailure extends AppFailure {
   const ServerFailure();
 }
@@ -65,6 +98,14 @@ final class UnexpectedResponseFailure extends AppFailure {
 /// A feature that needs a not-yet-connected backend integration.
 final class ServiceUnavailableFailure extends AppFailure {
   const ServiceUnavailableFailure();
+
+  @override
+  bool get isRecoverable => false;
+}
+
+/// The caller abandoned the operation (screen closed, user cancelled).
+final class CancelledFailure extends AppFailure {
+  const CancelledFailure();
 
   @override
   bool get isRecoverable => false;

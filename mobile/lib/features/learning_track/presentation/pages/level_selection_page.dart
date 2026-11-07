@@ -32,7 +32,7 @@ class LevelSelectionPage extends ConsumerWidget {
             ? Center(child: Text(l10n.errorNotFound))
             : AsyncValueView<List<LevelOverview>>(
                 value: ref.watch(levelOverviewsProvider),
-                onRetry: () => ref.invalidate(levelOverviewsProvider),
+                onRetry: () => reloadTrackCatalog(ref),
                 data: (levels) => ContentWidth(
                   child: ListView(
                     padding: AppSpacing.page,
@@ -45,7 +45,9 @@ class LevelSelectionPage extends ConsumerWidget {
                               style: Theme.of(context).textTheme.bodyLarge,
                             ),
                           ),
-                          const DemoBadge(),
+                          if (ref.watch(contentModeProvider) ==
+                              ContentMode.demo)
+                            const DemoBadge(),
                         ],
                       ),
                       const SizedBox(height: AppSpacing.lg),

@@ -98,12 +98,17 @@ class StageCard extends StatelessWidget {
     required this.stage,
     required this.status,
     required this.record,
+    this.officialScore,
     required this.onOpen,
   });
 
   final LessonStage stage;
   final StageStatus status;
   final StageRecord? record;
+
+  /// OFFICIAL server score (0..100) for this stage; takes precedence over
+  /// any local practice score.
+  final double? officialScore;
   final VoidCallback? onOpen;
 
   @override
@@ -177,7 +182,15 @@ class StageCard extends StatelessWidget {
                           color: statusColor,
                         ),
                       ),
-                      if (record?.score != null)
+                      if (officialScore != null)
+                        Text(
+                          l10n.officialResultScore(
+                            formatScore(officialScore!).isolateLtr,
+                            '100'.isolateLtr,
+                          ),
+                          style: theme.textTheme.bodySmall,
+                        )
+                      else if (record?.score != null)
                         Text(
                           l10n.stageScoreLabel('${record!.score}'.isolateLtr),
                           style: theme.textTheme.bodySmall,

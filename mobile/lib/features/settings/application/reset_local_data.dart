@@ -14,6 +14,8 @@ import '../../vocabulary/application/vocabulary_providers.dart';
 /// the now-empty storage. Server-side data is not affected (none exists yet).
 Future<void> resetLocalData(WidgetRef ref) async {
   await ref.read(keyValueStoreProvider).clearAll();
+  // "All local data" includes the real session: tokens never survive a reset.
+  await ref.read(tokenStoreProvider).clear();
   ref
     ..invalidate(appLanguageProvider)
     ..invalidate(themeModeProvider)
@@ -21,5 +23,6 @@ Future<void> resetLocalData(WidgetRef ref) async {
     ..invalidate(onboardingCompletedProvider)
     ..invalidate(progressProvider)
     ..invalidate(vocabularyRecordsProvider)
-    ..invalidate(sessionProvider);
+    ..invalidate(sessionProvider)
+    ..invalidate(accountEpochProvider);
 }

@@ -167,7 +167,12 @@ extension AppFailureMessage on AppFailure {
     NotFoundFailure() => l10n.errorNotFound,
     ServerFailure() => l10n.errorServer,
     ServiceUnavailableFailure() => l10n.errorUnavailable,
+    ConflictFailure() => l10n.errorConflict,
+    RateLimitedFailure() => l10n.errorRateLimited,
+    PayloadTooLargeFailure() => l10n.errorTooLarge,
+    UnsupportedMediaFailure() => l10n.errorUnsupportedMedia,
     ValidationFailure() ||
+    CancelledFailure() ||
     UnexpectedResponseFailure() ||
     UnknownFailure() => l10n.errorGeneric,
   };
