@@ -19,4 +19,3 @@ public sealed class AssessmentResultConfiguration : IEntityTypeConfiguration<Ass
 
     }
 }
-

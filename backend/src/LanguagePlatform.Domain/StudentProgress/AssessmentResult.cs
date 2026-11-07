@@ -8,4 +8,3 @@ public sealed class AssessmentResult : PlatformEntity
     public required Guid StageAttemptId { get; init; }
     public required DateTime RecordedAtUtc { get; init; }
 }
-

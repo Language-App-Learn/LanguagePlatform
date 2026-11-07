@@ -18,4 +18,3 @@ public sealed class AIProviderConfigurationConfiguration : IEntityTypeConfigurat
 
     }
 }
-

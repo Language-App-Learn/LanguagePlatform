@@ -8,4 +8,3 @@ public sealed class CourseInstructor : PlatformEntity
     public required Guid UserId { get; init; }
     public bool CanEdit { get; init; }
 }
-

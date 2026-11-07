@@ -14,4 +14,3 @@ public sealed class UserSubscription : PlatformEntity
     public DateTime? CancelledAtUtc { get; init; }
     public uint Version { get; private set; }
 }
-

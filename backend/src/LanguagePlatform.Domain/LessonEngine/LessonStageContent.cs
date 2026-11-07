@@ -9,4 +9,3 @@ public sealed class LessonStageContent : PlatformEntity
     public string? Body { get; init; }
     public Guid? MediaAssetId { get; init; }
 }
-

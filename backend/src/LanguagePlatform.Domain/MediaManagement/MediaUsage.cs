@@ -9,4 +9,3 @@ public sealed class MediaUsage : PlatformEntity
     public required Guid UsedByUserId { get; init; }
     public required DateTime RecordedAtUtc { get; init; }
 }
-

@@ -18,4 +18,3 @@ public sealed class LearningStreakConfiguration : IEntityTypeConfiguration<Learn
 
     }
 }
-

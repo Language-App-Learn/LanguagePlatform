@@ -14,4 +14,3 @@ public sealed class AIProcessingJob : PlatformEntity
     public required string CorrelationId { get; init; }
     public uint Version { get; private set; }
 }
-

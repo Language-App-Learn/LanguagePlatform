@@ -19,4 +19,3 @@ public sealed class ScoringRubricConfiguration : IEntityTypeConfiguration<Scorin
 
     }
 }
-

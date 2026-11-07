@@ -8,4 +8,3 @@ public sealed class LearningStreak : PlatformEntity
     public required DateOnly ActivityDate { get; init; }
     public required int ActiveMinutes { get; init; }
 }
-

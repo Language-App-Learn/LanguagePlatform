@@ -12,4 +12,3 @@ public sealed class PaymentTransaction : PlatformEntity
     public required string Status { get; init; }
     public required DateTime OccurredAtUtc { get; init; }
 }
-

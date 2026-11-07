@@ -12,4 +12,3 @@ public sealed class Price : PlatformEntity
     public required DateTime ValidFromUtc { get; init; }
     public DateTime? ValidUntilUtc { get; init; }
 }
-

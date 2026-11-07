@@ -9,4 +9,3 @@ public sealed class MorphologicalAnalysis : PlatformEntity
     public required int FeaturesSchemaVersion { get; init; }
     public required string FeaturesJson { get; init; }
 }
-

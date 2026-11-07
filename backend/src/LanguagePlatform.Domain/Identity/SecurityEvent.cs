@@ -10,4 +10,3 @@ public sealed class SecurityEvent : PlatformEntity
     public required string CorrelationId { get; init; }
     public string? IpHash { get; init; }
 }
-

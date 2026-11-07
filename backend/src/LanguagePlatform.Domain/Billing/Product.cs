@@ -8,4 +8,3 @@ public sealed class Product : PlatformEntity
     public required string Name { get; init; }
     public bool IsActive { get; init; }
 }
-

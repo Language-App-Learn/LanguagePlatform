@@ -24,4 +24,3 @@ public sealed class AssessmentAttemptQuestionConfiguration : IEntityTypeConfigur
 
     }
 }
-

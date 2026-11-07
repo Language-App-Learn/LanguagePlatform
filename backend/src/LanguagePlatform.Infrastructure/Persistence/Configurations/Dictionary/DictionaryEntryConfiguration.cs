@@ -21,4 +21,3 @@ public sealed class DictionaryEntryConfiguration : IEntityTypeConfiguration<Dict
 
     }
 }
-

@@ -17,4 +17,3 @@ public sealed class MediaAccessPolicyConfiguration : IEntityTypeConfiguration<Me
 
     }
 }
-

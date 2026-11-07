@@ -13,4 +13,3 @@ public sealed class Purchase : PlatformEntity
     public required DateTime PurchasedAtUtc { get; init; }
     public DateTime? VerifiedAtUtc { get; init; }
 }
-

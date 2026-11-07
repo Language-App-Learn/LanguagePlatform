@@ -23,4 +23,3 @@ public sealed class PaymentTransactionConfiguration : IEntityTypeConfiguration<P
 
     }
 }
-

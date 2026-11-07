@@ -14,4 +14,3 @@ public sealed class TranslationHistory : PlatformEntity
     public required DateTime CreatedAtUtc { get; init; }
     public required DateTime ExpiresAtUtc { get; init; }
 }
-

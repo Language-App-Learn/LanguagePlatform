@@ -10,4 +10,3 @@ public sealed class ContentPublication : PlatformEntity
     public DateTime? WithdrawnAtUtc { get; init; }
     public string? Reason { get; init; }
 }
-

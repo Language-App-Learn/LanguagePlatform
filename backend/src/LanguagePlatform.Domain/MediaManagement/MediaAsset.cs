@@ -19,4 +19,3 @@ public sealed class MediaAsset : PlatformEntity
     public DateTime? DeletedAtUtc { get; init; }
     public uint Version { get; private set; }
 }
-

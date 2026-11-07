@@ -10,4 +10,3 @@ public sealed class SubscriptionPlan : PlatformEntity
     public required int BillingPeriodMonths { get; init; }
     public bool IsActive { get; init; }
 }
-

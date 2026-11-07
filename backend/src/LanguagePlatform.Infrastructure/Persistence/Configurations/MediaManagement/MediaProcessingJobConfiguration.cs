@@ -27,4 +27,3 @@ public sealed class MediaProcessingJobConfiguration : IEntityTypeConfiguration<M
 
     }
 }
-

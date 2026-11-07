@@ -18,4 +18,3 @@ public sealed class StudentAchievementConfiguration : IEntityTypeConfiguration<S
 
     }
 }
-

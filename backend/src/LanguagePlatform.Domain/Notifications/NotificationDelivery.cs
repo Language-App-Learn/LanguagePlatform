@@ -11,4 +11,3 @@ public sealed class NotificationDelivery : PlatformEntity
     public required int AttemptCount { get; init; }
     public DateTime? DeliveredAtUtc { get; init; }
 }
-

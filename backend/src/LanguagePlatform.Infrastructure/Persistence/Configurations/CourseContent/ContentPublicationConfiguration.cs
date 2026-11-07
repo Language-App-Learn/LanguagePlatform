@@ -20,4 +20,3 @@ public sealed class ContentPublicationConfiguration : IEntityTypeConfiguration<C
 
     }
 }
-

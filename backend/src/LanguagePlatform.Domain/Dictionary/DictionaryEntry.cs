@@ -10,4 +10,3 @@ public sealed class DictionaryEntry : PlatformEntity
     public required string NormalizedLemma { get; init; }
     public required string PartOfSpeech { get; init; }
 }
-

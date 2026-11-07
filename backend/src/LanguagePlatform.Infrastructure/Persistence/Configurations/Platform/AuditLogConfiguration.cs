@@ -22,4 +22,3 @@ public sealed class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
 
     }
 }
-

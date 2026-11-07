@@ -9,4 +9,3 @@ public sealed class QuestionOption : PlatformEntity
     public required string Text { get; init; }
     public bool IsCorrect { get; init; }
 }
-

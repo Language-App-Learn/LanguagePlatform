@@ -20,4 +20,3 @@ public sealed class StageDependencyConfiguration : IEntityTypeConfiguration<Stag
 
     }
 }
-

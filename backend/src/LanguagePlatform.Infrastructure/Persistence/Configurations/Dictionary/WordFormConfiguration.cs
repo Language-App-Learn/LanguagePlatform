@@ -19,4 +19,3 @@ public sealed class WordFormConfiguration : IEntityTypeConfiguration<WordForm>
 
     }
 }
-

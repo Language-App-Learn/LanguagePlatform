@@ -12,4 +12,3 @@ public sealed class ReadingTextSegment : PlatformEntity
     public required int AlignmentSchemaVersion { get; init; }
     public required string AlignmentJson { get; init; }
 }
-

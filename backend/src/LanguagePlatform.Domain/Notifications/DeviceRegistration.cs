@@ -12,4 +12,3 @@ public sealed class DeviceRegistration : PlatformEntity
     public required DateTime LastSeenAtUtc { get; init; }
     public DateTime? RevokedAtUtc { get; init; }
 }
-

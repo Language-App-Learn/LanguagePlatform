@@ -24,4 +24,3 @@ public sealed class PriceConfiguration : IEntityTypeConfiguration<Price>
 
     }
 }
-

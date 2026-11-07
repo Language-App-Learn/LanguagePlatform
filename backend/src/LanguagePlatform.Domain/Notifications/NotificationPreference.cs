@@ -9,4 +9,3 @@ public sealed class NotificationPreference : PlatformEntity
     public bool PushEnabled { get; init; }
     public bool EmailEnabled { get; init; }
 }
-

@@ -12,4 +12,3 @@ public sealed class Question : PlatformEntity
     public required string AnswerKeyJson { get; init; }
     public bool IsArchived { get; init; }
 }
-

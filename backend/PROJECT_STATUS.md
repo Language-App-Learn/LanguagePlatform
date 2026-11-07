@@ -24,7 +24,9 @@ Final build completed with zero warnings and errors. The PostgreSQL-backed suite
 
 The PostgreSQL 18 backup rehearsal applied all nine migrations, exported a custom archive and restored it into a second database in the same disposable cluster. Migration count and the Arabic UTF-8 sample matched. Local transitive NuGet audit found zero affected dependencies across seven projects. Gitleaks reported no findings in the backend source tree.
 
-[Backend CI run 42380517906](https://github.com/Language-App-Learn/LanguagePlatform/actions/runs/42380517906) passed secret scanning and stopped in the audit filter because clean NuGet v1 reports omit per-project framework arrays. The updated filter accepts optional arrays and rejects vulnerabilities, audit diagnostics and malformed reports. The actual report and regression inputs passed the local jq verification. Actionlint, Bash syntax, restore, build, all 43 tests on disposable PostgreSQL 18.6, OpenAPI export and EF CLI 10.0.14 checks passed locally. A hosted run of the updated workflow is pending.
+[Backend CI run 42380517906](https://github.com/Language-App-Learn/LanguagePlatform/actions/runs/42380517906) stopped in the audit filter because clean NuGet v1 reports omit per-project framework arrays. The updated filter accepts optional arrays and rejects vulnerabilities, audit diagnostics and malformed reports. [Hosted run 42382120411](https://github.com/Language-App-Learn/LanguagePlatform/actions/runs/42382120411) passed the audit, all 43 tests and EF checks.
+
+[PR #1 run 42399306279](https://github.com/Language-App-Learn/LanguagePlatform/actions/runs/42399306279) reported 186 extra blank lines at the ends of C# files. Those files now have one final newline and the full PR diff passes `git diff --check`. The workflow checks the merge-base-to-head range for pull requests and the before-to-after range for pushes. The local checks covered PR, multi-commit push and new-branch range selection, Actionlint, Gitleaks history and tree scans, a clean build, all 43 tests on disposable PostgreSQL 18.6, OpenAPI export and EF CLI 10.0.14. The updated PR workflow has yet to run on GitHub.
 
 ## Next checkpoint
 

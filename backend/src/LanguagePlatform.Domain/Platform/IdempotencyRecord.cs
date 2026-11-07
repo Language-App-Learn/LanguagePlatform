@@ -14,4 +14,3 @@ public sealed class IdempotencyRecord : PlatformEntity
     public required DateTime ExpiresAtUtc { get; init; }
     public uint Version { get; private set; }
 }
-

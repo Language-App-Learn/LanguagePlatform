@@ -9,4 +9,3 @@ public sealed class LessonLocalization : PlatformEntity
     public required string Title { get; init; }
     public string? Description { get; init; }
 }
-

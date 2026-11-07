@@ -13,4 +13,3 @@ public sealed class StageAttempt : PlatformEntity
     public required string IdempotencyKey { get; init; }
     public uint Version { get; private set; }
 }
-

@@ -25,4 +25,3 @@ public sealed class AIProcessingJobConfiguration : IEntityTypeConfiguration<AIPr
 
     }
 }
-

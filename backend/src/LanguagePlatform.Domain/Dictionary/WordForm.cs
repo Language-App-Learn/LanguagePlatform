@@ -9,4 +9,3 @@ public sealed class WordForm : PlatformEntity
     public required string NormalizedText { get; init; }
     public required string FormType { get; init; }
 }
-

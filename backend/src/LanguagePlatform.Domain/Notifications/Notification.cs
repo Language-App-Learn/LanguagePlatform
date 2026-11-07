@@ -12,4 +12,3 @@ public sealed class Notification : PlatformEntity
     public DateTime? ReadAtUtc { get; init; }
     public required DateTime ExpiresAtUtc { get; init; }
 }
-

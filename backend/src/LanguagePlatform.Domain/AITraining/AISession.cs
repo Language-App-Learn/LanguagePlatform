@@ -13,4 +13,3 @@ public sealed class AISession : PlatformEntity
     public required string Status { get; init; }
     public uint Version { get; private set; }
 }
-

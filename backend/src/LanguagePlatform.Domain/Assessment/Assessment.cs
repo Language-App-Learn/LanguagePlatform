@@ -13,4 +13,3 @@ public sealed class Assessment : PlatformEntity
 
     public void Publish() => IsPublished = true;
 }
-

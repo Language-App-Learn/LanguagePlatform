@@ -20,4 +20,3 @@ public sealed class ReadingPassageConfiguration : IEntityTypeConfiguration<Readi
 
     }
 }
-

@@ -11,4 +11,3 @@ public sealed class AIMessage : PlatformEntity
     public Guid? AudioAssetId { get; init; }
     public required DateTime CreatedAtUtc { get; init; }
 }
-

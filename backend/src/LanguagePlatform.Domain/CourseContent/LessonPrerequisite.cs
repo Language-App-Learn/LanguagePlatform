@@ -7,4 +7,3 @@ public sealed class LessonPrerequisite : PlatformEntity
     public required Guid LessonId { get; init; }
     public required Guid RequiredLessonId { get; init; }
 }
-

@@ -8,4 +8,3 @@ public sealed class PlanEntitlement : PlatformEntity
     public required Guid EntitlementId { get; init; }
     public int? UsageLimit { get; init; }
 }
-

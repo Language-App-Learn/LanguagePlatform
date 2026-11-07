@@ -8,4 +8,3 @@ public sealed class Root : PlatformEntity
     public required string Letters { get; init; }
     public string? Meaning { get; init; }
 }
-

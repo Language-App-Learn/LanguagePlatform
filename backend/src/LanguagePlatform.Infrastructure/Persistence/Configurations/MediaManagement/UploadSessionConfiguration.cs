@@ -25,4 +25,3 @@ public sealed class UploadSessionConfiguration : IEntityTypeConfiguration<Upload
 
     }
 }
-

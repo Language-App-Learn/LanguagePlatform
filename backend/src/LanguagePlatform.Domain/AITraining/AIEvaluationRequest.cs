@@ -16,4 +16,3 @@ public sealed class AIEvaluationRequest : PlatformEntity
     public required DateTime ExpiresAtUtc { get; init; }
     public uint Version { get; private set; }
 }
-

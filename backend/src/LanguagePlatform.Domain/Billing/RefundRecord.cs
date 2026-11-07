@@ -12,4 +12,3 @@ public sealed class RefundRecord : PlatformEntity
     public required string Reason { get; init; }
     public required DateTime RefundedAtUtc { get; init; }
 }
-

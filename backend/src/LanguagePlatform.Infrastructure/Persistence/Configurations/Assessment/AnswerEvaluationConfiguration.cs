@@ -24,4 +24,3 @@ public sealed class AnswerEvaluationConfiguration : IEntityTypeConfiguration<Ans
 
     }
 }
-

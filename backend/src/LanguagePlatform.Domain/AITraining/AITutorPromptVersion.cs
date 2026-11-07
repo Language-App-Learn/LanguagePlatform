@@ -10,4 +10,3 @@ public sealed class AITutorPromptVersion : PlatformEntity
     public required DateTime CreatedAtUtc { get; init; }
     public DateTime? PublishedAtUtc { get; init; }
 }
-

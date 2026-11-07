@@ -8,4 +8,3 @@ public sealed class QuestionLocalization : PlatformEntity
     public required Guid LanguageId { get; init; }
     public required string Prompt { get; init; }
 }
-

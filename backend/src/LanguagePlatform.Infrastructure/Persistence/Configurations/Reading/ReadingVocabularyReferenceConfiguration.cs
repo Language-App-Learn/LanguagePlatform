@@ -17,4 +17,3 @@ public sealed class ReadingVocabularyReferenceConfiguration : IEntityTypeConfigu
 
     }
 }
-

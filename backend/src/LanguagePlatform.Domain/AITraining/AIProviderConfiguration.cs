@@ -10,4 +10,3 @@ public sealed class AIProviderConfiguration : PlatformEntity
     public required string SecretReference { get; init; }
     public bool IsEnabled { get; init; }
 }
-

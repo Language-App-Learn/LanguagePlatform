@@ -32,4 +32,3 @@ public sealed class LessonStageConfiguration : IEntityTypeConfiguration<LessonSt
 
     }
 }
-

@@ -10,4 +10,3 @@ public sealed class MediaVariant : PlatformEntity
     public required string ContentType { get; init; }
     public required long FileSize { get; init; }
 }
-

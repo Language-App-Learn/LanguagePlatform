@@ -9,4 +9,3 @@ public sealed class CourseLocalization : PlatformEntity
     public required string Title { get; init; }
     public string? Description { get; init; }
 }
-

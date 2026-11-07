@@ -18,4 +18,3 @@ public sealed class CoursePrerequisiteConfiguration : IEntityTypeConfiguration<C
 
     }
 }
-

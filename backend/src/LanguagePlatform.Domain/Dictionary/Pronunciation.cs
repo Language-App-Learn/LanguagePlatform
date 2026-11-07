@@ -9,4 +9,3 @@ public sealed class Pronunciation : PlatformEntity
     public required string DialectCode { get; init; }
     public string? PhoneticText { get; init; }
 }
-

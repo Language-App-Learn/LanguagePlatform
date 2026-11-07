@@ -15,4 +15,3 @@ public sealed class AIUsageRecord : PlatformEntity
     public required string Currency { get; init; }
     public required DateTime RecordedAtUtc { get; init; }
 }
-

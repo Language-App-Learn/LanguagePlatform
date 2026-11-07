@@ -16,4 +16,3 @@ public sealed class OutboxMessage : PlatformEntity
     public required string CorrelationId { get; init; }
     public uint Version { get; private set; }
 }
-

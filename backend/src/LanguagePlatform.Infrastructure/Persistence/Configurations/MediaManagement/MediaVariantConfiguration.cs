@@ -21,4 +21,3 @@ public sealed class MediaVariantConfiguration : IEntityTypeConfiguration<MediaVa
 
     }
 }
-

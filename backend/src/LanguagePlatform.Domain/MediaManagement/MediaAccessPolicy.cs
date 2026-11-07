@@ -9,4 +9,3 @@ public sealed class MediaAccessPolicy : PlatformEntity
     public bool RequiresEnrollment { get; init; }
     public bool RequiresEntitlement { get; init; }
 }
-

@@ -20,4 +20,3 @@ public sealed class StudentSavedWordConfiguration : IEntityTypeConfiguration<Stu
 
     }
 }
-

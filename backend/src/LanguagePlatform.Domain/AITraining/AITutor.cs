@@ -9,4 +9,3 @@ public sealed class AITutor : PlatformEntity
     public required Guid LanguageId { get; init; }
     public bool IsActive { get; init; }
 }
-

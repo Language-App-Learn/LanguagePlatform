@@ -9,4 +9,3 @@ public sealed class ReadingPassage : PlatformEntity
     public required string OriginalText { get; init; }
     public int? PageNumber { get; init; }
 }
-

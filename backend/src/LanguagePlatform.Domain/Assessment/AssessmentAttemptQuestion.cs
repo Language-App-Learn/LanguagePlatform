@@ -12,4 +12,3 @@ public sealed class AssessmentAttemptQuestion : PlatformEntity
     public required string OptionsSnapshotJson { get; init; }
     public required decimal MaximumScore { get; init; }
 }
-

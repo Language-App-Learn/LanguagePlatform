@@ -8,4 +8,3 @@ public sealed class StudentAchievement : PlatformEntity
     public required Guid AchievementId { get; init; }
     public required DateTime AwardedAtUtc { get; init; }
 }
-

@@ -9,4 +9,3 @@ public sealed class StudentAnswer : PlatformEntity
     public required string SelectedOptionsJson { get; init; }
     public required DateTime SubmittedAtUtc { get; init; }
 }
-

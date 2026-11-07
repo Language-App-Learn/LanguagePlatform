@@ -18,4 +18,3 @@ public sealed class LessonProgress : PlatformEntity
         UpdatedAtUtc = nowUtc;
     }
 }
-

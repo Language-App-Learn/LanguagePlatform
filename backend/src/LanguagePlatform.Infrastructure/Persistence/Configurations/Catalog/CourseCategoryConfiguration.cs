@@ -15,4 +15,3 @@ public sealed class CourseCategoryConfiguration : IEntityTypeConfiguration<Cours
 
     }
 }
-

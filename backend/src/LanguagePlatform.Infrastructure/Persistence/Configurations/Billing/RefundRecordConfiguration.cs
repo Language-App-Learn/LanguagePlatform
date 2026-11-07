@@ -23,4 +23,3 @@ public sealed class RefundRecordConfiguration : IEntityTypeConfiguration<RefundR
 
     }
 }
-

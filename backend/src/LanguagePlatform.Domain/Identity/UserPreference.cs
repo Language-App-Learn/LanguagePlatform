@@ -21,4 +21,3 @@ public sealed class UserPreference : PlatformEntity
         NotificationsEnabled = notificationsEnabled;
     }
 }
-

@@ -10,4 +10,3 @@ public sealed class StudentSavedWord : PlatformEntity
     public string? Note { get; init; }
     public bool IsFavorite { get; init; } = true;
 }
-

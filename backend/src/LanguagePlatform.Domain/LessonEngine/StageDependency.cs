@@ -8,4 +8,3 @@ public sealed class StageDependency : PlatformEntity
     public required Guid StageId { get; init; }
     public required Guid RequiredStageId { get; init; }
 }
-

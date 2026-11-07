@@ -11,4 +11,3 @@ public sealed class ReadingSession : PlatformEntity
     public Guid? AudioAssetId { get; init; }
     public required DateTime ExpiresAtUtc { get; init; }
 }
-

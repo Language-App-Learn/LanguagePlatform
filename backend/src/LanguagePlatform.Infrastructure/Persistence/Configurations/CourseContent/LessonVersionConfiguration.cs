@@ -29,4 +29,3 @@ public sealed class LessonVersionConfiguration : IEntityTypeConfiguration<Lesson
 
     }
 }
-

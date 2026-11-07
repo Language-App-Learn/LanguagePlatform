@@ -19,4 +19,3 @@ public sealed class SecurityEventConfiguration : IEntityTypeConfiguration<Securi
 
     }
 }
-

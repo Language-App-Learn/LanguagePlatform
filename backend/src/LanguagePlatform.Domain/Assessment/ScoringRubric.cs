@@ -9,4 +9,3 @@ public sealed class ScoringRubric : PlatformEntity
     public required string CriteriaJson { get; init; }
     public required decimal MaximumScore { get; init; }
 }
-

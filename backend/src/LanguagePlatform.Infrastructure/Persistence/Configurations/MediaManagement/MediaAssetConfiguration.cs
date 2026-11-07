@@ -33,4 +33,3 @@ public sealed class MediaAssetConfiguration : IEntityTypeConfiguration<MediaAsse
 
     }
 }
-

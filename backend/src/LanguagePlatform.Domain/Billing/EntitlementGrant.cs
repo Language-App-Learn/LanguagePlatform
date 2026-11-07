@@ -13,4 +13,3 @@ public sealed class EntitlementGrant : PlatformEntity
     public DateTime? RevokedAtUtc { get; init; }
     public required string IdempotencyKey { get; init; }
 }
-

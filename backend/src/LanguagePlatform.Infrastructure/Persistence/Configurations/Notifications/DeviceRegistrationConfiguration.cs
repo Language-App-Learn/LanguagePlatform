@@ -23,4 +23,3 @@ public sealed class DeviceRegistrationConfiguration : IEntityTypeConfiguration<D
 
     }
 }
-

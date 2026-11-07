@@ -11,4 +11,3 @@ public sealed class Enrollment : PlatformEntity
     public DateTime? CompletedAtUtc { get; init; }
     public uint Version { get; private set; }
 }
-

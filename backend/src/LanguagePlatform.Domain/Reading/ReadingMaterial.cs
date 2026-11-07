@@ -21,4 +21,3 @@ public sealed class ReadingMaterial : PlatformEntity
         ReviewedAtUtc = nowUtc;
     }
 }
-

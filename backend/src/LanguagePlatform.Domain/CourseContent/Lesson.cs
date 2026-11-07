@@ -11,4 +11,3 @@ public sealed class Lesson : PlatformEntity
     public int? CurriculumPosition { get; init; }
     public bool IsArchived { get; init; }
 }
-

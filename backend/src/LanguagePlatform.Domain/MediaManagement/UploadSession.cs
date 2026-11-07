@@ -13,4 +13,3 @@ public sealed class UploadSession : PlatformEntity
     public required DateTime ExpiresAtUtc { get; init; }
     public DateTime? CompletedAtUtc { get; init; }
 }
-

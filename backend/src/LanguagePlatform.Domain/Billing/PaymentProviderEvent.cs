@@ -15,4 +15,3 @@ public sealed class PaymentProviderEvent : PlatformEntity
     public string? ErrorCode { get; init; }
     public uint Version { get; private set; }
 }
-

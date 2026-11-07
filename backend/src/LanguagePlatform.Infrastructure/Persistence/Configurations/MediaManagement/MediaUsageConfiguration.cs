@@ -19,4 +19,3 @@ public sealed class MediaUsageConfiguration : IEntityTypeConfiguration<MediaUsag
 
     }
 }
-

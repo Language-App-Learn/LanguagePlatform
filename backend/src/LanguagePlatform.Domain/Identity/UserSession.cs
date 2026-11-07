@@ -18,4 +18,3 @@ public sealed class UserSession : PlatformEntity
 
     public void Revoke(DateTime utcNow) => RevokedAtUtc ??= utcNow;
 }
-

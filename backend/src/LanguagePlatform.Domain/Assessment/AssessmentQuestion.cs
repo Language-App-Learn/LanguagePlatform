@@ -9,4 +9,3 @@ public sealed class AssessmentQuestion : PlatformEntity
     public required int DisplayOrder { get; init; }
     public required decimal MaximumScore { get; init; }
 }
-

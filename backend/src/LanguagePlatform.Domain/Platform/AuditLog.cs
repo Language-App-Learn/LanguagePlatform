@@ -12,4 +12,3 @@ public sealed class AuditLog : PlatformEntity
     public required string CorrelationId { get; init; }
     public required string RedactedChangesJson { get; init; }
 }
-

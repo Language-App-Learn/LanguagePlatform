@@ -16,4 +16,3 @@ public sealed class LessonStage : PlatformEntity
     public required string SettingsJson { get; init; }
     public bool IsActive { get; init; }
 }
-

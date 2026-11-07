@@ -19,4 +19,3 @@ public sealed class LessonLocalizationConfiguration : IEntityTypeConfiguration<L
 
     }
 }
-

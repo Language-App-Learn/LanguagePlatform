@@ -10,4 +10,3 @@ public sealed class UserConsent : PlatformEntity
     public required DateTime GrantedAtUtc { get; init; }
     public DateTime? WithdrawnAtUtc { get; init; }
 }
-

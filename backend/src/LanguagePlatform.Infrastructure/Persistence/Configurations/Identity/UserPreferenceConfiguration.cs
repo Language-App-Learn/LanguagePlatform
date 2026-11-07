@@ -22,4 +22,3 @@ public sealed class UserPreferenceConfiguration : IEntityTypeConfiguration<UserP
 
     }
 }
-

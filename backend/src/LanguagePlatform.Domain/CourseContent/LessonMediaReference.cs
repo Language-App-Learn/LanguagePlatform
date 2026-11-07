@@ -8,4 +8,3 @@ public sealed class LessonMediaReference : PlatformEntity
     public required Guid MediaAssetId { get; init; }
     public required string Purpose { get; init; }
 }
-

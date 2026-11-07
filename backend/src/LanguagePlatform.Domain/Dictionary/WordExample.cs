@@ -11,4 +11,3 @@ public sealed class WordExample : PlatformEntity
     public int? StartSeconds { get; init; }
     public int? EndSeconds { get; init; }
 }
-

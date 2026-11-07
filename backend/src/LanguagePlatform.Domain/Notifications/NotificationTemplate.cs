@@ -9,4 +9,3 @@ public sealed class NotificationTemplate : PlatformEntity
     public required string Title { get; init; }
     public required string Body { get; init; }
 }
-

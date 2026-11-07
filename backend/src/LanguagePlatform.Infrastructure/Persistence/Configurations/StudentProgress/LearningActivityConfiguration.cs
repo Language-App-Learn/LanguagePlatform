@@ -21,4 +21,3 @@ public sealed class LearningActivityConfiguration : IEntityTypeConfiguration<Lea
 
     }
 }
-

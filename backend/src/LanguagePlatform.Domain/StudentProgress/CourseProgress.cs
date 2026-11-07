@@ -9,4 +9,3 @@ public sealed class CourseProgress : PlatformEntity
     public required DateTime UpdatedAtUtc { get; init; }
     public uint Version { get; private set; }
 }
-

@@ -20,4 +20,3 @@ public sealed class UserConsentConfiguration : IEntityTypeConfiguration<UserCons
 
     }
 }
-

@@ -34,4 +34,3 @@ public sealed class AssessmentAttemptConfiguration : IEntityTypeConfiguration<As
 
     }
 }
-

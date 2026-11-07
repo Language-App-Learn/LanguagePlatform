@@ -8,4 +8,3 @@ public sealed class WordSense : PlatformEntity
     public required int SenseNumber { get; init; }
     public required string Definition { get; init; }
 }
-

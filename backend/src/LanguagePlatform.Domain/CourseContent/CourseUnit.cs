@@ -8,4 +8,3 @@ public sealed class CourseUnit : PlatformEntity
     public required string Title { get; init; }
     public required int DisplayOrder { get; init; }
 }
-

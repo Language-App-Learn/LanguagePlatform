@@ -15,4 +15,3 @@ public sealed class AIEvaluationResult : PlatformEntity
     public bool AcceptedForScoring { get; init; }
     public Guid? ReviewedBy { get; init; }
 }
-

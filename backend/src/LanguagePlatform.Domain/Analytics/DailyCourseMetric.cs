@@ -11,4 +11,3 @@ public sealed class DailyCourseMetric : PlatformEntity
     public required int AssessmentsCompleted { get; init; }
     public required DateTime UpdatedAtUtc { get; init; }
 }
-

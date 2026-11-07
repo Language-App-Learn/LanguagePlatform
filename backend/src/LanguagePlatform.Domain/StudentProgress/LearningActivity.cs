@@ -10,4 +10,3 @@ public sealed class LearningActivity : PlatformEntity
     public required DateTime OccurredAtUtc { get; init; }
     public required int DurationSeconds { get; init; }
 }
-

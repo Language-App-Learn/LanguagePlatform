@@ -15,4 +15,3 @@ public sealed class EntitlementConfiguration : IEntityTypeConfiguration<Entitlem
 
     }
 }
-

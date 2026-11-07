@@ -12,4 +12,3 @@ public sealed class AnswerEvaluation : PlatformEntity
     public required DateTime EvaluatedAtUtc { get; init; }
     public required string Method { get; init; }
 }
-

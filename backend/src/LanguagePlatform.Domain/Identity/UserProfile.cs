@@ -9,4 +9,3 @@ public sealed class UserProfile : PlatformEntity
     public string? Biography { get; init; }
     public required string TimeZone { get; init; }
 }
-
