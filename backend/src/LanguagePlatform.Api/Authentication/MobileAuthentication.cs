@@ -11,7 +11,7 @@ public static class MobileAuthentication
 {
     public const string AccountRatePolicy = "account";
 
-    public static void AddMobileAuthentication(this IServiceCollection services)
+    public static void AddMobileAuthentication(this IServiceCollection services, bool requirePrivilegedMfa)
     {
         services.AddIdentityCore<ApplicationUser>(options =>
         {
@@ -35,11 +35,15 @@ public static class MobileAuthentication
         foreach (var permission in Permissions.All)
         {
             services.AddAuthorizationBuilder().AddPolicy(permission, policy =>
-                policy.RequireAuthenticatedUser().RequireClaim(HttpCurrentActor.PermissionClaim, permission));
+            {
+                policy.RequireAuthenticatedUser().RequireClaim(HttpCurrentActor.PermissionClaim, permission);
+                if (requirePrivilegedMfa) policy.RequireClaim(MobileAccountService.AuthenticationMethodClaim, "mfa");
+            });
         }
         services.AddHttpContextAccessor();
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<MobileAccountService>();
+        services.AddScoped<AccountDataExportService>();
         services.AddScoped<AccountPreferencesService>();
         services.AddScoped<ICurrentActor, HttpCurrentActor>();
         services.AddRateLimiter(options =>

@@ -19,11 +19,14 @@ public sealed partial class GlobalExceptionHandler(
         var (statusCode, title) = exception switch
         {
             DomainException => (StatusCodes.Status400BadRequest, "A business rule was violated."),
+            BadHttpRequestException { StatusCode: StatusCodes.Status413PayloadTooLarge }
+                => (StatusCodes.Status413PayloadTooLarge, "Request exceeds the allowed size."),
             BadHttpRequestException => (StatusCodes.Status400BadRequest, "Invalid request."),
             UploadTooLargeException => (StatusCodes.Status413PayloadTooLarge, "Upload exceeds the allowed size."),
             PermissionDeniedException => (StatusCodes.Status403Forbidden, "Permission denied."),
             ResourceNotFoundException => (StatusCodes.Status404NotFound, "The requested resource was not found."),
             StateConflictException => (StatusCodes.Status409Conflict, "The requested action conflicts with current state."),
+            ServiceUnavailableException => (StatusCodes.Status503ServiceUnavailable, "A required service is unavailable."),
             DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "The resource changed. Reload it before retrying."),
             DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.UniqueViolation
                 or PostgresErrorCodes.ForeignKeyViolation or PostgresErrorCodes.CheckViolation or PostgresErrorCodes.RestrictViolation } }
@@ -48,7 +51,7 @@ public sealed partial class GlobalExceptionHandler(
             {
                 Status = statusCode,
                 Title = title,
-                Detail = exception is DomainException or StateConflictException ? exception.Message : null,
+                Detail = exception is DomainException or StateConflictException or ServiceUnavailableException ? exception.Message : null,
                 Instance = httpContext.Request.Path
             }
         });

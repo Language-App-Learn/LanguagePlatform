@@ -1,7 +1,7 @@
 namespace LanguagePlatform.Application.Identity;
 
 public sealed record AccountRegistration(string Email, string Password);
-public sealed record AccountLogin(string Email, string Password);
+public sealed record AccountLogin(string Email, string Password, string? AuthenticatorCode = null);
 public sealed record AccountRefresh(string RefreshToken);
 public sealed record AccountEmail(string Email);
 public sealed record AccountConfirmation(Guid UserId, string Code);

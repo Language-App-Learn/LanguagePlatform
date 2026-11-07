@@ -11,8 +11,10 @@ public sealed class PostgreSqlReadiness(IServiceScopeFactory scopes) : IHealthCh
     {
         await using var scope = scopes.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<LanguagePlatformDbContext>();
-        return await db.Database.CanConnectAsync(cancellationToken)
-            ? HealthCheckResult.Healthy()
-            : HealthCheckResult.Unhealthy("PostgreSQL is unavailable.");
+        if (!await db.Database.CanConnectAsync(cancellationToken))
+            return HealthCheckResult.Unhealthy("PostgreSQL is unavailable.");
+        return (await db.Database.GetPendingMigrationsAsync(cancellationToken)).Any()
+            ? HealthCheckResult.Unhealthy("PostgreSQL schema is behind the application.")
+            : HealthCheckResult.Healthy();
     }
 }

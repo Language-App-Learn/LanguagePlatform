@@ -5,7 +5,7 @@ namespace LanguagePlatform.Api.Authentication;
 
 public sealed class HttpCurrentActor(IHttpContextAccessor accessor) : ICurrentActor
 {
-    public const string PermissionClaim = "permission";
+    public const string PermissionClaim = Permissions.ClaimType;
     private ClaimsPrincipal? Principal => accessor.HttpContext?.User;
 
     public Guid? UserId => Principal?.Identity?.IsAuthenticated == true

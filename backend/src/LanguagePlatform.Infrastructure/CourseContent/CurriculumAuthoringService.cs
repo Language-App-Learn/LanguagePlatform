@@ -14,7 +14,7 @@ using AssessmentEntity = LanguagePlatform.Domain.Assessment.Assessment;
 
 namespace LanguagePlatform.Infrastructure.CourseContent;
 
-public sealed class CurriculumAuthoringService(LanguagePlatformDbContext db)
+public sealed class CurriculumAuthoringService(LanguagePlatformDbContext db, MediaHostPolicy mediaPolicy)
 {
     public async Task<CurriculumCourseDto> CreateCourseAsync(CreateCurriculumCourse request, CancellationToken ct)
     {
@@ -96,7 +96,7 @@ public sealed class CurriculumAuthoringService(LanguagePlatformDbContext db)
             {
                 LessonVersionId = version.Id, StageType = kind, DisplayOrder = index + 1, Weight = weight,
                 IsRequired = true, IsActive = true, MinimumScore = 0m, MaximumAttempts = input?.MaximumAttempts ?? 1,
-                EstimatedDurationSeconds = 0, SettingsSchemaVersion = 1, SettingsJson = CurriculumStageSettings.Create(input)
+                EstimatedDurationSeconds = 0, SettingsSchemaVersion = 1, SettingsJson = CurriculumStageSettings.Create(input, mediaPolicy)
             };
             db.Add(stage);
             AddText(stage.Id, target.TargetLanguageId, input?.ArabicText);

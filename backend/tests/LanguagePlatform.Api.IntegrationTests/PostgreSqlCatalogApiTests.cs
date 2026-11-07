@@ -54,7 +54,9 @@ public sealed class PostgreSqlCatalogApiTests
         Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
         Assert.Equal("application/problem+json", invalid.Content.Headers.ContentType?.MediaType);
 
-        using var spec = JsonDocument.Parse(await client.GetStringAsync("/openapi/v1.json"));
+        var document = await client.GetStringAsync("/openapi/v1.json");
+        using var spec = JsonDocument.Parse(document);
+        Assert.StartsWith("3.1.", spec.RootElement.GetProperty("openapi").GetString(), StringComparison.Ordinal);
         var paths = spec.RootElement.GetProperty("paths");
         Assert.True(paths.TryGetProperty("/api/v1/catalog/courses/{id}", out _));
         Assert.True(paths.TryGetProperty("/api/v1/catalog/courses", out var catalog));
@@ -74,5 +76,16 @@ public sealed class PostgreSqlCatalogApiTests
             .GetProperty("security")[0].TryGetProperty("Bearer", out _));
         Assert.True(paths.GetProperty("/api/v1/admin/courses/{courseId}/lessons/{lessonId}/assessments/{assessmentId}/attempts/{attemptId}/speaking-evaluation")
             .GetProperty("post").GetProperty("security")[0].TryGetProperty("Bearer", out _));
+        Assert.True(paths.GetProperty("/api/v1/admin/lesson-versions/{versionId}/withdraw").GetProperty("post")
+            .GetProperty("security")[0].TryGetProperty("Bearer", out _));
+        Assert.True(paths.GetProperty("/api/v1/me/privacy/export").GetProperty("get")
+            .GetProperty("security")[0].TryGetProperty("Bearer", out _));
+        Assert.Equal("binary", spec.RootElement.GetProperty("components").GetProperty("schemas")
+            .GetProperty("Stream").GetProperty("format").GetString());
+        Assert.True(paths.GetProperty("/api/v1/me/courses/{courseId}/lessons/{lessonId}/reading-material/original")
+            .GetProperty("get").GetProperty("responses").GetProperty("200").GetProperty("content")
+            .TryGetProperty("application/pdf", out _));
+        if (Environment.GetEnvironmentVariable("LANGUAGEPLATFORM_OPENAPI_OUTPUT") is { Length: > 0 } output)
+            await File.WriteAllTextAsync(output, document);
     });
 }

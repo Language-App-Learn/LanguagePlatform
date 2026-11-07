@@ -16,7 +16,16 @@ public static class AdminPublicationEndpoints
             .WithTags("Administration").RequireAuthorization(Permissions.ContentPublish)
             .ProducesProblem(400).ProducesProblem(401).ProducesProblem(403)
             .ProducesProblem(404).ProducesProblem(409);
+        endpoints.MapPost("/api/v1/admin/lesson-versions/{versionId:guid}/withdraw",
+            async (Guid versionId, WithdrawLessonRequest request, LessonPublicationService service, CancellationToken ct) =>
+            {
+                await service.WithdrawAsync(versionId, request.Reason, ct);
+                return TypedResults.NoContent();
+            })
+            .WithTags("Administration").RequireAuthorization(Permissions.ContentPublish)
+            .ProducesProblem(400).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
     }
 }
 
 public sealed record PublishLessonRequest(uint ExpectedVersion);
+public sealed record WithdrawLessonRequest(string Reason);

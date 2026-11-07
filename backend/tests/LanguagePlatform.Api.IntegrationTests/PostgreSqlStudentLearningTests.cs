@@ -5,6 +5,7 @@ using System.Security.Claims;
 using LanguagePlatform.Api.Endpoints;
 using LanguagePlatform.Application.Assessment;
 using LanguagePlatform.Application.Catalog;
+using LanguagePlatform.Application.Common;
 using LanguagePlatform.Application.CourseContent;
 using LanguagePlatform.Application.Dictionary;
 using LanguagePlatform.Application.Identity;
@@ -173,9 +174,11 @@ public sealed class PostgreSqlStudentLearningTests
     public Task FiveStageDraftsArePrivateAndCurriculumProgressIsSequential() => PostgreSqlTestSchema.RunAsync(async (connection, db) =>
     {
         await new DevelopmentContentSeeder(db).SeedAsync(CancellationToken.None);
+        var scanner = new TestPdfScanner();
         await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             builder.UseEnvironment("Testing").ConfigureAppConfiguration((_, config) =>
-                config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:LanguagePlatform"] = connection })));
+                config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:LanguagePlatform"] = connection }))
+                .ConfigureServices(services => services.AddSingleton<IPdfMalwareScanner>(scanner)));
         using var student = factory.CreateClient();
         using var author = factory.CreateClient();
         using var publisher = factory.CreateClient();
@@ -216,7 +219,8 @@ public sealed class PostgreSqlStudentLearningTests
         DraftStage[] stages =
         [
             new("reading", 20, 3, greeting, null, questions, TeacherVideo: new("https://example.test/teacher.mp4", "Okuma")),
-            new("speaking", 20, 2, greeting, null, null, EvaluationRubric: "Öğretmen tarafından verilen ölçüt"),
+            new("speaking", 20, 2, greeting, null, null, EvaluationRubric: "Öğretmen tarafından verilen ölçüt",
+                TeacherVideo: new("https://example.test/dialogue.mp4", "Konuşma")),
             new("listening", 20, 2, "private-listening-transcript", null,
                 [new("WordBank", "{{blank}} عليك", [new("سلام", true), new("شكرا", false)], null),
                     new("FillBlank", "أهلاً {{blank}}", null, null, ["بك"])], AudioUrl: "https://example.test/listen.ogg"),
@@ -230,6 +234,11 @@ public sealed class PostgreSqlStudentLearningTests
         var request = new CreateCurriculumVersion("Selamlaşma", true, AttemptSelection.Best, stages);
         using var badWeights = await author.PostAsJsonAsync(slotsUrl + "/1/versions", request with { Stages = stages[..^1] });
         Assert.Equal(HttpStatusCode.BadRequest, badWeights.StatusCode);
+        using var invalidHost = await author.PostAsJsonAsync(slotsUrl + "/1/versions", request with
+        {
+            Stages = [stages[0] with { TeacherVideo = new("https://127.0.0.1/private.mp4", "Internal") }, .. stages[1..]]
+        });
+        Assert.Equal(HttpStatusCode.BadRequest, invalidHost.StatusCode);
         using var draftResponse = await author.PostAsJsonAsync(slotsUrl + "/1/versions", request);
         draftResponse.EnsureSuccessStatusCode();
         var first = (await draftResponse.Content.ReadFromJsonAsync<CurriculumDraftDto>())!;
@@ -246,6 +255,14 @@ public sealed class PostgreSqlStudentLearningTests
         var font = pdf.AddStandard14Font(Standard14Font.Helvetica);
         page.AddText("Reading draft", 12, new PdfPoint(25, 700), font);
         var original = pdf.Build();
+        scanner.Unavailable = true;
+        using var unavailable = await UploadPdfAsync(original);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, unavailable.StatusCode);
+        scanner.Unavailable = false;
+        scanner.Clean = false;
+        using var detected = await UploadPdfAsync(original);
+        Assert.Equal(HttpStatusCode.BadRequest, detected.StatusCode);
+        scanner.Clean = true;
         using var invalidPdf = await UploadPdfAsync("invalid content"u8.ToArray());
         Assert.Equal(HttpStatusCode.BadRequest, invalidPdf.StatusCode);
         using var invalidPdfStructure = await UploadPdfAsync("%PDF-1.7\ninvalid content"u8.ToArray());
@@ -333,6 +350,10 @@ public sealed class PostgreSqlStudentLearningTests
         Assert.Equal("available", partial.Stages[1].Status);
         Assert.Null(partial.FinalScore);
         var speaking = await StartAsync("speaking", "spoken");
+        var dialogueVideo = await student.GetFromJsonAsync<CurriculumStageMediaDto>(
+            firstLesson + $"/stages/{firstStages["speaking"].Id}/media");
+        Assert.Equal("available", dialogueVideo!.Status);
+        Assert.Equal("https://example.test/dialogue.mp4", dialogueVideo.TeacherVideo!.Url);
         var evaluate = $"/api/v1/admin/courses/{curriculum.CourseId}/lessons/{first.LessonId}/assessments/{speaking.AssessmentId}/attempts/{speaking.Id}/speaking-evaluation";
         var rubric = await evaluator.GetFromJsonAsync<SpeakingEvaluationContextDto>(evaluate);
         Assert.Equal(stages[1].EvaluationRubric, rubric!.Rubric);
@@ -389,6 +410,14 @@ public sealed class PostgreSqlStudentLearningTests
         Assert.Equal(replacement.VersionId, fresh.VersionId);
         Assert.Null(fresh.FinalScore);
         Assert.Equal(50, (await student.GetFromJsonAsync<ObjectiveResultDto>($"/api/v1/me/assessment-attempts/{retake.Id}/result"))!.Percentage);
+        var withdrawRoute = $"/api/v1/admin/lesson-versions/{replacement.VersionId}/withdraw";
+        using var withdrawn = await publisher.PostAsJsonAsync(withdrawRoute, new WithdrawLessonRequest("Content correction"));
+        Assert.Equal(HttpStatusCode.NoContent, withdrawn.StatusCode);
+        using var withdrawRetry = await publisher.PostAsJsonAsync(withdrawRoute, new WithdrawLessonRequest("Content correction"));
+        Assert.Equal(HttpStatusCode.NoContent, withdrawRetry.StatusCode);
+        using var afterWithdrawal = await student.GetAsync(stateUrl);
+        Assert.Equal(HttpStatusCode.NotFound, afterWithdrawal.StatusCode);
+        Assert.Equal(1, await db.Set<AuditLog>().CountAsync(x => x.EntityId == replacement.VersionId && x.Action == "content.withdraw"));
 
         async Task<HttpResponseMessage> UploadPdfAsync(byte[] data)
         {
@@ -424,6 +453,15 @@ public sealed class PostgreSqlStudentLearningTests
             return (await response.Content.ReadFromJsonAsync<ObjectiveResultDto>())!.Percentage;
         }
     });
+
+    private sealed class TestPdfScanner : IPdfMalwareScanner
+    {
+        public bool Clean { get; set; } = true;
+        public bool Unavailable { get; set; }
+
+        public Task<bool> IsCleanAsync(ReadOnlyMemory<byte> original, CancellationToken cancellationToken) =>
+            Unavailable ? throw new ServiceUnavailableException("PDF scanning is unavailable.") : Task.FromResult(Clean);
+    }
 
     private static async Task LoginAsync(WebApplicationFactory<Program> factory, HttpClient client, string email, string? permission = null)
     {

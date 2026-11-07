@@ -2,27 +2,33 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using LanguagePlatform.Application.Identity;
 using LanguagePlatform.Domain.Common;
 using LanguagePlatform.Domain.Identity;
+using LanguagePlatform.Domain.Platform;
 using LanguagePlatform.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 
 namespace LanguagePlatform.Infrastructure.Identity;
 
-public sealed class MobileAccountService(
+public sealed partial class MobileAccountService(
     UserManager<ApplicationUser> users,
     SignInManager<ApplicationUser> signIn,
     IOptions<IdentityOptions> identity,
     LanguagePlatformDbContext db,
     TimeProvider clock,
-    IEnumerable<IAccountEmailDelivery> deliveries)
+    IEnumerable<IAccountEmailDelivery> deliveries, ILogger<MobileAccountService> logger)
 {
     public const string SessionClaim = "lp_session";
+    public const string AuthenticationMethodClaim = "lp_amr";
     private const string NonceClaim = "lp_session_nonce";
+    private const string AuthenticatorReplayProvider = "LanguagePlatform.Authenticator";
+    private const string AuthenticatorReplayName = "RecentUses";
     private static readonly EmailAddressAttribute EmailAddress = new();
     private readonly IAccountEmailDelivery? delivery = deliveries.SingleOrDefault();
     public bool HasEmailDelivery => delivery is not null;
@@ -48,7 +54,7 @@ public sealed class MobileAccountService(
             return;
         }
         var code = await users.GenerateEmailConfirmationTokenAsync(user);
-        await delivery!.SendConfirmationAsync(request.Email, user.Id, code, cancellationToken);
+        await TryDeliverAsync(() => delivery!.SendConfirmationAsync(request.Email, user.Id, code, cancellationToken));
     }
 
     public async Task ResendConfirmationAsync(AccountEmail request, CancellationToken cancellationToken)
@@ -57,7 +63,7 @@ public sealed class MobileAccountService(
         var user = await users.FindByEmailAsync(request.Email);
         if (user is not { IsActive: true, EmailConfirmed: false }) return;
         var code = await users.GenerateEmailConfirmationTokenAsync(user);
-        await delivery!.SendConfirmationAsync(request.Email, user.Id, code, cancellationToken);
+        await TryDeliverAsync(() => delivery!.SendConfirmationAsync(request.Email, user.Id, code, cancellationToken));
     }
 
     public async Task ConfirmAsync(AccountConfirmation request)
@@ -74,7 +80,7 @@ public sealed class MobileAccountService(
         var user = await users.FindByEmailAsync(request.Email);
         if (user is not { IsActive: true, EmailConfirmed: true }) return;
         var code = await users.GeneratePasswordResetTokenAsync(user);
-        await delivery!.SendPasswordResetAsync(request.Email, code, cancellationToken);
+        await TryDeliverAsync(() => delivery!.SendPasswordResetAsync(request.Email, code, cancellationToken));
     }
 
     public async Task ResetAsync(AccountPasswordReset request)
@@ -94,8 +100,7 @@ public sealed class MobileAccountService(
         ValidateEmail(request.Email);
         ValidatePassword(request.Password);
         var user = await users.FindByEmailAsync(request.Email);
-        if (user is not { IsActive: true, EmailConfirmed: true, TwoFactorEnabled: false }
-            || !(await signIn.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true)).Succeeded)
+        if (user is null || !await CheckCredentialsAsync(user, request.Password, request.AuthenticatorCode, cancellationToken))
             return null;
 
         var now = clock.GetUtcNow().UtcDateTime;
@@ -104,7 +109,63 @@ public sealed class MobileAccountService(
             UserId = user.Id, FamilyId = Guid.NewGuid(), CreatedAtUtc = now, ExpiresAtUtc = now.AddDays(14)
         };
         db.Add(session);
-        return await IssueAsync(user, session, cancellationToken);
+        return await IssueAsync(user, session, user.TwoFactorEnabled, cancellationToken);
+    }
+
+    public async Task<bool> RequestDeletionAsync(Guid userId, AccountDeletionRequest request, CancellationToken ct)
+    {
+        ValidatePassword(request.Password);
+        var user = await db.Users.SingleOrDefaultAsync(x => x.Id == userId, ct);
+        if (user is null || !await CheckCredentialsAsync(user, request.Password, request.AuthenticatorCode, ct)) return false;
+        user.IsActive = false;
+        user.SecurityStamp = Guid.NewGuid().ToString("N");
+        user.ConcurrencyStamp = Guid.NewGuid().ToString("N");
+        db.Add(new AuditLog
+        {
+            ActorId = userId, EntityId = userId, EntityType = nameof(ApplicationUser), Action = "privacy.deletion.requested",
+            OccurredAtUtc = clock.GetUtcNow().UtcDateTime, CorrelationId = Guid.NewGuid().ToString("N"), RedactedChangesJson = "{}"
+        });
+        await db.SaveChangesAsync(ct);
+        return true;
+    }
+
+    private async Task<bool> CheckCredentialsAsync(ApplicationUser user, string password, string? authenticatorCode,
+        CancellationToken ct)
+    {
+        if (!user.IsActive || !user.EmailConfirmed ||
+            !(await signIn.CheckPasswordSignInAsync(user, password, lockoutOnFailure: true)).Succeeded) return false;
+        if (!user.TwoFactorEnabled) return true;
+        if (authenticatorCode is null) return false;
+        if (authenticatorCode is not { Length: 6 } code || !code.All(char.IsAsciiDigit)
+            || !await users.VerifyTwoFactorTokenAsync(user, identity.Value.Tokens.AuthenticatorTokenProvider, code))
+        {
+            await users.AccessFailedAsync(user);
+            return false;
+        }
+        if (!await ConsumeAuthenticatorCodeAsync(user, code, ct)) return false;
+        user.AccessFailedCount = 0;
+        return true;
+    }
+
+    private async Task<bool> ConsumeAuthenticatorCodeAsync(ApplicationUser user, string code, CancellationToken ct)
+    {
+        var key = await users.GetAuthenticatorKeyAsync(user);
+        if (string.IsNullOrEmpty(key)) return false;
+        var digest = Convert.ToHexString(HMACSHA256.HashData(Encoding.UTF8.GetBytes(key), Encoding.UTF8.GetBytes(code)));
+        var token = await db.UserTokens.FindAsync([user.Id, AuthenticatorReplayProvider, AuthenticatorReplayName], ct);
+        var now = clock.GetUtcNow().ToUnixTimeSeconds();
+        var recent = token?.Value is { } json
+            ? JsonSerializer.Deserialize<Dictionary<string, long>>(json)! : new Dictionary<string, long>(StringComparer.Ordinal);
+        var active = recent.Where(x => x.Value > now - 300).ToDictionary(StringComparer.Ordinal);
+        if (!active.TryAdd(digest, now)) return false;
+        if (token is null)
+        {
+            token = new IdentityUserToken<Guid> { UserId = user.Id, LoginProvider = AuthenticatorReplayProvider, Name = AuthenticatorReplayName };
+            db.UserTokens.Add(token);
+        }
+        token.Value = JsonSerializer.Serialize(active);
+        user.ConcurrencyStamp = Guid.NewGuid().ToString("N");
+        return true;
     }
 
     public async Task<ClaimsPrincipal?> RenewAsync(ClaimsPrincipal principal, CancellationToken cancellationToken)
@@ -112,16 +173,21 @@ public sealed class MobileAccountService(
         var session = await FindSessionAsync(principal, cancellationToken);
         if (session is null) return null;
         var user = await signIn.ValidateSecurityStampAsync(principal);
-        return user is { IsActive: true, EmailConfirmed: true, TwoFactorEnabled: false }
-            ? await IssueAsync(user, session, cancellationToken)
+        return await CanUseSessionAsync(user, principal)
+            ? await IssueAsync(user!, session, user!.TwoFactorEnabled, cancellationToken)
             : null;
     }
 
     public async Task<bool> ValidateAsync(ClaimsPrincipal principal, CancellationToken cancellationToken)
     {
         if (await FindSessionAsync(principal, cancellationToken) is null) return false;
-        return await signIn.ValidateSecurityStampAsync(principal)
-            is { IsActive: true, EmailConfirmed: true, TwoFactorEnabled: false };
+        var user = await signIn.ValidateSecurityStampAsync(principal);
+        if (!await CanUseSessionAsync(user, principal)) return false;
+        var claimed = principal.FindAll(Permissions.ClaimType).Select(x => x.Value).Distinct(StringComparer.Ordinal).ToArray();
+        if (claimed.Length == 0) return true;
+        var active = await db.UserClaims.Where(x => x.UserId == user!.Id && x.ClaimType == Permissions.ClaimType)
+            .Select(x => x.ClaimValue).ToListAsync(cancellationToken);
+        return claimed.All(permission => active.Contains(permission, StringComparer.Ordinal));
     }
 
     public async Task RevokeAsync(ClaimsPrincipal principal, CancellationToken cancellationToken)
@@ -139,7 +205,12 @@ public sealed class MobileAccountService(
          from profile in profiles.DefaultIfEmpty()
          select new CurrentAccountDto(user.Id, user.Email!, profile.DisplayName)).SingleOrDefaultAsync(cancellationToken);
 
-    private async Task<ClaimsPrincipal> IssueAsync(ApplicationUser user, UserSession session, CancellationToken cancellationToken)
+    private async Task<bool> CanUseSessionAsync(ApplicationUser? user, ClaimsPrincipal principal) =>
+        user is { IsActive: true, EmailConfirmed: true }
+        && (!user.TwoFactorEnabled || principal.HasClaim(AuthenticationMethodClaim, "mfa"))
+        && !await users.IsLockedOutAsync(user);
+
+    private async Task<ClaimsPrincipal> IssueAsync(ApplicationUser user, UserSession session, bool mfa, CancellationToken cancellationToken)
     {
         var nonce = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         session.Rotate(Hash(nonce));
@@ -147,6 +218,7 @@ public sealed class MobileAccountService(
         var claims = (ClaimsIdentity)principal.Identity!;
         claims.AddClaim(new Claim(SessionClaim, session.Id.ToString()));
         claims.AddClaim(new Claim(NonceClaim, nonce));
+        if (mfa) claims.AddClaim(new Claim(AuthenticationMethodClaim, "mfa"));
         await db.SaveChangesAsync(cancellationToken);
         return principal;
     }
@@ -165,6 +237,15 @@ public sealed class MobileAccountService(
     }
 
     private static string Hash(string nonce) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(nonce)));
+
+    private async Task TryDeliverAsync(Func<Task> send)
+    {
+        try { await send(); }
+        catch (AccountEmailDeliveryException) { LogDeliveryDeferred(logger); }
+    }
+
+    [LoggerMessage(EventId = 411, Level = LogLevel.Warning, Message = "Account email could not be queued.")]
+    private static partial void LogDeliveryDeferred(ILogger logger);
 
     private static void ValidateEmail(string email) =>
         Guard.Against(string.IsNullOrWhiteSpace(email) || email.Length > 254 || !EmailAddress.IsValid(email), "A valid email is required.");

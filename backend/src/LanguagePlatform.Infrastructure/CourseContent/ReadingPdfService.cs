@@ -9,17 +9,22 @@ using LanguagePlatform.Domain.Reading;
 using LanguagePlatform.Infrastructure.Persistence;
 using LanguagePlatform.Infrastructure.StudentProgress;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 
 namespace LanguagePlatform.Infrastructure.CourseContent;
 
 public sealed class ReadingPdfService(LanguagePlatformDbContext db, IPdfTextExtractor extractor,
-    StudentLearningService learning, TimeProvider clock)
+    StudentLearningService learning, TimeProvider clock, MediaHostPolicy mediaPolicy,
+    IHostEnvironment environment, IEnumerable<IPdfMalwareScanner> scanners)
 {
     public const int MaximumUploadBytes = PdfTextExtractor.MaxBytes;
 
     public async Task<ReadingPdfDraftDto> UploadAsync(Guid owner, Guid versionId, uint revision, string title, string rights,
         Stream stream, CancellationToken ct)
     {
+        var scanner = scanners.SingleOrDefault();
+        if (scanner is null && environment.IsProduction())
+            throw new ServiceUnavailableException("PDF scanning is unavailable.");
         var version = await FindDraftAsync(versionId, revision, ct);
         if (await Sources(versionId).AnyAsync(ct))
             throw new StateConflictException("This version already has a PDF. Create a new draft to replace it.");
@@ -30,7 +35,10 @@ public sealed class ReadingPdfService(LanguagePlatformDbContext db, IPdfTextExtr
         var read = await stream.ReadAtLeastAsync(buffer, buffer.Length, false, ct);
         if (read > MaximumUploadBytes) throw new UploadTooLargeException();
         var original = buffer.AsSpan(0, read).ToArray();
-        var pages = extractor.Extract(original, ct);
+        Guard.Against(original.Length < 8 || !original.AsSpan().StartsWith("%PDF-"u8), "Provide a valid PDF.");
+        if (scanner is not null)
+            Guard.Against(!await scanner.IsCleanAsync(original, ct), "This file did not pass the PDF safety check.");
+        var pages = await extractor.ExtractAsync(original, ct);
         var arabic = LanguageCode.Create("ar");
         var language = await db.Languages.Where(x => x.Code == arabic && x.IsActive).Select(x => x.Id).SingleAsync(ct);
         var material = new ReadingMaterial
@@ -127,7 +135,11 @@ public sealed class ReadingPdfService(LanguagePlatformDbContext db, IPdfTextExtr
         var json = await db.Set<LessonStage>().Where(x => x.Id == stageId && x.LessonVersionId == progress.VersionId)
             .Select(x => x.SettingsJson).SingleAsync(ct);
         var settings = CurriculumStageSettings.Read(json);
-        return new CurriculumStageMediaDto(settings.AudioUrl, settings.TeacherVideo);
+        var audio = mediaPolicy.CanServe(settings.AudioUrl) ? settings.AudioUrl : null;
+        var video = mediaPolicy.CanServe(settings.TeacherVideo?.Url) ? settings.TeacherVideo : null;
+        var blocked = (settings.AudioUrl is not null && audio is null) || (settings.TeacherVideo is not null && video is null);
+        return new CurriculumStageMediaDto(audio, video,
+            blocked ? "unconfigured" : audio is not null || video is not null ? "available" : "unavailable");
     }
 
     private IQueryable<ReadingMaterial> Sources(Guid versionId) =>

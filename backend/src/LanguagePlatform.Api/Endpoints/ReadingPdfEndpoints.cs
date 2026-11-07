@@ -26,7 +26,7 @@ public static class ReadingPdfEndpoints
         }).Accepts<Stream>(Pdf).RequireRateLimiting(UploadRatePolicy)
             .Produces<ReadingPdfDraftDto>().ProducesProblem(400).ProducesProblem(401)
             .ProducesProblem(403).ProducesProblem(404).ProducesProblem(409).ProducesProblem(413).ProducesProblem(415)
-            .ProducesProblem(429);
+            .ProducesProblem(429).ProducesProblem(503);
 
         author.MapGet("", async (Guid versionId, ICurrentActor actor, ReadingPdfService service, CancellationToken ct) =>
         {
@@ -44,7 +44,7 @@ public static class ReadingPdfEndpoints
         author.MapGet("/original", async (Guid versionId, HttpResponse response, ICurrentActor actor,
             ReadingPdfService service, CancellationToken ct) => actor.UserId is { } id
                 ? Download(await service.GetOwnerPdfAsync(id, versionId, ct), response) : Results.Unauthorized())
-            .Produces(StatusCodes.Status200OK, contentType: Pdf).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404);
+            .Produces<Stream>(StatusCodes.Status200OK, contentType: Pdf).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404);
 
         var student = endpoints.MapGroup("/api/v1/me/courses/{courseId:guid}/lessons/{lessonId:guid}")
             .WithTags("Reading materials").RequireAuthorization();
@@ -59,7 +59,7 @@ public static class ReadingPdfEndpoints
         student.MapGet("/reading-material/original", async (Guid courseId, Guid lessonId, HttpResponse response,
             ICurrentActor actor, ReadingPdfService service, CancellationToken ct) => actor.UserId is { } id
                 ? Download(await service.GetPublishedPdfAsync(id, courseId, lessonId, ct), response) : Results.Unauthorized())
-            .Produces(StatusCodes.Status200OK, contentType: Pdf).ProducesProblem(401).ProducesProblem(404);
+            .Produces<Stream>(StatusCodes.Status200OK, contentType: Pdf).ProducesProblem(401).ProducesProblem(404);
 
         student.MapGet("/stages/{stageId:guid}/media", async (Guid courseId, Guid lessonId, Guid stageId,
             ICurrentActor actor, ReadingPdfService service, CancellationToken ct) =>

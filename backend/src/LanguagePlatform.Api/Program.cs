@@ -9,13 +9,25 @@ using LanguagePlatform.Infrastructure.Assessment;
 using LanguagePlatform.Infrastructure.CourseContent;
 using LanguagePlatform.Infrastructure.Dictionary;
 using LanguagePlatform.Infrastructure.Persistence;
+using LanguagePlatform.Infrastructure.Identity;
 using LanguagePlatform.Infrastructure.StudentProgress;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.RateLimiting;
 using Npgsql;
 
-var builder = WebApplication.CreateBuilder(args);
+if (args is [IsolatedPdfTextExtractor.WorkerCommand])
+{
+    Environment.ExitCode = await PdfExtractionWorker.RunAsync();
+    return;
+}
+
+var operatorMode = args is ["operator", ..];
+var builder = WebApplication.CreateBuilder(operatorMode ? [] : args);
+ProductionSecurity.Configure(builder);
+SmtpAccountEmailDelivery.Configure(builder.Services, builder.Configuration);
+if (builder.Environment.IsProduction())
+    builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 4 * 1024 * 1024);
 
 builder.Services.AddSingleton(services =>
     new StudentReleaseOptions((builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing"))
@@ -23,8 +35,8 @@ builder.Services.AddSingleton(services =>
 
 builder.Services.AddDbContext<LanguagePlatformDbContext>((services, options) =>
     options.UseNpgsql(
-        services.GetRequiredService<IConfiguration>().GetConnectionString("LanguagePlatform")
-            ?? "Host=localhost;Port=5432;Database=language_platform_dev;Username=postgres;Include Error Detail=false",
+        ProductionSecurity.DatabaseConnection(services.GetRequiredService<IConfiguration>(),
+            services.GetRequiredService<IHostEnvironment>()),
         npgsql => npgsql.MigrationsAssembly(typeof(LanguagePlatformDbContext).Assembly.FullName)
             .EnableRetryOnFailure()));
 
@@ -41,13 +53,32 @@ builder.Services.AddScoped<LessonPublicationService>();
 builder.Services.AddScoped<CurriculumAuthoringService>();
 builder.Services.AddScoped<CurriculumQueries>();
 builder.Services.AddScoped<ReadingPdfService>();
-builder.Services.AddSingleton<IPdfTextExtractor, PdfTextExtractor>();
+builder.Services.AddScoped<OperatorAccessService>();
+if (builder.Environment.IsProduction())
+{
+    var executable = Environment.ProcessPath ?? throw new InvalidOperationException("The PDF worker executable could not be resolved.");
+    var entryPoint = Path.GetFileNameWithoutExtension(executable).Equals("dotnet", StringComparison.OrdinalIgnoreCase)
+        ? typeof(Program).Assembly.Location : null;
+    builder.Services.AddSingleton<IPdfTextExtractor>(new IsolatedPdfTextExtractor(executable, entryPoint));
+}
+else
+{
+    builder.Services.AddSingleton<IPdfTextExtractor, PdfTextExtractor>();
+}
+builder.Services.AddSingleton(services => new MediaHostPolicy(builder.Environment.IsProduction(),
+    services.GetRequiredService<IConfiguration>().GetSection("Media:AllowedHosts").Get<string[]>() ?? []));
+if (builder.Configuration.GetValue<bool>("PdfScanning:Enabled"))
+{
+    var scannerPort = builder.Configuration.GetValue("PdfScanning:Port", 3310);
+    if (scannerPort is < 1 or > 65535) throw new InvalidOperationException("Configure a valid PDF scanner port.");
+    builder.Services.AddSingleton<IPdfMalwareScanner>(new ClamAvPdfScanner(System.Net.IPAddress.Loopback, scannerPort));
+}
 
 builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
     context.ProblemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddHealthChecks().AddCheck<PostgreSqlReadiness>("postgresql", tags: ["ready"]);
-builder.Services.AddMobileAuthentication();
+builder.Services.AddMobileAuthentication(builder.Environment.IsProduction());
 builder.Services.AddRateLimiter(options => options.AddConcurrencyLimiter(ReadingPdfEndpoints.UploadRatePolicy,
     limiter =>
     {
@@ -57,10 +88,31 @@ builder.Services.AddRateLimiter(options => options.AddConcurrencyLimiter(Reading
 builder.Services.AddOpenApi("v1", OpenApiAuthentication.Configure);
 
 var app = builder.Build();
+ProductionSecurity.VerifyHost(app);
+if (operatorMode)
+{
+    Environment.ExitCode = await OperatorCommand.RunAsync(app, args, CancellationToken.None);
+    await app.DisposeAsync();
+    return;
+}
 
 app.UseExceptionHandler();
 app.UseStatusCodePages();
-if (!app.Environment.IsEnvironment("Testing"))
+if (app.Configuration.GetSection("ReverseProxy:KnownProxies").GetChildren().Any()) app.UseForwardedHeaders();
+if (app.Environment.IsProduction())
+{
+    app.UseHsts();
+    app.Use(async (context, next) =>
+    {
+        if (!context.Request.IsHttps)
+        {
+            await Results.Problem(statusCode: 400, title: "HTTPS is required.").ExecuteAsync(context);
+            return;
+        }
+        await next(context);
+    });
+}
+else if (!app.Environment.IsEnvironment("Testing"))
 {
     app.UseHttpsRedirection();
 }

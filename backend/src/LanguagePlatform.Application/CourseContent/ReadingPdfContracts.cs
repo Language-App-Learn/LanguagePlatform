@@ -2,7 +2,12 @@ namespace LanguagePlatform.Application.CourseContent;
 
 public interface IPdfTextExtractor
 {
-    IReadOnlyList<ExtractedPdfPage> Extract(byte[] original, CancellationToken cancellationToken);
+    Task<IReadOnlyList<ExtractedPdfPage>> ExtractAsync(byte[] original, CancellationToken cancellationToken);
+}
+
+public interface IPdfMalwareScanner
+{
+    Task<bool> IsCleanAsync(ReadOnlyMemory<byte> original, CancellationToken cancellationToken);
 }
 
 public sealed record ExtractedPdfPage(int Page, string Text);

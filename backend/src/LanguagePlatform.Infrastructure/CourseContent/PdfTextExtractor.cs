@@ -10,7 +10,10 @@ public sealed class PdfTextExtractor : IPdfTextExtractor
     internal const int MaxBytes = 2 * 1024 * 1024;
     internal const int MaxPages = 30;
 
-    public IReadOnlyList<ExtractedPdfPage> Extract(byte[] original, CancellationToken cancellationToken)
+    public Task<IReadOnlyList<ExtractedPdfPage>> ExtractAsync(byte[] original, CancellationToken cancellationToken) =>
+        Task.FromResult(Extract(original, cancellationToken));
+
+    public static IReadOnlyList<ExtractedPdfPage> Extract(byte[] original, CancellationToken cancellationToken)
     {
         Guard.Against(original.Length is < 8 or > MaxBytes || !original.AsSpan().StartsWith("%PDF-"u8),
             "Provide a PDF no larger than 2 MiB.");

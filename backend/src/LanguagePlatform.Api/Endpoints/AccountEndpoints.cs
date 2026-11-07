@@ -78,6 +78,21 @@ public static class AccountEndpoints
             return account is null ? Results.Unauthorized() : Results.Ok(account);
         }).WithTags("Account").RequireAuthorization().Produces<CurrentAccountDto>().ProducesProblem(401);
 
+        var privacy = endpoints.MapGroup("/api/v1/me/privacy").WithTags("Account privacy").RequireAuthorization()
+            .RequireRateLimiting(MobileAuthentication.AccountRatePolicy);
+        privacy.MapGet("/export", async (int? offset, int? limit, ICurrentActor actor, HttpContext context,
+            AccountDataExportService exports, CancellationToken ct) =>
+        {
+            if (actor.UserId is not { } userId) return Results.Unauthorized();
+            context.Response.Headers.CacheControl = "private, no-store";
+            return Results.Ok(await exports.GetAsync(userId, offset ?? 0, limit ?? 25, ct));
+        }).Produces<AccountDataExport>().ProducesProblem(400).ProducesProblem(401).ProducesProblem(429);
+        privacy.MapPost("/deletion-request", async (AccountDeletionRequest request, ICurrentActor actor,
+            MobileAccountService accounts, CancellationToken ct) =>
+            actor.UserId is { } userId && await accounts.RequestDeletionAsync(userId, request, ct)
+                ? Results.Accepted() : Results.Unauthorized())
+            .Produces(202).ProducesProblem(400).ProducesProblem(401).ProducesProblem(409).ProducesProblem(429);
+
         var preferences = endpoints.MapGroup("/api/v1/me/preferences").WithTags("Account").RequireAuthorization();
         preferences.MapGet("", async (ICurrentActor actor, AccountPreferencesService service, CancellationToken ct) =>
         {

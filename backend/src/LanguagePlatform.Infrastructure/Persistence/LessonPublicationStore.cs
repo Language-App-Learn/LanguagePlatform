@@ -11,10 +11,11 @@ using LanguagePlatform.Domain.Catalog;
 using LanguagePlatform.Infrastructure.Assessment;
 using LanguagePlatform.Infrastructure.CourseContent;
 using LanguagePlatform.Domain.Reading;
+using LanguagePlatform.Application.Common;
 
 namespace LanguagePlatform.Infrastructure.Persistence;
 
-public sealed class LessonPublicationStore(LanguagePlatformDbContext db) : ILessonPublicationStore
+public sealed class LessonPublicationStore(LanguagePlatformDbContext db, MediaHostPolicy mediaPolicy) : ILessonPublicationStore
 {
     public Task<LessonVersion?> FindAsync(Guid versionId, CancellationToken cancellationToken) =>
         db.Set<LessonVersion>().SingleOrDefaultAsync(x => x.Id == versionId, cancellationToken);
@@ -46,6 +47,35 @@ public sealed class LessonPublicationStore(LanguagePlatformDbContext db) : ILess
         // A single SaveChanges is atomic: publication, audit, outbox and xmin update commit together.
         await db.SaveChangesAsync(cancellationToken);
     }
+
+    public Task WithdrawAsync(Guid versionId, Guid actorId, string reason, CancellationToken cancellationToken) =>
+        db.Database.CreateExecutionStrategy().ExecuteAsync(async ct =>
+        {
+            db.ChangeTracker.Clear();
+            await using var transaction = await db.Database.BeginTransactionAsync(ct);
+            var publication = db.Set<ContentPublication>().Where(x => x.LessonVersionId == versionId);
+            var now = DateTime.UtcNow;
+            var changed = await publication.Where(x => x.WithdrawnAtUtc == null).ExecuteUpdateAsync(setters =>
+                setters.SetProperty(x => x.WithdrawnAtUtc, now).SetProperty(x => x.Reason, reason), ct);
+            if (changed == 0)
+            {
+                if (!await publication.AnyAsync(ct)) throw new ResourceNotFoundException();
+                return;
+            }
+            var correlation = Guid.NewGuid().ToString("N");
+            db.Add(new AuditLog
+            {
+                ActorId = actorId, Action = "content.withdraw", EntityType = nameof(LessonVersion), EntityId = versionId,
+                OccurredAtUtc = now, CorrelationId = correlation, RedactedChangesJson = "{}"
+            });
+            db.Add(new OutboxMessage
+            {
+                EventType = "LessonWithdrawn", SchemaVersion = 1, PayloadJson = JsonSerializer.Serialize(new { LessonVersionId = versionId }),
+                OccurredAtUtc = now, AvailableAtUtc = now, AttemptCount = 0, CorrelationId = correlation
+            });
+            await db.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
+        }, cancellationToken);
 
     private async Task ValidateCurriculumContentAsync(Guid versionId, CancellationToken ct)
     {
@@ -80,6 +110,8 @@ public sealed class LessonPublicationStore(LanguagePlatformDbContext db) : ILess
         foreach (var stage in stages.OrderBy(x => x.DisplayOrder))
         {
             var settings = CurriculumStageSettings.Read(stage.SettingsJson);
+            if (settings.AudioUrl is { } audio) mediaPolicy.Validate(audio);
+            if (settings.TeacherVideo is { } video) mediaPolicy.Validate(video.Url);
             if (stage.StageType == "reading")
                 Guard.Against(!arabicTextStages.Contains(stage.Id) && !reviewedPdf, "Reading needs reviewed Arabic text.");
             if (stage.StageType == "speaking")

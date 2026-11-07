@@ -2,6 +2,8 @@
 
 This document describes the implemented ASP.NET Core v1 API. The latest Flutter contract review used `origin/Flutter` at `d64c2e342320db721384b57f76f8c6be9d68c2b4`. See the [five-stage lesson contract](FIVE_STAGE_LESSON_CONTRACT.md) for the initial student release, stage states and publication availability.
 
+Use an environment-specific HTTPS API origin with the same `/api/v1` routes. The repository contains the [generated OpenAPI document](openapi.v1.json). The deployed API origin is an operator setting. Keep demo and real environment data separate.
+
 ## Transport, identifiers and errors
 
 - JSON uses camelCase. Backend identifiers are UUID strings. Store and pass them as opaque Dart `String` values. Demo slugs and IDs are separate from server UUIDs. Course lookup takes a UUID. Slug is the catalog cursor only.
@@ -39,7 +41,7 @@ Example request: `GET /api/v1/catalog/courses?source=tr&target=ar&locale=tr&limi
 | POST `/api/v1/auth/register` | Public | `{email,password}` → 202 generic acceptance. 400 for invalid input/password policy. 503 without configured email delivery. |
 | POST `/api/v1/auth/confirm-email` | Public | `{userId,code}` → 204. 400 for invalid or expired code. |
 | POST `/api/v1/auth/confirm-email/resend` | Public | `{email}` → 202 generic acceptance or 503 without delivery. |
-| POST `/api/v1/auth/login` | Public | `{email,password}` → 200 `{tokenType,accessToken,expiresIn,refreshToken}`. 400 invalid request. 401 invalid, inactive, locked, unconfirmed or currently unsupported MFA account. |
+| POST `/api/v1/auth/login` | Public | `{email,password,authenticatorCode?}` → 200 `{tokenType,accessToken,expiresIn,refreshToken}`. MFA accounts supply a fresh six-digit code. 400 invalid request and 401 rejected credentials or unavailable account. |
 | POST `/api/v1/auth/refresh` | Public with valid refresh ticket | `{refreshToken}` → 200 token pair. 401 invalid/expired/replayed ticket. 409 on concurrent state change. |
 | POST `/api/v1/auth/logout` | Bearer | Empty body → 204. 401 invalid session, 409 on concurrent update. |
 | POST `/api/v1/auth/password-reset/request` | Public | `{email}` → 202 generic acceptance, 400 invalid input or 503 without delivery. |
@@ -48,7 +50,12 @@ Example request: `GET /api/v1/catalog/courses?source=tr&target=ar&locale=tr&limi
 | GET `/api/v1/me/preferences` | Bearer | 200 preferences or 404 if not configured. |
 | PUT `/api/v1/me/preferences` | Bearer | `{uiLanguageId,learningPathId,dailyGoalMinutes,notificationsEnabled}` → 200 preferences. Invalid or inactive selections return 400. Concurrent creation/update can return 409. |
 
-Account body fields are strings except UUID `userId`. Email is at most 254 characters and must have valid syntax. Passwords are capped at 256 characters. New passwords use the Identity policy including length ≥12, mixed case, digit and symbol. Protected tickets are opaque strings. `expiresIn` is integer seconds (600). Sessions have an absolute fourteen-day deadline. Account public routes are subject to 429 throttling. An active confirmed account is required. Confirmation and reset are tested with a test adapter. The deployed API needs a real `IAccountEmailDelivery` adapter before registration/dispatch is available.
+Account body fields are strings except UUID `userId`. Email is at most 254 characters and passwords at most 256. New passwords follow the Identity policy including length ≥12, mixed case, digit and symbol. Tickets are opaque. `expiresIn` is integer seconds (600) and sessions have an absolute fourteen-day deadline. A coordinated refresh must replace both tickets. On concurrent refresh, one succeeds and the other can receive 401 or 409. Login requires an active confirmed account. Authenticator codes already consumed are rejected. Account endpoints are rate limited. Configured SMTP dispatch is asynchronous, so 202 is generic acceptance. When mail is unavailable, use resend after recovery. No configured adapter returns 503.
+
+| Method and path | Auth | Result |
+| --- | --- | --- |
+| GET `/api/v1/me/privacy/export?offset=0&limit=25` | Bearer | Paged account, preferences, enrollments, progress, attempts and submitted answers. Limit 1–50. Apply `nextOffset` to continue each collection. Response is private and not cacheable. |
+| POST `/api/v1/me/privacy/deletion-request` | Bearer | `{password,authenticatorCode?}` → 202. The account is immediately deactivated and its sessions invalidated. 202 is acceptance for operator review. |
 
 Preferences add `sourceLanguageId` and `targetLanguageId` to the update shape. Both are nullable UUIDs derived from `learningPathId`, which is nullable. `uiLanguageId` is independently required. `dailyGoalMinutes` is an integer from 1–1440. `notificationsEnabled` is boolean. Example response:
 
@@ -102,4 +109,4 @@ Vocabulary list items are `{id,languageCode,lemma,partOfSpeech,isFavorite}`. Def
 4. Keep demo quiz models separate. They require a correct answer for local scoring. A remote attempt needs a presentation model with no answer key and a submission adapter that uses snapshot IDs. Render the server result instead of injecting fabricated correct IDs into the demo model.
 5. Enable auth only when test/production delivery and key storage are provisioned. Then bind the authenticated repositories for preferences, enrollment, progress, assessments and favorites. Never merge `lp.progress` or `lp.vocabulary` demo state into accounts by default.
 
-Pending surfaces include profile edits, MFA and email delivery, course/editor management, multi-type or localized questions, review scheduling/history, offline sync, signed media, subscriptions and AI workflows. They have no implemented client contract here.
+For offline use, persist only the student's pending submissions and the attempt/version IDs under the account that created them. On reconnect, resume from the server's progress and attempt result, and reuse the original idempotency key. If the server returns 404 or a different version, refresh published content and reconcile without moving answers to a new attempt. Keep offline practice results local. There is no bulk reconciliation API. Pending surfaces include profile edits, fully approved account purge, review scheduling, signed media, subscriptions and automated speech.

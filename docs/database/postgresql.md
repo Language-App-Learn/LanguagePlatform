@@ -31,3 +31,13 @@ Verify the server identity, environment, database name, current migration histor
 Set `LANGUAGEPLATFORM_TEST_CONNECTION` locally for a dedicated PostgreSQL 18 `language_platform_test` on localhost, 127.0.0.1 or ::1. The test runner verifies the connected server version and database name before creating an isolated schema with a random name. It migrates only that schema and drops only the schema it created. It never uses the API development connection. Missing test configuration is reported as a skip.
 
 Tests verify the complete migration history, FK/restrict and check violations, unique email/directional paths, rollback, UTC/UUID/JSONB column types, and stale-row detection with `xmin`. HTTP flows cover published visibility, session rotation, two-user access boundaries, snapshot grading, idempotency and publication audit. No substitute database provider is used.
+
+## Production migration and recovery
+
+1. Verify the host, database, current user, PostgreSQL major version and TLS. Use a dedicated, restricted application role without schema ownership or DDL rights. Use a separately authorized migration role for DDL. Grant the application role access only to the tables and sequences needed for runtime and read access to the migration history.
+2. Verify a recent encrypted backup and a restore rehearsal. Agree on retention, recovery time and permitted data loss. Monitor backup freshness, WAL, database size, locks and the largest tables. Restrict backup access to operators.
+3. Generate and review the idempotent SQL against the exact migration history. Plan for locks and schedule the authorized change. Run the reviewed SQL with error-stop enabled.
+4. Compare migration history, run integrity queries, check readiness and verify sign-in and a representative learner read.
+5. If integrity fails, stop writes, preserve evidence and select a reviewed forward fix or restore from the verified backup into a separate target. Confirm recovery and pending privacy requests before redirecting traffic.
+
+For a disposable PostgreSQL 18 rehearsal, generate SQL with `dotnet ef migrations script --idempotent --no-build --project backend/src/LanguagePlatform.Infrastructure --startup-project backend/src/LanguagePlatform.Api --output backend/TestResults/production-review.sql`. Run `backend/tools/Test-PostgreSqlBackup.ps1 -PostgreSqlBin <path> -MigrationSql backend/TestResults/production-review.sql` with PowerShell 7. The script creates its own local cluster and compares restored migration history and a synthetic Arabic UTF-8 sample.

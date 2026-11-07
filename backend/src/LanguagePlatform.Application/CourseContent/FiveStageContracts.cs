@@ -10,7 +10,7 @@ public sealed record DraftStage(string Kind, decimal? Weight, int MaximumAttempt
     string? TurkishText, IReadOnlyList<DraftQuestion>? Questions, string? EvaluationRubric = null,
     string? AudioUrl = null, TeacherVideoDto? TeacherVideo = null);
 public sealed record TeacherVideoDto(string Url, string Title);
-public sealed record CurriculumStageMediaDto(string? AudioUrl, TeacherVideoDto? TeacherVideo);
+public sealed record CurriculumStageMediaDto(string? AudioUrl, TeacherVideoDto? TeacherVideo, string Status = "unavailable");
 public sealed record CreateCurriculumVersion(string Title, bool ApproveWeights, AttemptSelection AttemptSelection,
     IReadOnlyList<DraftStage> Stages);
 public sealed record CurriculumLevelDto(Guid Id, string Code, int Order, int Capacity);

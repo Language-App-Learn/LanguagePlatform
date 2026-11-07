@@ -2,6 +2,7 @@ namespace LanguagePlatform.Application.Identity;
 
 public static class Permissions
 {
+    public const string ClaimType = "permission";
     public const string ContentEdit = "content.edit";
     public const string ContentPublish = "content.publish";
     public const string AssessmentEvaluate = "assessment.evaluate";
