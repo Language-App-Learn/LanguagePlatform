@@ -1,0 +1,24 @@
+@LanguagePlatform_Api_HostAddress = http://localhost:5150
+
+GET {{LanguagePlatform_Api_HostAddress}}/health
+Accept: text/plain
+
+###
+
+GET {{LanguagePlatform_Api_HostAddress}}/api/v1/catalog/languages
+Accept: application/json
+
+###
+
+GET {{LanguagePlatform_Api_HostAddress}}/api/v1/catalog/learning-paths
+Accept: application/json
+
+###
+
+GET {{LanguagePlatform_Api_HostAddress}}/api/v1/catalog/programs
+Accept: application/json
+
+###
+
+GET {{LanguagePlatform_Api_HostAddress}}/api/v1/catalog/courses
+Accept: application/json

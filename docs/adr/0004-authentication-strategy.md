@@ -1,0 +1,7 @@
+# ADR 0004 — ASP.NET Core Identity and mobile bearer sessions
+
+ASP.NET Core Identity owns password hashing, normalized users, lockout, confirmation and password reset. Sign-in requires an active and confirmed account. The mobile API uses the framework's opaque bearer access and refresh tickets with Data Protection. The access lifetime is ten minutes. Session expiration is fixed at fourteen days from login. Refresh rotates the session nonce and invalidates the previous ticket pair. PostgreSQL xmin prevents two successful updates of the same session. Logout revokes the session. Password reset changes the Identity security stamp, invalidating old tickets.
+
+The validated principal supplies the account identifier. Backend policies check permissions at privileged endpoints. Students cannot submit another learner's ID. The publication policy requires a trusted `permission=content.publish` claim. Update the security stamp when removing grants. No admin bootstrap or public grant endpoints are configured.
+
+Email confirmation and reset dispatch require an `IAccountEmailDelivery` adapter. Requests that cannot be handled because an adapter is absent return 503. The integration test adapter captures tokens for tests. Deploy with a durable provider, shared protected Data Protection keys, TLS, and trusted proxy configuration. Two-factor-enabled accounts are refused by the current mobile login until the second-factor flow is implemented. A future browser administration frontend can use a separate secure session strategy.

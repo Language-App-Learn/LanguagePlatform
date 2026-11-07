@@ -3,6 +3,10 @@
 **/obj/
 .vs/
 *.user
+TestResults/
+*.trx
+*.coverage
+coverage/
 
 # Flutter
 .dart_tool/
