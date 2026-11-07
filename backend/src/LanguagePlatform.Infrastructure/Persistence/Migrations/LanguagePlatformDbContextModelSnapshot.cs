@@ -2260,6 +2260,10 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("published_at_utc");
 
+                    b.Property<int>("ReadingMaterialRevision")
+                        .HasColumnType("integer")
+                        .HasColumnName("reading_material_revision");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -3788,6 +3792,10 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("copyright_notice");
 
+                    b.Property<string>("ExtractedPagesJson")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("extracted_pages_json");
+
                     b.Property<Guid>("LanguageId")
                         .HasColumnType("uuid")
                         .HasColumnName("language_id");
@@ -3796,9 +3804,17 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("lesson_version_id");
 
+                    b.Property<byte[]>("OriginalPdf")
+                        .HasColumnType("bytea")
+                        .HasColumnName("original_pdf");
+
                     b.Property<Guid?>("PdfAssetId")
                         .HasColumnType("uuid")
                         .HasColumnName("pdf_asset_id");
+
+                    b.Property<DateTime?>("ReviewedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reviewed_at_utc");
 
                     b.Property<DateTime>("RightsConfirmedAtUtc")
                         .HasColumnType("timestamp with time zone")
@@ -3818,13 +3834,20 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("LanguageId");
 
-                    b.HasIndex("LessonVersionId");
-
                     b.HasIndex("PdfAssetId");
 
                     b.HasIndex("UploadedBy");
 
-                    b.ToTable("reading_materials", (string)null);
+                    b.HasIndex("LessonVersionId");
+
+                    b.HasIndex(new[] { "LessonVersionId" }, "UX_reading_materials_inline_pdf_version")
+                        .IsUnique()
+                        .HasFilter("original_pdf IS NOT NULL");
+
+                    b.ToTable("reading_materials", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_reading_materials_inline_pdf", "original_pdf IS NULL OR (octet_length(original_pdf) BETWEEN 8 AND 2097152 AND extracted_pages_json IS NOT NULL)");
+                        });
                 });
 
             modelBuilder.Entity("LanguagePlatform.Domain.Reading.ReadingPassage", b =>

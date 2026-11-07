@@ -13,6 +13,7 @@ The chain preserves `InitialLearningCatalog`, `AddIdentityAndMediaFoundation`, `
 - `AddLearningPathPreference`: nullable directional path FK, a matching index and EF concurrency mapping to PostgreSQL's existing system `xmin` column.
 - `AddObjectiveAssessmentAndFavorites`: nullable attempt deadline and pass threshold snapshots with a check constraint. Existing attempts stay readable to existing stores but lack the snapshot required by the new objective API. Existing saved words are initialized as favorites. The SQL uses a boolean default.
 - `AddFiveStageCurriculum`: nullable lesson level and position, with a foreign key, a paired range check and a unique level/position index. Adds course/version curriculum flags and a version weight-approval flag. Existing records default to the legacy policy. The version check requires a threshold of 60 and explicit weight approval when published under the new policy.
+- `AddReviewedLessonPdf`: nullable original PDF bytes, extracted page JSON and review time on existing reading materials. Adds a filtered uniqueness index and a 2 MiB check for inline PDFs, plus a lesson version counter used with `xmin` to serialize material edits and review. The migration keeps existing PDF asset references and all prior rows and indexes.
 
 From the repository root, restore/build, then use the following read-only EF checks:
 

@@ -32,9 +32,19 @@ public static class FiveStageEndpoints
             .Produces<CurriculumDraftDto>().ProducesProblem(400).ProducesProblem(401).ProducesProblem(403)
             .ProducesProblem(404).ProducesProblem(409);
         authors.MapPost("/versions/{versionId:guid}/review", async (Guid versionId, ReviewCurriculumVersion request,
-            CurriculumAuthoringService service, CancellationToken ct) =>
-            TypedResults.Ok(await service.ReviewAsync(versionId, request.ExpectedVersion, ct)))
+            ICurrentActor actor, CurriculumAuthoringService service, CancellationToken ct) =>
+            actor.UserId is { } id
+                ? Results.Ok(await service.ReviewAsync(id, versionId, request.ExpectedVersion, ct))
+                : Results.Unauthorized())
+            .Produces<CurriculumDraftDto>()
             .ProducesProblem(400).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        endpoints.MapPost("/api/v1/admin/five-stage/courses/{courseId:guid}/publish",
+            async (Guid courseId, CurriculumAuthoringService service, CancellationToken ct) =>
+            {
+                await service.PublishCourseAsync(courseId, ct);
+                return TypedResults.NoContent();
+            }).RequireAuthorization(Permissions.ContentPublish).WithTags("Five-stage authoring")
+            .ProducesProblem(400).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404);
     }
 
     private static IResult Present<T>(T? result) where T : class =>

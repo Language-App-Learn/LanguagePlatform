@@ -4,9 +4,13 @@ namespace LanguagePlatform.Application.CourseContent;
 
 public sealed record CreateCurriculumCourse(string Slug, string Title, string? Description);
 public sealed record DraftChoice(string Text, bool IsCorrect);
-public sealed record DraftQuestion(string Kind, string Prompt, IReadOnlyList<DraftChoice>? Options, bool? CorrectValue);
+public sealed record DraftQuestion(string Kind, string Prompt, IReadOnlyList<DraftChoice>? Options, bool? CorrectValue,
+    IReadOnlyList<string>? AcceptedAnswers = null, IReadOnlyList<int>? CorrectOrder = null, decimal MaximumScore = 1);
 public sealed record DraftStage(string Kind, decimal? Weight, int MaximumAttempts, string? ArabicText,
-    string? TurkishText, IReadOnlyList<DraftQuestion>? Questions);
+    string? TurkishText, IReadOnlyList<DraftQuestion>? Questions, string? EvaluationRubric = null,
+    string? AudioUrl = null, TeacherVideoDto? TeacherVideo = null);
+public sealed record TeacherVideoDto(string Url, string Title);
+public sealed record CurriculumStageMediaDto(string? AudioUrl, TeacherVideoDto? TeacherVideo);
 public sealed record CreateCurriculumVersion(string Title, bool ApproveWeights, AttemptSelection AttemptSelection,
     IReadOnlyList<DraftStage> Stages);
 public sealed record CurriculumLevelDto(Guid Id, string Code, int Order, int Capacity);

@@ -12,6 +12,7 @@ using LanguagePlatform.Infrastructure.Persistence;
 using LanguagePlatform.Infrastructure.StudentProgress;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.RateLimiting;
 using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,12 +40,20 @@ builder.Services.AddScoped<ILessonPublicationStore, LessonPublicationStore>();
 builder.Services.AddScoped<LessonPublicationService>();
 builder.Services.AddScoped<CurriculumAuthoringService>();
 builder.Services.AddScoped<CurriculumQueries>();
+builder.Services.AddScoped<ReadingPdfService>();
+builder.Services.AddSingleton<IPdfTextExtractor, PdfTextExtractor>();
 
 builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
     context.ProblemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddHealthChecks().AddCheck<PostgreSqlReadiness>("postgresql", tags: ["ready"]);
 builder.Services.AddMobileAuthentication();
+builder.Services.AddRateLimiter(options => options.AddConcurrencyLimiter(ReadingPdfEndpoints.UploadRatePolicy,
+    limiter =>
+    {
+        limiter.PermitLimit = 2;
+        limiter.QueueLimit = 0;
+    }));
 builder.Services.AddOpenApi("v1", OpenApiAuthentication.Configure);
 
 var app = builder.Build();
@@ -75,6 +84,7 @@ app.MapObjectiveAssessmentEndpoints();
 app.MapVocabularyEndpoints();
 app.MapAdminPublicationEndpoints();
 app.MapFiveStageEndpoints();
+app.MapReadingPdfEndpoints();
 
 await InitializeDatabaseWhenRequestedAsync(app);
 await app.RunAsync();

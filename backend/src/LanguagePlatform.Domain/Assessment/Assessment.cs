@@ -9,6 +9,8 @@ public sealed class Assessment : PlatformEntity
     public required decimal PassingScore { get; init; }
     public required int MaximumAttempts { get; init; }
     public int? TimeLimitSeconds { get; init; }
-    public bool IsPublished { get; init; }
+    public bool IsPublished { get; private set; }
+
+    public void Publish() => IsPublished = true;
 }
 

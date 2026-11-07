@@ -3,11 +3,14 @@ using LanguagePlatform.Application.Assessment;
 using LanguagePlatform.Application.Common;
 using LanguagePlatform.Application.CourseContent;
 using LanguagePlatform.Domain.Assessment;
+using LanguagePlatform.Domain.Catalog;
 using LanguagePlatform.Domain.Common;
 using LanguagePlatform.Domain.CourseContent;
 using LanguagePlatform.Domain.LessonEngine;
+using LanguagePlatform.Domain.Platform;
 using LanguagePlatform.Domain.StudentProgress;
 using LanguagePlatform.Infrastructure.Persistence;
+using LanguagePlatform.Infrastructure.CourseContent;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using AssessmentEntity = LanguagePlatform.Domain.Assessment.Assessment;
@@ -16,8 +19,6 @@ namespace LanguagePlatform.Infrastructure.Assessment;
 
 public sealed class ObjectiveAssessmentService(LanguagePlatformDbContext db, IPublishedContentQueries content, TimeProvider clock)
 {
-    private const string Choice = "MultipleChoice";
-    private const string Boolean = "TrueFalse";
     private const int MaximumQuestions = 100;
 
     public async Task<ObjectiveAttemptDto?> StartAsync(Guid userId, Guid courseId, Guid lessonId, Guid assessmentId,
@@ -31,16 +32,18 @@ public sealed class ObjectiveAssessmentService(LanguagePlatformDbContext db, IPu
         var number = (await db.Set<AssessmentAttempt>()
             .Where(x => x.StudentId == userId && x.AssessmentId == assessmentId)
             .MaxAsync(x => (int?)x.AttemptNumber, ct) ?? 0) + 1;
-        var maximum = await db.Set<LessonStage>().Where(x => x.Id == available.LessonStageId)
-            .Select(x => x.MaximumAttempts).SingleAsync(ct);
-        if (number > Math.Min(maximum, available.MaximumAttempts)) throw new StateConflictException("Attempt limit reached.");
+        var stage = await db.Set<LessonStage>().AsNoTracking().SingleAsync(x => x.Id == available.LessonStageId, ct);
+        var isSpeaking = stage.StageType == "speaking"
+            && await db.Set<LessonVersion>().AnyAsync(x => x.Id == stage.LessonVersionId && x.UsesFiveStageCurriculum, ct);
+        if (number > Math.Min(stage.MaximumAttempts, available.MaximumAttempts)) throw new StateConflictException("Attempt limit reached.");
 
         var questions = await (from link in db.Set<AssessmentQuestion>().AsNoTracking()
             where link.AssessmentId == assessmentId
             join question in db.Set<Question>() on link.QuestionId equals question.Id
             orderby link.DisplayOrder
             select new { Link = link, Question = question }).Take(MaximumQuestions + 1).ToListAsync(ct);
-        if (questions.Count is 0 or > MaximumQuestions || questions.Any(x => x.Question.IsArchived))
+        if ((isSpeaking ? questions.Count != 0 : questions.Count == 0) ||
+            questions.Count > MaximumQuestions || questions.Any(x => x.Question.IsArchived))
             throw new StateConflictException("The assessment does not have a supported published question set.");
         var questionIds = questions.Select(x => x.Question.Id).ToArray();
         var options = (await db.Set<QuestionOption>().AsNoTracking().Where(x => questionIds.Contains(x.QuestionId))
@@ -49,11 +52,12 @@ public sealed class ObjectiveAssessmentService(LanguagePlatformDbContext db, IPu
         var attempt = new AssessmentAttempt
         {
             StudentId = userId, AssessmentId = assessmentId, AttemptNumber = number, IdempotencyKey = key,
-            StartedAtUtc = now, MaximumScore = questions.Sum(x => x.Link.MaximumScore),
+            StartedAtUtc = now, MaximumScore = isSpeaking ? 100m : questions.Sum(x => x.Link.MaximumScore),
             PassingScoreSnapshot = available.PassingScore,
             DeadlineUtc = available.TimeLimitSeconds is { } seconds ? now.AddSeconds(seconds) : null
         };
-        var snapshots = questions.Select(x => Snapshot(attempt.Id, x.Link, x.Question, options[x.Question.Id].ToArray())).ToArray();
+        var snapshots = questions.Select(x => ExerciseQuestions.Snapshot(attempt.Id, x.Link, x.Question,
+            options[x.Question.Id].ToArray())).ToArray();
         db.Add(attempt);
         db.AddRange(snapshots);
         try
@@ -84,6 +88,7 @@ public sealed class ObjectiveAssessmentService(LanguagePlatformDbContext db, IPu
         var now = UtcNow();
         if (attempt.DeadlineUtc <= now) throw new StateConflictException("The attempt deadline has expired.");
         var snapshots = await SnapshotsAsync(attempt.Id, ct);
+        if (snapshots.Count == 0) throw new StateConflictException("This speaking attempt requires an authorized evaluator.");
         Guard.Against(request.Answers is null || request.Answers.Count != snapshots.Count
             || request.Answers.Any(x => x is null)
             || request.Answers.Select(x => x.QuestionId).Distinct().Count() != snapshots.Count,
@@ -94,13 +99,11 @@ public sealed class ObjectiveAssessmentService(LanguagePlatformDbContext db, IPu
         foreach (var snapshot in snapshots)
         {
             if (!byId.TryGetValue(snapshot.Id, out var answer)) throw new DomainException("Unknown attempt question.");
-            var question = JsonSerializer.Deserialize<PublicSnapshot>(snapshot.OptionsSnapshotJson)!;
-            var key = JsonSerializer.Deserialize<AnswerKey>(snapshot.AnswerKeySnapshotJson)!;
-            score += Grade(snapshot.MaximumScore, question, key, answer);
+            score += ExerciseQuestions.Grade(snapshot, answer);
             answers.Add(new StudentAnswer
             {
                 AttemptQuestionId = snapshot.Id, SubmittedAtUtc = now,
-                SelectedOptionsJson = JsonSerializer.Serialize(new { answer.OptionId, answer.Value })
+                SelectedOptionsJson = JsonSerializer.Serialize(new { answer.OptionId, answer.Value, answer.Text, answer.OrderedOptionIds })
             });
         }
         attempt.Submit();
@@ -110,6 +113,58 @@ public sealed class ObjectiveAssessmentService(LanguagePlatformDbContext db, IPu
         // Attempt xmin and unique answer indexes protect the entire SaveChanges transaction.
         await db.SaveChangesAsync(ct);
         return Result(attempt);
+    }
+
+    public async Task<ObjectiveResultDto?> EvaluateSpeakingAsync(Guid actorId, Guid courseId, Guid lessonId,
+        Guid assessmentId, Guid attemptId, EvaluateSpeaking request, CancellationToken ct)
+    {
+        Guard.Percentage(request.Score);
+        Guard.Against(decimal.Round(request.Score, 4) != request.Score, "Use at most four decimal places.");
+        var context = await FindSpeakingAsync(actorId, courseId, lessonId, assessmentId, attemptId, ct);
+        if (context is null) return null;
+        var (attempt, stage, _) = context.Value;
+        if (attempt.Status == AttemptStatus.Completed) return Result(attempt);
+        if (attempt.Status != AttemptStatus.InProgress) throw new StateConflictException("This attempt is not open.");
+        var now = UtcNow();
+        attempt.Submit();
+        attempt.Complete(request.Score, now);
+        await RecordProgressAsync(attempt.StudentId, courseId, stage.Id, attempt, now, ct);
+        db.Add(new AuditLog
+        {
+            ActorId = actorId, Action = "assessment.speaking.evaluate", EntityType = nameof(AssessmentAttempt),
+            EntityId = attempt.Id, OccurredAtUtc = now, CorrelationId = Guid.NewGuid().ToString("N"),
+            RedactedChangesJson = JsonSerializer.Serialize(new { request.Score })
+        });
+        await db.SaveChangesAsync(ct);
+        return Result(attempt);
+    }
+
+    public async Task<SpeakingEvaluationContextDto?> GetSpeakingEvaluationAsync(Guid actorId, Guid courseId, Guid lessonId,
+        Guid assessmentId, Guid attemptId, CancellationToken ct)
+    {
+        var context = await FindSpeakingAsync(actorId, courseId, lessonId, assessmentId, attemptId, ct);
+        if (context is null) return null;
+        var (_, stage, rubric) = context.Value;
+        var arabic = LanguageCode.Create("ar");
+        var prompt = await (from text in db.Set<LessonStageContent>()
+            join language in db.Languages on text.LanguageId equals language.Id
+            where text.LessonStageId == stage.Id && language.Code == arabic
+            select text.Body).FirstOrDefaultAsync(ct);
+        return new SpeakingEvaluationContextDto(attemptId, rubric, prompt);
+    }
+
+    private async Task<(AssessmentAttempt Attempt, LessonStage Stage, string Rubric)?> FindSpeakingAsync(
+        Guid actorId, Guid courseId, Guid lessonId, Guid assessmentId, Guid attemptId, CancellationToken ct)
+    {
+        var attempt = await db.Set<AssessmentAttempt>().SingleOrDefaultAsync(x => x.Id == attemptId
+            && x.AssessmentId == assessmentId && x.StudentId != actorId && x.PassingScoreSnapshot != null, ct);
+        if (attempt is null) return null;
+        var available = await FindAvailableAsync(attempt.StudentId, courseId, lessonId, assessmentId, ct);
+        if (available is null) return null;
+        var stage = await db.Set<LessonStage>().AsNoTracking().SingleOrDefaultAsync(x => x.Id == available.LessonStageId
+            && x.StageType == "speaking" && db.Set<LessonVersion>().Any(v => v.Id == x.LessonVersionId && v.UsesFiveStageCurriculum), ct);
+        if (stage is null || CurriculumStageSettings.Read(stage.SettingsJson).EvaluationRubric is not { } rubric) return null;
+        return (attempt, stage, rubric);
     }
 
     public async Task<ObjectiveResultDto?> FindResultAsync(Guid userId, Guid attemptId, CancellationToken ct)
@@ -228,52 +283,11 @@ public sealed class ObjectiveAssessmentService(LanguagePlatformDbContext db, IPu
         db.Set<AssessmentAttemptQuestion>().AsNoTracking().Where(x => x.AssessmentAttemptId == attemptId)
             .OrderBy(x => x.DisplayOrder).ToListAsync(ct);
 
-    private static AssessmentAttemptQuestion Snapshot(Guid attemptId, AssessmentQuestion link, Question question, QuestionOption[] options)
-    {
-        AnswerKey key;
-        ObjectiveOptionDto[] publicOptions;
-        if (question.QuestionType == Choice && options.Length >= 2 && options.Count(x => x.IsCorrect) == 1)
-        {
-            key = new AnswerKey(options.Single(x => x.IsCorrect).Id, null);
-            publicOptions = options.Select(x => new ObjectiveOptionDto(x.Id, x.Text)).ToArray();
-        }
-        else if (question.QuestionType == Boolean)
-        {
-            using var json = JsonDocument.Parse(question.AnswerKeyJson);
-            if (json.RootElement.ValueKind != JsonValueKind.Object || !json.RootElement.TryGetProperty("correctAnswer", out var correct)
-                || correct.ValueKind is not (JsonValueKind.True or JsonValueKind.False))
-                throw new StateConflictException("A true/false question has an invalid answer key.");
-            key = new AnswerKey(null, correct.GetBoolean());
-            publicOptions = [];
-        }
-        else
-        {
-            throw new StateConflictException("The assessment contains an unsupported question.");
-        }
-        return new AssessmentAttemptQuestion
-        {
-            AssessmentAttemptId = attemptId, QuestionId = question.Id, DisplayOrder = link.DisplayOrder,
-            PromptSnapshot = question.Prompt, MaximumScore = link.MaximumScore,
-            AnswerKeySnapshotJson = JsonSerializer.Serialize(key),
-            OptionsSnapshotJson = JsonSerializer.Serialize(new PublicSnapshot(question.QuestionType, publicOptions))
-        };
-    }
-
-    private static decimal Grade(decimal max, PublicSnapshot question, AnswerKey key, ObjectiveAnswer answer)
-    {
-        if (question.Kind == Choice && answer.OptionId is { } option && answer.Value is null
-            && question.Options.Any(x => x.Id == option) && key.OptionId is { } correct)
-            return ObjectiveScoring.ScoreChoice(option, correct, max);
-        if (question.Kind == Boolean && answer.Value is { } value && answer.OptionId is null && key.Value is { } correctValue)
-            return ObjectiveScoring.ScoreBoolean(value, correctValue, max);
-        throw new DomainException("The answer is not valid for this question.");
-    }
-
     private static ObjectiveAttemptDto ToAttempt(AssessmentAttempt attempt, IEnumerable<AssessmentAttemptQuestion> questions) =>
         new(attempt.Id, attempt.AssessmentId, attempt.AttemptNumber, attempt.StartedAtUtc, attempt.DeadlineUtc,
             questions.Select(x =>
             {
-                var snapshot = JsonSerializer.Deserialize<PublicSnapshot>(x.OptionsSnapshotJson)!;
+                var snapshot = ExerciseQuestions.ReadPresentation(x);
                 return new ObjectiveQuestionDto(x.Id, snapshot.Kind, x.PromptSnapshot, x.MaximumScore, snapshot.Options);
             }).ToArray());
 
@@ -285,6 +299,4 @@ public sealed class ObjectiveAssessmentService(LanguagePlatformDbContext db, IPu
             percentage >= attempt.PassingScoreSnapshot.Value, attempt.CompletedAtUtc!.Value);
     }
 
-    private sealed record PublicSnapshot(string Kind, ObjectiveOptionDto[] Options);
-    private sealed record AnswerKey(Guid? OptionId, bool? Value);
 }

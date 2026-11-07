@@ -70,5 +70,9 @@ public sealed class PostgreSqlCatalogApiTests
             .GetProperty("security")[0].TryGetProperty("Bearer", out _));
         Assert.True(paths.GetProperty("/api/v1/me/courses/{courseId}/lessons/{lessonId}/curriculum-progress").GetProperty("get")
             .GetProperty("security")[0].TryGetProperty("Bearer", out _));
+        Assert.True(paths.GetProperty("/api/v1/admin/five-stage/versions/{versionId}/reading-pdf").GetProperty("post")
+            .GetProperty("security")[0].TryGetProperty("Bearer", out _));
+        Assert.True(paths.GetProperty("/api/v1/admin/courses/{courseId}/lessons/{lessonId}/assessments/{assessmentId}/attempts/{attemptId}/speaking-evaluation")
+            .GetProperty("post").GetProperty("security")[0].TryGetProperty("Bearer", out _));
     });
 }

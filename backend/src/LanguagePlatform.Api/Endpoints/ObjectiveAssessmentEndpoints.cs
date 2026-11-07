@@ -34,5 +34,26 @@ public static class ObjectiveAssessmentEndpoints
             return result is null ? Results.Problem(statusCode: 404) : Results.Ok(result);
         }).RequireAuthorization().WithTags("Assessments")
             .Produces<ObjectiveResultDto>().ProducesProblem(401).ProducesProblem(404);
+
+        const string speaking = "/api/v1/admin/courses/{courseId:guid}/lessons/{lessonId:guid}/assessments/{assessmentId:guid}/attempts/{attemptId:guid}/speaking-evaluation";
+        endpoints.MapGet(speaking,
+            async (Guid courseId, Guid lessonId, Guid assessmentId, Guid attemptId,
+                ICurrentActor actor, ObjectiveAssessmentService service, CancellationToken ct) =>
+            {
+                if (actor.UserId is not { } id) return Results.Unauthorized();
+                var context = await service.GetSpeakingEvaluationAsync(id, courseId, lessonId, assessmentId, attemptId, ct);
+                return context is null ? Results.Problem(statusCode: 404) : Results.Ok(context);
+            }).RequireAuthorization(Permissions.AssessmentEvaluate).WithTags("Assessments")
+            .Produces<SpeakingEvaluationContextDto>().ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+        endpoints.MapPost(speaking,
+            async (Guid courseId, Guid lessonId, Guid assessmentId, Guid attemptId, EvaluateSpeaking request,
+                ICurrentActor actor, ObjectiveAssessmentService service, CancellationToken ct) =>
+            {
+                if (actor.UserId is not { } id) return Results.Unauthorized();
+                var result = await service.EvaluateSpeakingAsync(id, courseId, lessonId, assessmentId, attemptId, request, ct);
+                return result is null ? Results.Problem(statusCode: 404) : Results.Ok(result);
+            }).RequireAuthorization(Permissions.AssessmentEvaluate).WithTags("Assessments")
+            .Produces<ObjectiveResultDto>().ProducesProblem(400).ProducesProblem(401).ProducesProblem(403)
+            .ProducesProblem(404).ProducesProblem(409);
     }
 }

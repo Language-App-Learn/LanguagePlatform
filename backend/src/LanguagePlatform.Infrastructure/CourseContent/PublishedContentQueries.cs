@@ -31,6 +31,7 @@ public sealed class PublishedContentQueries(LanguagePlatformDbContext db) : IPub
     {
         var lesson = await VisibleLessons(courseId).Where(x => x.Lesson.Id == lessonId)
             .Select(x => new { x.Version.Id, x.Version.VersionNumber, x.Version.Title, x.Version.PassingScore,
+                x.Version.UsesFiveStageCurriculum,
                 x.Lesson.DisplayOrder, Target = x.Course.LearningPath.TargetLanguage.Code })
             .SingleOrDefaultAsync(cancellationToken);
         if (lesson is null) return null;
@@ -48,6 +49,7 @@ public sealed class PublishedContentQueries(LanguagePlatformDbContext db) : IPub
                 (from content in db.Set<LessonStageContent>()
                  join language in db.Languages on content.LanguageId equals language.Id
                  where content.LessonStageId == stage.Id && content.Body != null && language.IsActive
+                    && (!lesson.UsesFiveStageCurriculum || stage.StageType != "listening")
                  orderby language.Code
                  select new StageTextDto(language.Code.Value, content.Body!)).ToList(),
                 db.Set<AssessmentEntity>().Where(a => a.LessonStageId == stage.Id && a.IsPublished)

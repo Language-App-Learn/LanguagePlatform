@@ -20,6 +20,7 @@ public sealed partial class GlobalExceptionHandler(
         {
             DomainException => (StatusCodes.Status400BadRequest, "A business rule was violated."),
             BadHttpRequestException => (StatusCodes.Status400BadRequest, "Invalid request."),
+            UploadTooLargeException => (StatusCodes.Status413PayloadTooLarge, "Upload exceeds the allowed size."),
             PermissionDeniedException => (StatusCodes.Status403Forbidden, "Permission denied."),
             ResourceNotFoundException => (StatusCodes.Status404NotFound, "The requested resource was not found."),
             StateConflictException => (StatusCodes.Status409Conflict, "The requested action conflicts with current state."),

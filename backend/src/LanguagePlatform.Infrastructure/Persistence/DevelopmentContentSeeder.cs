@@ -56,8 +56,9 @@ public sealed class DevelopmentContentSeeder(LanguagePlatformDbContext db)
         var assessment = new AssessmentEntity
         {
             LessonStageId = stage.Id, Title = "[DEV] Greetings quiz", PassingScore = 60,
-            MaximumAttempts = 2, TimeLimitSeconds = 600, IsPublished = true
+            MaximumAttempts = 2, TimeLimitSeconds = 600
         };
+        assessment.Publish();
         // The fixture author is an inactive ownership record with no credentials or roles.
         var email = $"dev-fixture-{Guid.NewGuid():N}@example.test";
         var author = new ApplicationUser

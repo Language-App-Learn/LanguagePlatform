@@ -16,6 +16,13 @@ public sealed class LessonVersion : PlatformEntity
     public DateTime CreatedAtUtc { get; init; } = DateTime.UtcNow;
     public DateTime? PublishedAtUtc { get; private set; }
     public uint Version { get; private set; }
+    public int ReadingMaterialRevision { get; private set; }
+
+    public void RecordReadingMaterialChange()
+    {
+        Guard.Against(Status != PublicationState.Draft, "Reading material can only change in a draft.");
+        ReadingMaterialRevision++;
+    }
 
     public void SubmitForReview()
     {
