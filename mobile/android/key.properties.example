@@ -1,0 +1,15 @@
+# Copy to android/key.properties (git-ignored) and fill in on the machine that
+# signs release builds. NEVER commit the real file or the keystore.
+#
+# Create the upload keystore once, outside the repository, and back it up in a
+# password manager / secure vault. With Play App Signing, Google holds the app
+# signing key and this is only the UPLOAD key (it can be reset via Play
+# Console if lost - but only if Play App Signing is enabled).
+#
+#   keytool -genkeypair -v -keystore <path>/upload-keystore.jks \
+#     -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+#
+storeFile=C:/secure/language-platform/upload-keystore.jks
+storePassword=
+keyAlias=upload
+keyPassword=
