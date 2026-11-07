@@ -1,6 +1,6 @@
 # PROJECT_STATUS — Mobile (Flutter)
 
-> Update after every milestone. Keep short. Last update: 2026-11-07 (V8 + final Android build verification on `d225b19`)
+> Update after every milestone. Keep short. Last update: 2026-11-08 (V8 + Kotlin fix applied and verified on `557b591`)
 
 Release verdict: **NO-GO for store release**, but a real A1 lesson now works end-to-end against the real backend (see `docs/testing/E2E_REAL_BACKEND.md`). Details: `docs/release/RELEASE_READINESS.md`, `docs/security/MASVS_FINDINGS.md`, `docs/api-feedback/BACKEND_FEEDBACK.md`, `docs/architecture/DEPENDENCY_REQUESTS.md`.
 
@@ -9,7 +9,7 @@ Release verdict: **NO-GO for store release**, but a real A1 lesson now works end
 
 ## Quality gates (V8)
 - `dart format`: clean. `flutter analyze`: **No issues found**. `flutter test` (offline): **596 passed, 0 failed, 2 skipped** (the two real-backend files skip without `E2E_DIR`). Real-backend run (`E2E_DIR` set): **25 repository-level + 3 UI-level tests passed** against local ASP.NET Core + a disposable PostgreSQL 18 cluster.
-- Android (verified on `d225b19`, all five plugins installed): plain `flutter build apk --debug` and plain `flutter build apk --release` both **FAIL** (known Kotlin 2.4.0 incremental-cache error, now in `share_plus`, `audio_session`, `video_player_android`, `shared_preferences_android`). With `-Pkotlin.incremental=false`: debug APK **built**, release APK **built (57.9 MB)**. `flutter build appbundle --release` correctly **refuses** without `android/key.properties` (fails in 11 s, no bundle). Release APK signature: v2 verified, signer `CN=Android Debug` (local-convenience fallback only; NOT distributable).
+- Android (re-verified on `557b591` after the Kotlin fix): **plain `flutter build apk --debug` and plain `flutter build apk --release` now both PASS** with incremental Kotlin compilation ON (no `-Pkotlin.incremental=false`); release APK 57.9 MB. `flutter build appbundle --release` still refuses without `android/key.properties`. Release APK signer is still `CN=Android Debug` (not distributable). Details: "Kotlin fix applied" below.
 - iOS not built (needs macOS/Xcode). No device/emulator run. TalkBack/VoiceOver untested.
 
 ## Dependencies (owner-approved on 2026-11-07, installed incrementally)
@@ -30,10 +30,10 @@ Release verdict: **NO-GO for store release**, but a real A1 lesson now works end
 1. Final Android application ID / label, iOS bundle ID / team, upload keystore, Play App Signing (separate release decision).
 2. Reachable HTTPS media host + teacher materials to verify audio/video playback; verified link format for email confirmation (U-1).
 3. Privacy policy / terms / data-safety content; crash-reporting vendor decision.
-4. Kotlin incremental-cache issue: root cause found (project and Pub Cache on different drives); fix = put `PUB_CACHE` on the project drive (see section below). Not applied to the original project yet.
+4. (done) Kotlin incremental-cache issue: fixed on this machine (see "Kotlin fix applied"). Fresh IDE / terminal sessions must inherit the user variable `PUB_CACHE=D:\PubCache`.
 5. Enable CI (template in `docs/ci/`; workflow location is outside `mobile/`).
 
-## Final Android verification (2026-11-07, commit d225b19)
+## Final Android verification (2026-11-07, commit d225b19) - HISTORICAL, before the Kotlin fix; plain builds failed then and pass now (see next section)
 
 | Check | Result |
 |---|---|
@@ -49,6 +49,20 @@ Release verdict: **NO-GO for store release**, but a real A1 lesson now works end
 | Signing safeguards | no keystore generated; `bundleRelease` refuses without `key.properties`; `assembleRelease` falls back to the debug key (APK signer `CN=Android Debug`) and is for local use only |
 | Still NOT verified | installing/running the APK on an emulator or device, real audio/video playback, the OS share sheet, TalkBack, iOS |
 
+## Kotlin fix applied and verified (2026-11-08)
+
+Applied the fix proven by the disposable-copy matrix to the ORIGINAL project, without changing any source, Kotlin or Gradle version, application ID, signing, or backend file:
+
+1. Project (`D:\Projeler\LanguagePlatform-Flutter\mobile`) and Pub Cache are now both on **D:**; plugin sources resolve to `D:\PubCache\hosted\pub.dev\...` (`flutter pub get`).
+2. **Persistent user-level environment variable `PUB_CACHE=D:\PubCache`** (current user only; machine level untouched; verified with `reg query HKCU\Environment` and a fresh `cmd`). The old C: Pub Cache was not deleted.
+3. After the path fix the plain build still failed with "Storage ... is already registered": the Gradle daemon (and its Kotlin daemons) kept the broken registrations of earlier failed runs at the same paths. They were retired with the **official wrapper command `.\gradlew.bat --stop`** (graceful, no force-kill, no Android Studio was running, no cache deleted). `flutter clean` was not needed.
+4. **Normal `flutter build apk --debug` and `flutter build apk --release` both succeeded WITHOUT `-Pkotlin.incremental=false`** (zero Kotlin cache errors).
+5. `flutter analyze`: no issues. `flutter test`: **596 passed, 0 failed, 2 skipped** (the two real-backend files, skipped without `E2E_DIR`).
+6. The new release APK's own manifest (`aapt2`) is unchanged: package `com.example.musab_hoca_arapca`, `targetSdk 36`, `INTERNET` + `ACCESS_NETWORK_STATE` + `WAKE_LOCK`, `allowBackup=false`, not debuggable, no `networkSecurityConfig`, no `usesCleartextTraffic`, no microphone/camera/location permission.
+
+**Operational rule:** a fresh terminal or IDE session must inherit `PUB_CACHE=D:\PubCache` (terminals and IDEs opened before the change keep the old value until restarted). If `flutter pub get` is ever run without it, plugin paths fall back to C: and the Kotlin error returns (symptom: "this and base files have different roots"; after that, also "already registered" until the Gradle daemon is stopped again with `.\gradlew.bat --stop`). Fallbacks: `-Pkotlin.incremental=false`. CI on Linux is unaffected.
+
+Release verdict is unchanged: **NO-GO** (a real upload keystore is still missing and the release APK is signed with the debug certificate; no physical-device run; real audio/video playback and PDF sharing unverified on devices; iOS build and accessibility checks incomplete).
 ## Kotlin incremental-cache issue: ROOT CAUSE FOUND (2026-11-07)
 
 **Cause (reproducible, with stack trace): the project and the Pub Cache are on different drives.** Kotlin 2.4.0's incremental cache stores every source file path *relative to the project directory* (`RelocatableFileToPathConverter.toPath` -> `File.relativeTo`). A plugin source file that lives under the Pub Cache on `C:` cannot be made relative to a project on `D:` (and vice versa), so Kotlin throws `IllegalArgumentException: this and base files have different roots: C:\...\Pub\Cache\...\audio_session-0.2.4\...\AndroidAudioManager.kt and D:\...\mobile\android`. Closing the cache then fails with "Could not close incremental caches", which surfaces as the Gradle error. It affects every plugin that contains Kotlin code (`audio_session`, `share_plus`, `shared_preferences_android`, `video_player_android`, ...). It is not a corrupt Gradle cache, not a poisoned daemon, and not specific to one plugin.
