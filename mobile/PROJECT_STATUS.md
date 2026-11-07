@@ -1,6 +1,6 @@
 # PROJECT_STATUS — Mobile (Flutter)
 
-> Update after every milestone. Keep short. Last update: 2026-11-07 (V8: approved packages, secure storage, account deletion, real end-to-end run)
+> Update after every milestone. Keep short. Last update: 2026-11-07 (V8 + final Android build verification on `d225b19`)
 
 Release verdict: **NO-GO for store release**, but a real A1 lesson now works end-to-end against the real backend (see `docs/testing/E2E_REAL_BACKEND.md`). Details: `docs/release/RELEASE_READINESS.md`, `docs/security/MASVS_FINDINGS.md`, `docs/api-feedback/BACKEND_FEEDBACK.md`, `docs/architecture/DEPENDENCY_REQUESTS.md`.
 
@@ -9,7 +9,7 @@ Release verdict: **NO-GO for store release**, but a real A1 lesson now works end
 
 ## Quality gates (V8)
 - `dart format`: clean. `flutter analyze`: **No issues found**. `flutter test` (offline): **596 passed, 0 failed, 2 skipped** (the two real-backend files skip without `E2E_DIR`). Real-backend run (`E2E_DIR` set): **25 repository-level + 3 UI-level tests passed** against local ASP.NET Core + a disposable PostgreSQL 18 cluster.
-- Android: builds with the new plugins were verified only in scratch copies of the project (see below); **no Gradle build was run after `just_audio` / `video_player` were added** - pending.
+- Android (verified on `d225b19`, all five plugins installed): plain `flutter build apk --debug` and plain `flutter build apk --release` both **FAIL** (known Kotlin 2.4.0 incremental-cache error, now in `share_plus`, `audio_session`, `video_player_android`, `shared_preferences_android`). With `-Pkotlin.incremental=false`: debug APK **built**, release APK **built (57.9 MB)**. `flutter build appbundle --release` correctly **refuses** without `android/key.properties` (fails in 11 s, no bundle). Release APK signature: v2 verified, signer `CN=Android Debug` (local-convenience fallback only; NOT distributable).
 - iOS not built (needs macOS/Xcode). No device/emulator run. TalkBack/VoiceOver untested.
 
 ## Dependencies (owner-approved on 2026-11-07, installed incrementally)
@@ -30,11 +30,45 @@ Release verdict: **NO-GO for store release**, but a real A1 lesson now works end
 1. Final Android application ID / label, iOS bundle ID / team, upload keystore, Play App Signing (separate release decision).
 2. Reachable HTTPS media host + teacher materials to verify audio/video playback; verified link format for email confirmation (U-1).
 3. Privacy policy / terms / data-safety content; crash-reporting vendor decision.
-4. Android: confirm the full build after the last two plugins; Kotlin cache issue (below).
+4. Kotlin incremental-cache issue: root cause found (project and Pub Cache on different drives); fix = put `PUB_CACHE` on the project drive (see section below). Not applied to the original project yet.
 5. Enable CI (template in `docs/ci/`; workflow location is outside `mobile/`).
 
-## Kotlin incremental-cache issue (investigation log)
-Plain `flutter build apk --debug` in `D:\Projeler\...\mobile` fails the first time any Kotlin module is compiled (`:shared_preferences_android`, later `:share_plus`) with Kotlin 2.4.0 "Storage ... is already registered". In **scratch copies of the same project on drive C:** (same drive as the pub cache) a completely clean plain build succeeds with Kotlin 2.4.0 *and* 2.4.21. A pub cache moved to D: did not fix the D: project (but that run started from already-poisoned build output). Leading hypothesis: cross-drive path handling in Kotlin's incremental caches (project on D:, plugin sources on C:). Not yet proven: needs one clean build of a copy on D: with the pub cache on D: (and one with the default cache). Safe workarounds: `-Pkotlin.incremental=false`, or move the project/pub cache onto one drive. No daemon was killed and no caches were deleted in the real project.
+## Final Android verification (2026-11-07, commit d225b19)
+
+| Check | Result |
+|---|---|
+| `flutter analyze` / `flutter test` | clean / **596 passed, 2 skipped (E2E), 0 failed** |
+| `flutter build apk --debug` (plain) | **FAILED** - Kotlin cache error (share_plus, audio_session) |
+| `flutter build apk --release` (plain) | **FAILED** - Kotlin cache error (audio_session, video_player_android, shared_preferences_android) |
+| `flutter build apk --debug -Pkotlin.incremental=false` | **BUILT** |
+| `flutter build apk --release -Pkotlin.incremental=false` | **BUILT**, 57.9 MB, ABIs arm64-v8a / armeabi-v7a / x86_64 |
+| `flutter build appbundle --release` | **refused by design** (no `android/key.properties`): "bundleRelease needs android/key.properties ..." |
+| Plugins in the build | Android registrant lists FlutterSecureStoragePlugin, SharePlusPlugin, JustAudioPlugin, AudioSessionPlugin, VideoPlayerPlugin, SharedPreferencesPlugin, JniPlugin/JniFlutterPlugin; all five approved plugins' classes are present in R8's mapping.txt (path_provider_android has no Java plugin class on this version - it runs through the JNI plugin) |
+| Release merged manifest | `INTERNET`, `ACCESS_NETWORK_STATE`, `WAKE_LOCK` (media plugins); `minSdk=24`, **`targetSdk=36`**; `allowBackup=false`, `fullBackupContent=false`, `dataExtractionRules`; **no** `networkSecurityConfig`, **no** `usesCleartextTraffic`, no `debuggable` (so cleartext is blocked by the platform default); `share_provider` FileProvider for share_plus; application ID unchanged |
+| HTTPS restrictions | release: platform blocks cleartext; the localhost/10.0.2.2 cleartext rule exists only in `src/debug`; `ApiConfig` rejects `http://` for any other host; media players refuse non-HTTPS |
+| Signing safeguards | no keystore generated; `bundleRelease` refuses without `key.properties`; `assembleRelease` falls back to the debug key (APK signer `CN=Android Debug`) and is for local use only |
+| Still NOT verified | installing/running the APK on an emulator or device, real audio/video playback, the OS share sheet, TalkBack, iOS |
+
+## Kotlin incremental-cache issue: ROOT CAUSE FOUND (2026-11-07)
+
+**Cause (reproducible, with stack trace): the project and the Pub Cache are on different drives.** Kotlin 2.4.0's incremental cache stores every source file path *relative to the project directory* (`RelocatableFileToPathConverter.toPath` -> `File.relativeTo`). A plugin source file that lives under the Pub Cache on `C:` cannot be made relative to a project on `D:` (and vice versa), so Kotlin throws `IllegalArgumentException: this and base files have different roots: C:\...\Pub\Cache\...\audio_session-0.2.4\...\AndroidAudioManager.kt and D:\...\mobile\android`. Closing the cache then fails with "Could not close incremental caches", which surfaces as the Gradle error. It affects every plugin that contains Kotlin code (`audio_session`, `share_plus`, `shared_preferences_android`, `video_player_android`, ...). It is not a corrupt Gradle cache, not a poisoned daemon, and not specific to one plugin.
+
+Controlled experiment: four **clean disposable copies** (sources only), same Flutter 3.47.9, Gradle 9.3.1, AGP 9.1.0, Kotlin 2.4.0, JDK of Android Studio, same shared Gradle user home, plain commands, one build at a time:
+
+| Project drive | Pub Cache drive | `apk --debug` | `apk --release` |
+|---|---|---|---|
+| D: | C: (default) | **FAIL** (4 Kotlin modules) | **FAIL** |
+| D: | D: | **PASS** | **PASS** |
+| C: | C: (default) | **PASS** | **PASS** |
+| C: | D: | **FAIL** (same 4 modules) | **FAIL** |
+
+* Failures are identical in both mixed-drive cases (same modules, same exception with the two roots swapped); same-drive cases have zero such errors.
+* Control with `-Pkotlin.incremental=false` on clean copies of both failing configurations: **debug PASS, release PASS** in both. So Kotlin's *incremental* mode is the part that breaks; disabling it avoids the path conversion.
+* Earlier observation corrected: the scratch copies that "passed with Kotlin 2.4.0 and 2.4.21" were C:+C: (same drive), so they say nothing about the Kotlin version. Whether a newer Kotlin patch handles cross-root paths is **untested** (needs separate approval to change Kotlin).
+
+**Safest permanent fix (no Gradle/Kotlin/version change, no app change):** keep the project and the Pub Cache on the same drive. For this machine (project on `D:`): set the *user* environment variable `PUB_CACHE` to a folder on `D:` (e.g. `D:\PubCache`), restart Android Studio / VS Code / terminals so they inherit it, then run `flutter pub get` in `mobile/`; a stale `mobile/build` from earlier failed runs may need `flutter clean` (not done here). Equivalent alternative: move the project onto `C:`. Fallback when that is not possible: `-Pkotlin.incremental=false` per invocation (slower builds; no source change). CI on Linux is unaffected (single filesystem root); the CI template keeps the workaround only as a safety net.
+
+Not done on purpose: the original project, its `build/` folder, global caches and any daemon were not touched; this was proven only in disposable copies. Copies and logs: `D:\Projeler\kt-lab\` and the session scratch directory (safe to delete when no longer needed; they contain only copies of the sources).
 
 ## V7 — what changed
 | Area | Status |

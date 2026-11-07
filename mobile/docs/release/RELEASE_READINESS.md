@@ -6,7 +6,7 @@ Last updated: 2026-11-07 (V8). Branch `Flutter`, base commit `b7ff409`; all work
 
 ## Verdict: NO-GO for store release
 
-A real A1 lesson now works end-to-end against the real backend (see Evidence). Remaining blockers: no final application ID / signing keystore / iOS team (separate release decision), no reachable media host so audio/video **playback** and the OS share sheet are unverified, no device/emulator run (TalkBack/VoiceOver), iOS unbuilt, no Android Gradle build after `just_audio` + `video_player` (pending), email-link format undefined, privacy / data-safety paperwork, crash-reporting decision.
+A real A1 lesson now works end-to-end against the real backend (see Evidence). Remaining blockers: no final application ID / signing keystore / iOS team (separate release decision), no reachable media host so audio/video **playback** and the OS share sheet are unverified, no device/emulator run (TalkBack/VoiceOver), iOS unbuilt, email-link format undefined, privacy / data-safety paperwork, crash-reporting decision.
 
 ## Evidence
 
@@ -16,9 +16,11 @@ A real A1 lesson now works end-to-end against the real backend (see Evidence). R
 | `flutter test` (offline) | **596 passed, 0 failed, 2 skipped** (baseline at V7 start: 458) |
 | Real end-to-end (`E2E_DIR`, local ASP.NET Core + disposable PostgreSQL 18.6 at `127.0.0.1:55432`, db `language_platform_dev` inside a scratch cluster) | **25 repository-level + 3 UI-level tests passed** (`docs/testing/E2E_REAL_BACKEND.md`) |
 | Scenario results on the real server | final **50.0 -> passed=false**, next lesson locked (400); retake to **exactly 60.0 -> passed=true**, `nextLessonId` set, lesson 2 opened; results identical after restart |
-| `flutter build apk --debug` in the real project | **failed** on a first Kotlin compile of `:share_plus` (same Kotlin 2.4.0 cache bug); `-Pkotlin.incremental=false` worked earlier for other plugins |
-| Clean plain `flutter build apk --debug` in scratch copies on drive C: (secure storage + share_plus included) | **passed** with Kotlin 2.4.0 and with 2.4.21 |
-| Build with `just_audio` + `video_player` | **NOT RUN** (owner asked for no further builds during the status check; pending) |
+| `flutter build apk --debug` / `--release` (plain, real project, all plugins) | **both FAILED** (Kotlin 2.4.0 cache error in share_plus, audio_session, video_player_android, shared_preferences_android) |
+| Same with `-Pkotlin.incremental=false` | **debug APK built; release APK built (57.9 MB)**; release manifest: INTERNET, targetSdk 36, backup off, no cleartext config; APK signer is the debug key (no keystore exists); `appbundle --release` refuses without `key.properties` |
+| Kotlin matrix, clean disposable copies, plain commands (project drive / Pub Cache drive): D:+C: / C:+D: | **FAIL** debug + release (`IllegalArgumentException: this and base files have different roots` in Kotlin's incremental cache) |
+| Same matrix: D:+D: / C:+C: | **PASS** debug + release (plain, incremental compilation ON) |
+| `-Pkotlin.incremental=false` control on both failing configurations | **PASS** debug + release |
 | iOS build / archive | NOT VERIFIED (needs macOS + Xcode) |
 | Device / emulator run, real audio/video playback, share sheet | NOT VERIFIED |
 
@@ -70,7 +72,7 @@ A real A1 lesson now works end-to-end against the real backend (see Evidence). R
 * Fixed: main manifest lacked `INTERNET` (release builds could not reach any server). Backup/device-transfer disabled. Plain HTTP only in the **debug** build and only for `10.0.2.2`, `localhost`, `127.0.0.1`.
 * Signing: `android/key.properties` (git-ignored; template `android/key.properties.example`). Without it `assembleRelease` falls back to the debug key for local runs and `bundleRelease` **refuses to run**. Use Play App Signing. No keystore was created.
 * Application ID `com.example.musab_hoca_arapca` and app label are placeholders: **owner must approve the final ID before first publication** (immutable afterwards).
-* Kotlin build error: stack shows the failure inside Kotlin 2.4.0 (`InMemoryStorage.applyChanges` → "Storage … is already registered") during a non-incremental compile of `:shared_preferences_android`. Tried: pub cache on the project drive (no effect), plain re-runs (fail for debug and release), `--no-android-gradle-daemon` (debug passed once, release failed). Reliable workaround: `-Pkotlin.incremental=false` per invocation. Next: try a Kotlin 2.4.x patch release once the owner approves changing `settings.gradle.kts`.
+* Kotlin build error: **root cause proven** - project and Pub Cache on different drives (Kotlin 2.4.0 incremental caches need paths relative to the project dir). Fix: put `PUB_CACHE` on the project drive (or move the project), then `flutter pub get`; fallback `-Pkotlin.incremental=false`. Details and the 2x2 matrix: PROJECT_STATUS.md. The original project has NOT been changed yet; Kotlin/Gradle versions untouched.
 
 ## iOS (static review, Windows)
 
