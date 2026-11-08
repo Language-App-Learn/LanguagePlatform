@@ -26,7 +26,19 @@ Verify the server identity, environment, database name, current migration histor
 
 ## Seed and tests
 
-`Database__SeedOnStartup=true` adds catalog languages, paths and programs. `Database__SeedDemoContentOnStartup=true` additionally creates a clearly marked published and draft course, a lesson, an objective assessment and one dictionary entry. The fixture author is inactive and has no password or roles. Run once against a migrated development database and clear the flag afterward. Sequential repeats preserve existing rows. Seed failures surface on startup.
+`Database__SeedOnStartup=true` adds only structural catalog languages, paths and programs to the migrated local development database. Sequential repeats preserve existing rows. CEFR levels and slot capacity still come from the existing course-authoring flow. Startup creates no educational content. The obsolete `Database__SeedDemoContentOnStartup` and `StudentRelease__IncludeLegacyContent` flags are ignored. Synthetic education fixtures are defined and invoked only by the integration-test project.
+
+### Historical fixture inventory
+
+The former development seeder could leave the following records. These are source-level signatures. Existing development and production databases were outside this audit.
+
+| Records | Evidence to correlate |
+| --- | --- |
+| Published and draft courses | Exact slugs `dev-fixture-arabic-basics` and `dev-fixture-unpublished`, the historical `[DEV]` titles, Turkish-to-Arabic path and legacy course shape |
+| Published lesson tree and assessment | A1 lesson slug `greetings`, marked lesson and quiz titles, the linked question codes `dev-greeting-choice` and `dev-greeting-boolean`, and the inactive `dev-fixture-…@example.test` bank owner |
+| Dictionary sense | Arabic entry and Turkish translation matching the former seeder plus the exact `[DEV] A greeting.` definition and its single original translation. Runtime responses hide this unchanged sense. A word with another visible sense remains available. |
+
+An ordinary title, shared Arabic text or a partially matching signature is ambiguous. A course or word may also contain material added by a teacher after the seed ran. Enrollments, answers, grades, saved words and other records linked to a fixture are not evidence that their owners or records are disposable. Confirm provenance and dependencies in an authorized read-only inventory before proposing any removal. Deletion requires separate approval.
 
 Set `LANGUAGEPLATFORM_TEST_CONNECTION` locally for a dedicated PostgreSQL 18 `language_platform_test` on localhost, 127.0.0.1 or ::1. The test runner verifies the connected server version and database name before creating an isolated schema with a random name. It migrates only that schema and drops only the schema it created. It never uses the API development connection. Missing test configuration is reported as a skip.
 

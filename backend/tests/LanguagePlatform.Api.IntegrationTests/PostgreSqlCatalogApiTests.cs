@@ -3,11 +3,13 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using LanguagePlatform.Application.Catalog;
 using LanguagePlatform.Domain.Catalog;
+using LanguagePlatform.Infrastructure.Catalog;
 using LanguagePlatform.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace LanguagePlatform.Api.IntegrationTests;
 
@@ -30,8 +32,9 @@ public sealed class PostgreSqlCatalogApiTests
         await db.SaveChangesAsync();
 
         await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-            builder.UseEnvironment("Development").UseSetting("StudentRelease:IncludeLegacyContent", "true").ConfigureAppConfiguration((_, config) =>
-                config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:LanguagePlatform"] = connection })));
+            builder.UseEnvironment("Development").ConfigureAppConfiguration((_, config) =>
+                config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:LanguagePlatform"] = connection }))
+                .ConfigureServices(services => services.AddSingleton(new StudentReleaseOptions(true))));
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost") });
 
         using var ready = await client.GetAsync("/health/ready");

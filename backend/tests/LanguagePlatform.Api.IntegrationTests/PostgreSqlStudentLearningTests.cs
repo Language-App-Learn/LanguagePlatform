@@ -19,6 +19,7 @@ using LanguagePlatform.Domain.StudentProgress;
 using LanguagePlatform.Domain.Dictionary;
 using AssessmentEntity = LanguagePlatform.Domain.Assessment.Assessment;
 using LanguagePlatform.Infrastructure.Identity;
+using LanguagePlatform.Infrastructure.Catalog;
 using LanguagePlatform.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Hosting;
@@ -39,13 +40,14 @@ public sealed class PostgreSqlStudentLearningTests
     [PostgreSqlFact]
     public Task LearnerWorkflowIsIdempotentPrivateAndServerGraded() => PostgreSqlTestSchema.RunAsync(async (connection, db) =>
     {
-        await new DevelopmentContentSeeder(db).SeedAsync(CancellationToken.None);
-        var courseId = await db.Courses.Where(x => x.Slug == DevelopmentContentSeeder.PublishedSlug)
+        await new LegacyContentFixture(db).SeedAsync(CancellationToken.None);
+        var courseId = await db.Courses.Where(x => x.Slug == LegacyContentFixture.PublishedSlug)
             .Select(x => x.Id).SingleAsync();
         var lessonId = await db.Set<Lesson>().Select(x => x.Id).SingleAsync();
         await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-            builder.UseEnvironment("Testing").UseSetting("StudentRelease:IncludeLegacyContent", "true").ConfigureAppConfiguration((_, config) =>
-                config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:LanguagePlatform"] = connection })));
+            builder.UseEnvironment("Testing").ConfigureAppConfiguration((_, config) =>
+                config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:LanguagePlatform"] = connection }))
+                .ConfigureServices(services => services.AddSingleton(new StudentReleaseOptions(true))));
         using var first = factory.CreateClient();
         using var second = factory.CreateClient();
         var course = $"/api/v1/me/courses/{courseId}";
@@ -136,7 +138,7 @@ public sealed class PostgreSqlStudentLearningTests
     [PostgreSqlFact]
     public Task PublicationRequiresPermissionAndWritesAuditAndOutbox() => PostgreSqlTestSchema.RunAsync(async (connection, db) =>
     {
-        await new DevelopmentContentSeeder(db).SeedAsync(CancellationToken.None);
+        await new LegacyContentFixture(db).SeedAsync(CancellationToken.None);
         var lessonId = await db.Set<Lesson>().Select(x => x.Id).SingleAsync();
         var version = new LessonVersion { LessonId = lessonId, VersionNumber = 2, Title = "Review", PassingScore = 60 };
         version.SubmitForReview();
@@ -149,8 +151,9 @@ public sealed class PostgreSqlStudentLearningTests
         });
         await db.SaveChangesAsync();
         await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-            builder.UseEnvironment("Testing").UseSetting("StudentRelease:IncludeLegacyContent", "true").ConfigureAppConfiguration((_, config) =>
-                config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:LanguagePlatform"] = connection })));
+            builder.UseEnvironment("Testing").ConfigureAppConfiguration((_, config) =>
+                config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:LanguagePlatform"] = connection }))
+                .ConfigureServices(services => services.AddSingleton(new StudentReleaseOptions(true))));
         using var student = factory.CreateClient();
         using var publisher = factory.CreateClient();
         var url = $"/api/v1/admin/lesson-versions/{version.Id}/publish";
@@ -173,7 +176,7 @@ public sealed class PostgreSqlStudentLearningTests
     [PostgreSqlFact]
     public Task FiveStageDraftsArePrivateAndCurriculumProgressIsSequential() => PostgreSqlTestSchema.RunAsync(async (connection, db) =>
     {
-        await new DevelopmentContentSeeder(db).SeedAsync(CancellationToken.None);
+        await new LegacyContentFixture(db).SeedAsync(CancellationToken.None);
         var scanner = new TestPdfScanner();
         await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             builder.UseEnvironment("Testing").ConfigureAppConfiguration((_, config) =>
@@ -186,15 +189,32 @@ public sealed class PostgreSqlStudentLearningTests
         using var otherAuthor = factory.CreateClient();
         var paths = await student.GetFromJsonAsync<LearningPathDto[]>("/api/v1/catalog/learning-paths");
         Assert.Equal(CatalogSeedIds.TurkishToArabic, Assert.Single(paths!).Id);
-        var legacyId = await db.Courses.Where(x => x.Slug == DevelopmentContentSeeder.PublishedSlug).Select(x => x.Id).SingleAsync();
+        var legacyId = await db.Courses.Where(x => x.Slug == LegacyContentFixture.PublishedSlug).Select(x => x.Id).SingleAsync();
         using var legacy = await student.GetAsync($"/api/v1/catalog/courses/{legacyId}");
         Assert.Equal(HttpStatusCode.NotFound, legacy.StatusCode);
+        var legacyLesson = await db.Set<Lesson>().SingleAsync();
+        using var legacyDetail = await student.GetAsync($"/api/v1/courses/{legacyId}/lessons/{legacyLesson.Id}");
+        Assert.Equal(HttpStatusCode.NotFound, legacyDetail.StatusCode);
 
         const string courses = "/api/v1/admin/five-stage/courses";
         var create = new CreateCurriculumCourse("arabic-five-stage", "Arapça", null);
         using var unauthorized = await student.PostAsJsonAsync(courses, create);
         Assert.Equal(HttpStatusCode.Unauthorized, unauthorized.StatusCode);
         await LoginAsync(factory, student, "curriculum-learner@example.test");
+        var fixtureWord = await db.Set<DictionaryEntry>().SingleAsync();
+        var vocabulary = "/api/v1/me/vocabulary";
+        Assert.Empty((await student.GetFromJsonAsync<VocabularyPage>(vocabulary))!.Items);
+        using var hiddenWord = await student.GetAsync($"{vocabulary}/{fixtureWord.Id}");
+        Assert.Equal(HttpStatusCode.NotFound, hiddenWord.StatusCode);
+        using var hiddenFavorite = await student.PutAsJsonAsync($"{vocabulary}/{fixtureWord.Id}/favorite", new UpdateFavorite(true));
+        Assert.Equal(HttpStatusCode.NotFound, hiddenFavorite.StatusCode);
+        const string authoredSense = "Teacher-owned test sense";
+        db.Add(new WordSense { DictionaryEntryId = fixtureWord.Id, SenseNumber = 2, Definition = authoredSense });
+        await db.SaveChangesAsync();
+        Assert.Equal(fixtureWord.Id, Assert.Single((await student.GetFromJsonAsync<VocabularyPage>(vocabulary))!.Items).Id);
+        var visibleWord = (await student.GetFromJsonAsync<VocabularyDetailDto>($"{vocabulary}/{fixtureWord.Id}"))!;
+        Assert.Equal(authoredSense, Assert.Single(visibleWord.Senses).Definition);
+        Assert.Equal(2, await db.Set<WordSense>().CountAsync());
         await LoginAsync(factory, author, "curriculum-author@example.test", Permissions.ContentEdit);
         await LoginAsync(factory, publisher, "curriculum-publisher@example.test", Permissions.ContentPublish);
         await LoginAsync(factory, evaluator, "curriculum-evaluator@example.test", Permissions.AssessmentEvaluate);

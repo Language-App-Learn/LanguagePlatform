@@ -4,12 +4,13 @@ using LanguagePlatform.Domain.LessonEngine;
 using LanguagePlatform.Domain.Assessment;
 using LanguagePlatform.Domain.Dictionary;
 using LanguagePlatform.Infrastructure.Identity;
+using LanguagePlatform.Infrastructure.Persistence;
 using AssessmentEntity = LanguagePlatform.Domain.Assessment.Assessment;
 using Microsoft.EntityFrameworkCore;
 
-namespace LanguagePlatform.Infrastructure.Persistence;
+namespace LanguagePlatform.Api.IntegrationTests;
 
-public sealed class DevelopmentContentSeeder(LanguagePlatformDbContext db)
+internal sealed class LegacyContentFixture(LanguagePlatformDbContext db)
 {
     public const string PublishedSlug = "dev-fixture-arabic-basics";
     public const string DraftSlug = "dev-fixture-unpublished";

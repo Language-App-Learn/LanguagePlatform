@@ -28,6 +28,12 @@ The PostgreSQL 18 backup rehearsal applied all nine migrations, exported a custo
 
 [PR #1 run 42399306279](https://github.com/Language-App-Learn/LanguagePlatform/actions/runs/42399306279) reported 186 extra blank lines at the ends of C# files. Those files now have one final newline and the full PR diff passes `git diff --check`. The workflow checks the merge-base-to-head range for pull requests and the before-to-after range for pushes. The local checks covered PR, multi-commit push and new-branch range selection, Actionlint, Gitleaks history and tree scans, a clean build, all 43 tests on disposable PostgreSQL 18.6, OpenAPI export and EF CLI 10.0.14. The updated PR workflow has yet to run on GitHub.
 
+## Teacher-only content cleanup
+
+The teacher-only content cleanup is based on `origin/Develop` at `5f66656`. The former runtime content seeder now exists only as an integration-test fixture. Startup still supports structural catalog initialization. Obsolete demo flags have no runtime effect. Existing five-stage course publication, authorization, lesson ordering and progress behavior are preserved. The vocabulary read path excludes the unchanged historical fixture sense without removing records or suppressing other senses on the same entry. See the [historical inventory](../docs/database/postgresql.md#historical-fixture-inventory).
+
+The build completed with zero warnings and errors. All 45 tests passed with zero failures and zero skips on disposable PostgreSQL 18.6. The new checks cover Development startup with obsolete flags, empty catalog and slot responses, and Production startup with a nonconnecting test target. Updated tests cover historical vocabulary visibility, draft isolation, preserved stored progress, teacher publication and the 60/100 gate. EF reports no pending model changes and all nine migrations remain intact.
+
 ## Next checkpoint
 
 1. Configure staging SMTP, ClamAV, HTTPS, PostgreSQL TLS and service resource isolation. Verify live delivery and scanning, the operator command, and deployment restart behavior. See the [deployment runbook](../docs/deployment/BACKEND_PRODUCTION.md).
