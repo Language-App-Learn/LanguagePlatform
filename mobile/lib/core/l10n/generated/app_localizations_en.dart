@@ -25,27 +25,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loadingLabel => 'Loading';
 
   @override
-  String get demoNotice => 'Demo data. Nothing is saved to a server.';
-
-  @override
-  String get settingsTitle => 'Settings';
-
-  @override
-  String get interfaceLanguageTitle => 'App language';
-
-  @override
-  String get themeTitle => 'Appearance';
-
-  @override
-  String get themeModeSystem => 'System';
-
-  @override
-  String get themeModeLight => 'Light';
-
-  @override
-  String get themeModeDark => 'Dark';
-
-  @override
   String get skip => 'Skip';
 
   @override
@@ -55,178 +34,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get back => 'Back';
 
   @override
-  String get getStarted => 'Get started';
-
-  @override
-  String get continueAction => 'Continue';
-
-  @override
-  String get onboarding1Title => 'Learn a new language';
-
-  @override
-  String get onboarding1Body =>
-      'Pick the language you want to learn and start from the language you already know.';
-
-  @override
-  String get onboarding2Title => 'Grow with interactive lessons';
-
-  @override
-  String get onboarding2Body =>
-      'Short lessons with dialogues, vocabulary and grammar help you move forward step by step.';
-
-  @override
-  String get onboarding3Title => 'Practice words and speaking';
-
-  @override
-  String get onboarding3Body =>
-      'Review vocabulary today. Speaking practice is on its way.';
-
-  @override
-  String get onboarding4Title => 'Track your progress';
-
-  @override
-  String get onboarding4Body =>
-      'See finished lessons, quiz scores and your daily goal in one place.';
-
-  @override
-  String onboardingStepSemantics(int current, int total) {
-    return 'Step $current of $total';
-  }
-
-  @override
-  String get languageSetupTitle => 'Choose your languages';
-
-  @override
-  String get languageSetupSubtitle =>
-      'App language, the language you know and the language you want to learn are three separate choices.';
-
-  @override
-  String get knownLanguageTitle => 'I speak';
-
-  @override
-  String get targetLanguageTitle => 'I want to learn';
-
-  @override
-  String get sameLanguageHint =>
-      'Pick two different languages for \"I speak\" and \"I want to learn\".';
-
-  @override
-  String get chooseBothLanguagesHint =>
-      'Choose the language you know and the language you want to learn.';
-
-  @override
   String get done => 'Done';
 
   @override
-  String get viewAll => 'View all';
-
-  @override
   String get startLesson => 'Start lesson';
-
-  @override
-  String get continueCourse => 'Continue';
-
-  @override
-  String get startCourse => 'Start course';
-
-  @override
-  String get reviewCourse => 'Review course';
-
-  @override
-  String get navHome => 'Home';
-
-  @override
-  String get navCourses => 'Courses';
-
-  @override
-  String get navVocabulary => 'Words';
-
-  @override
-  String get navProgress => 'Progress';
-
-  @override
-  String get navProfile => 'Profile';
-
-  @override
-  String get homeGreeting => 'Welcome back';
-
-  @override
-  String homeLearningLabel(String language) {
-    return 'Learning: $language';
-  }
-
-  @override
-  String get homeChooseTargetHint =>
-      'Choose the language you want to learn in Settings.';
-
-  @override
-  String get homeDailyGoalTitle => 'Daily goal';
-
-  @override
-  String get homeGoalReached => 'You reached today\'s goal!';
-
-  @override
-  String homeDailyGoalProgress(int done, int goal) {
-    return '$done of $goal lessons today';
-  }
-
-  @override
-  String get homeContinueTitle => 'Continue learning';
-
-  @override
-  String get homeStartTitle => 'Start your first lesson';
-
-  @override
-  String get homeNextLessonTitle => 'Up next';
-
-  @override
-  String get homeAllDone => 'You finished every available lesson. Great work!';
-
-  @override
-  String get homeFeaturedCourses => 'Featured courses';
-
-  @override
-  String get homeRecommendedPractice => 'Recommended practice';
-
-  @override
-  String get practiceVocabularyTitle => 'Review vocabulary';
-
-  @override
-  String get practiceVocabularySubtitle =>
-      'Browse your words and update how well you know them';
-
-  @override
-  String get practiceQuizTitle => 'Test yourself';
-
-  @override
-  String get homeProgressTitle => 'Your progress';
-
-  @override
-  String get coursesTitle => 'Courses';
-
-  @override
-  String get searchCoursesHint => 'Search courses';
-
-  @override
-  String get clearSearch => 'Clear search';
-
-  @override
-  String get filterLanguageTitle => 'Language';
-
-  @override
-  String get filterLevelTitle => 'Level';
-
-  @override
-  String get filterAll => 'All';
-
-  @override
-  String get noCoursesTitle => 'No courses found';
-
-  @override
-  String get noCoursesMessage => 'Try changing your search or filters.';
-
-  @override
-  String get clearFilters => 'Clear filters';
 
   @override
   String lessonCount(int count) {
@@ -241,215 +52,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String lessonMinutes(int minutes) {
-    return '$minutes min';
-  }
-
-  @override
-  String courseProgressLabel(int done, int total) {
-    return '$done/$total lessons';
-  }
-
-  @override
-  String get courseLessonsTitle => 'Lessons';
-
-  @override
-  String get noLessonsTitle => 'Lessons are coming soon';
-
-  @override
-  String get noLessonsMessage =>
-      'The content for this course is being prepared.';
-
-  @override
-  String quizBestScore(String score) {
-    return 'Best: $score';
-  }
-
-  @override
-  String get lessonDialogue => 'Dialogue';
-
-  @override
-  String get lessonVocabulary => 'Vocabulary';
-
-  @override
-  String get lessonGrammar => 'Grammar';
-
-  @override
-  String get lessonExample => 'Example';
-
-  @override
-  String get lessonExercise => 'Practice';
-
-  @override
-  String get checkAnswer => 'Check answer';
-
-  @override
   String get answerCorrect => 'Correct!';
 
   @override
   String get answerIncorrect => 'Not quite.';
 
   @override
-  String get markLessonComplete => 'Mark as complete';
-
-  @override
-  String get lessonCompleted => 'Completed';
-
-  @override
-  String get takeQuiz => 'Take the quiz';
-
-  @override
-  String get previousLesson => 'Previous lesson';
-
-  @override
   String get nextLesson => 'Next lesson';
-
-  @override
-  String get quizTitle => 'Quiz';
-
-  @override
-  String quizQuestionOf(int current, int total) {
-    return 'Question $current of $total';
-  }
-
-  @override
-  String get quizNext => 'Next question';
-
-  @override
-  String get quizFinish => 'See results';
-
-  @override
-  String get quizResultTitle => 'Your result';
-
-  @override
-  String quizScoreSummary(int correct, int total) {
-    return '$correct of $total correct';
-  }
-
-  @override
-  String get quizPassed => 'Great job!';
-
-  @override
-  String get quizFailed => 'Keep practicing.';
-
-  @override
-  String get quizTryAgain => 'Try again';
-
-  @override
-  String get quizLocalOnly =>
-      'In this demo build, results are kept only on this device.';
-
-  @override
-  String get quizEmptyTitle => 'No questions yet';
-
-  @override
-  String get vocabularyTitle => 'Vocabulary';
-
-  @override
-  String get vocabularyEmptyTitle => 'No words found';
-
-  @override
-  String get vocabularyEmptyMessage =>
-      'Change the filter or choose a language to learn.';
-
-  @override
-  String get vocabularyStatusNew => 'New';
-
-  @override
-  String get vocabularyStatusLearning => 'Learning';
-
-  @override
-  String get vocabularyStatusLearned => 'Learned';
-
-  @override
-  String get wordMeaning => 'Meaning';
-
-  @override
-  String get wordStatusTitle => 'Learning status';
-
-  @override
-  String get progressTitle => 'Progress';
-
-  @override
-  String get progressDemoNotice =>
-      'Progress is kept only on this device and resets when you close the app. It is not saved to an account.';
-
-  @override
-  String get progressCompletedLessons => 'Completed lessons';
-
-  @override
-  String get progressAverageScore => 'Average quiz score';
-
-  @override
-  String get progressNoQuizYet => 'No quizzes yet';
-
-  @override
-  String get progressDailyGoalTitle => 'Daily goal';
-
-  @override
-  String dailyGoalOption(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count lessons a day',
-      one: '1 lesson a day',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get progressCoursesTitle => 'Course progress';
-
-  @override
-  String get progressEmptyTitle => 'No progress yet';
-
-  @override
-  String get progressEmptyMessage =>
-      'Complete a lesson to see your progress here.';
-
-  @override
-  String get browseCourses => 'Browse courses';
-
-  @override
-  String get profileTitle => 'Profile';
-
-  @override
-  String get profileDemoName => 'Demo learner';
-
-  @override
-  String get profileGuestName => 'Guest';
-
-  @override
-  String get profileDemoSubtitle => 'Demo mode, not signed in';
-
-  @override
-  String get profileSignedOutSubtitle => 'Not signed in';
-
-  @override
-  String get profileLanguagesTitle => 'Languages';
-
-  @override
-  String get accountIntegrationPending =>
-      'Account features need a server connection and are not available yet.';
-
-  @override
-  String get exitDemoMode => 'Exit demo mode';
-
-  @override
-  String get accountSectionTitle => 'Account';
-
-  @override
-  String get editProfile => 'Edit profile';
-
-  @override
-  String get changePassword => 'Change password';
-
-  @override
-  String get aboutTitle => 'About';
-
-  @override
-  String get aboutDescription =>
-      'LanguagePlatform helps you learn languages in your own language. This is a demo build.';
 
   @override
   String get loginTitle => 'Sign in';
@@ -474,13 +83,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get registerButton => 'Create account';
-
-  @override
-  String get demoModeExplain =>
-      'Demo mode lets you explore the app with sample content. No account is created and nothing is saved.';
-
-  @override
-  String get continueDemo => 'Continue in demo mode';
 
   @override
   String get registerTitle => 'Create account';
@@ -536,131 +138,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
-  String get homeResumeTitle => 'Resume your lesson';
-
-  @override
-  String get weeklyActivityTitle => 'Last 7 days';
-
-  @override
-  String activityStreak(int days) {
-    String _temp0 = intl.Intl.pluralLogic(
-      days,
-      locale: localeName,
-      other: '$days-day streak',
-      one: '1-day streak',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get activityNone =>
-      'No activity recorded yet. Finish a lesson, quiz or review to see it here.';
-
-  @override
-  String get statWordsLearned => 'Words learned';
-
-  @override
-  String get statWordsLearning => 'Words in progress';
-
-  @override
-  String get statReviewsDue => 'Reviews due';
-
-  @override
-  String get vocabularySearchHint => 'Search words';
-
-  @override
-  String get vocabularyFavorites => 'Favorites';
-
-  @override
-  String get favoriteAdd => 'Add to favorites';
-
-  @override
-  String get favoriteRemove => 'Remove from favorites';
-
-  @override
-  String get reviewDueBadge => 'Due for review';
-
-  @override
-  String reviewDueBanner(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count words due for review',
-      one: '1 word due for review',
-      zero: 'No words due. Practice new words',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get startReview => 'Review';
-
-  @override
-  String get reviewTitle => 'Flashcards';
-
-  @override
-  String get reviewShowAnswer => 'Show answer';
-
-  @override
-  String reviewProgress(int current, int total) {
-    return 'Card $current of $total';
-  }
-
-  @override
-  String get ratingAgain => 'Again';
-
-  @override
-  String get ratingHard => 'Hard';
-
-  @override
-  String get ratingGood => 'Good';
-
-  @override
-  String get ratingEasy => 'Easy';
-
-  @override
-  String get reviewDoneTitle => 'Session complete';
-
-  @override
-  String reviewDoneSummary(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'You reviewed $count words.',
-      one: 'You reviewed 1 word.',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get reviewNothingTitle => 'Nothing to review';
-
-  @override
-  String get reviewNothingMessage =>
-      'Choose a language to learn or come back when words are due.';
-
-  @override
-  String get settingsDemoNotice =>
-      'Demo build: your settings and progress are stored only on this device, not in an account.';
-
-  @override
-  String get resetDataTitle => 'Reset local demo data';
-
-  @override
-  String get resetDataSubtitle =>
-      'Deletes progress, vocabulary state and preferences on this device';
-
-  @override
-  String get resetDataConfirmTitle => 'Reset local data?';
-
-  @override
-  String get resetDataConfirmMessage =>
-      'This deletes your onboarding state, language choices, progress and vocabulary records on this device. It cannot be undone.';
-
-  @override
-  String get resetDataConfirmAction => 'Reset';
-
-  @override
   String get errorNetwork =>
       'No internet connection. Check your connection and try again.';
 
@@ -680,18 +157,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorUnavailable => 'This feature is not connected yet.';
 
   @override
-  String get storageWriteFailed =>
-      'Some changes could not be saved on this device and may be lost when you close the app.';
-
-  @override
   String get answerTrue => 'True';
 
   @override
   String get answerFalse => 'False';
-
-  @override
-  String get unsupportedContent =>
-      'This content is not supported in this version of the app.';
 
   @override
   String get pageNotFoundTitle => 'Page not found';
@@ -703,112 +172,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goHome => 'Go to home';
 
   @override
-  String get activeCourseTitle => 'Your course';
-
-  @override
-  String get activeCourseEmptyTitle => 'No course yet';
-
-  @override
-  String get activeCourseEmptyMessage =>
-      'Pick a course to see your level and progress here.';
-
-  @override
-  String get openCourse => 'Open course';
-
-  @override
-  String get reviewHistoryTitle => 'Review history';
-
-  @override
-  String get reviewHistoryEmptyTitle => 'No reviews yet';
-
-  @override
-  String get reviewHistoryEmptyMessage =>
-      'Your flashcard reviews will appear here.';
-
-  @override
-  String historyNextReview(String date) {
-    return 'Next review: $date';
-  }
-
-  @override
-  String get historyUnknownWord => 'Word no longer available';
-
-  @override
-  String get reviewHistoryOpen => 'Review history';
-
-  @override
   String get brandTagline => 'LANGUAGE LEARNING PLATFORM';
 
   @override
   String lessonPosition(int current, int total) {
     return 'Lesson $current of $total';
   }
-
-  @override
-  String get lessonCompletedSnack => 'Lesson marked as complete';
-
-  @override
-  String get leaveQuizTitle => 'Leave the quiz?';
-
-  @override
-  String get leaveQuizMessage =>
-      'Your answers in this attempt will not be saved.';
-
-  @override
-  String get leaveQuizConfirm => 'Leave';
-
-  @override
-  String optionLetterSemantics(String letter) {
-    return 'Option $letter';
-  }
-
-  @override
-  String get trackTitle => 'Learn Arabic from Turkish';
-
-  @override
-  String get trackSubtitle => 'Choose your CEFR level';
-
-  @override
-  String get demoContentBadge => 'Demo content';
-
-  @override
-  String get levelNameA1 => 'Beginner';
-
-  @override
-  String get levelNameA2 => 'Elementary';
-
-  @override
-  String get levelNameB1 => 'Intermediate';
-
-  @override
-  String get levelNameB2 => 'Upper intermediate';
-
-  @override
-  String get levelNameC1 => 'Advanced';
-
-  @override
-  String get levelNameC2 => 'Proficient';
-
-  @override
-  String levelPublishedCount(int published, int total) {
-    return '$published of $total lessons published';
-  }
-
-  @override
-  String levelCompletedCount(int count) {
-    return '$count completed';
-  }
-
-  @override
-  String get levelNoLessons => 'No lessons published yet';
-
-  @override
-  String lessonNumber(int number) {
-    return 'Lesson $number';
-  }
-
-  @override
-  String get lessonInPreparation => 'In preparation';
 
   @override
   String get stageReading => 'Reading';
@@ -887,89 +256,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'The stage weights are set by the server and are not available yet, so no final score is shown.';
 
   @override
-  String get demoScoreNotice =>
-      'Demo practice result. It is not an official score and does not count towards passing.';
-
-  @override
-  String stageScoreLabel(String score) {
-    return 'Practice score: $score';
-  }
-
-  @override
-  String get audioUnavailable => 'Audio is not available yet';
-
-  @override
-  String get pdfUnavailable => 'The original PDF is not available yet';
-
-  @override
-  String get videoUnavailable => 'The teacher video is not available yet';
-
-  @override
-  String get aiPracticeTitle => 'Conversation practice';
-
-  @override
-  String get aiPracticeUnavailable =>
-      'AI conversation practice is not connected yet. No recording is made or sent.';
-
-  @override
-  String get dialogueTitle => 'Dialogue';
-
-  @override
-  String get readingQuestionsTitle => 'Questions';
-
-  @override
-  String get listeningInstruction =>
-      'Audio is not available yet. Place each word into the right blank.';
-
-  @override
-  String get writingFillTitle => 'Fill in the blank';
-
-  @override
-  String get writingArrangeTitle => 'Arrange the words';
-
-  @override
-  String get translationChoiceTitle => 'Choose the correct translation';
-
-  @override
-  String get translationWriteTitle => 'Write the translation';
-
-  @override
   String get wordBank => 'Word bank';
-
-  @override
-  String get tapToPlace => 'Tap a word, then tap a blank (or drag the word).';
-
-  @override
-  String blankLabel(int number) {
-    return 'Blank $number';
-  }
-
-  @override
-  String get checkStage => 'Check answers';
-
-  @override
-  String get resetStage => 'Reset';
-
-  @override
-  String get undoStep => 'Undo';
-
-  @override
-  String get yourAnswer => 'Your answer';
-
-  @override
-  String get finishPractice => 'Finish practice';
 
   @override
   String get stageContentMissing =>
       'This lesson has no published content for this stage yet.';
-
-  @override
-  String resultCorrect(int correct, int total) {
-    return '$correct of $total correct';
-  }
-
-  @override
-  String get practiceRecorded => 'Practice recorded on this device (demo).';
 
   @override
   String get authInvalidCredentials =>
@@ -987,20 +278,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signOut => 'Sign out';
 
   @override
-  String get profileAccountSubtitle => 'Signed in to your account';
-
-  @override
   String get remoteSignInPrompt => 'Sign in to see and save your progress.';
 
   @override
-  String get remoteNotConfigured =>
-      'The learning server is not configured in this build.';
-
-  @override
   String get remoteBeginLesson => 'Begin this lesson';
-
-  @override
-  String get remoteNoCourse => 'No Turkish-to-Arabic course is published yet.';
 
   @override
   String stageAttempts(int count) {
@@ -1032,12 +313,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String officialResultScore(String score, String max) {
     return '$score of $max';
   }
-
-  @override
-  String get attemptPassed => 'Passed';
-
-  @override
-  String get attemptNotPassed => 'Not passed';
 
   @override
   String get nextLessonAction => 'Go to the next lesson';
@@ -1088,16 +363,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get mediaAudioAvailable => 'Listening audio is available.';
-
-  @override
   String mediaVideoAvailable(String title) {
     return 'Teacher video: $title';
   }
-
-  @override
-  String get mediaPlaybackUnavailable =>
-      'Playback is not enabled in this build yet.';
 
   @override
   String get mediaNone =>
@@ -1196,14 +464,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get attemptRecorded =>
       'Result recorded. Your lesson result is updated on the lesson page.';
-
-  @override
-  String get homeRemoteNotice =>
-      'Your lessons and official results come from your account. Vocabulary, review and activity summaries will appear here when they are connected to it.';
-
-  @override
-  String get localPracticeNotice =>
-      'This is practice data stored only on this device. It is not linked to your account and is not an official result.';
 
   @override
   String get authenticatorCodeLabel =>
