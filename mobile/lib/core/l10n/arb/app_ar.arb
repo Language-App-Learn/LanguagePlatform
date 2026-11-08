@@ -211,7 +211,7 @@
   "historyNextReview": "المراجعة التالية: {date}",
   "historyUnknownWord": "الكلمة لم تعد متاحة",
   "reviewHistoryOpen": "سجل المراجعة",
-  "brandTagline": "تعلّم اللغات بلغتك.",
+  "brandTagline": "منصة تعلّم اللغات",
   "lessonPosition": "الدرس {current} من {total}",
   "lessonCompletedSnack": "تم وضع علامة اكتمال على الدرس",
   "leaveQuizTitle": "مغادرة الاختبار؟",
@@ -370,5 +370,33 @@
   "mediaStop": "إيقاف",
   "mediaPlaybackFailed": "تعذّر تشغيل الوسائط. قد تكون صلاحية الرابط قد انتهت أو قد تكون غير متصل.",
   "mediaListeningAudio": "الاستماع الصوتي"
+,
+  "appLanguageTitle": "بأي لغة يعمل التطبيق؟",
+  "appLanguageSubtitle": "اختر لغة واجهة التطبيق.",
+  "menuLearn": "تعلّم لغة",
+  "menuTranslate": "الترجمة بجميع اللغات",
+  "menuTranslateSoon": "الترجمة قريبًا."
+,
+  "languagePairTitle": "اختيار اللغة",
+  "languagePairSubtitle": "اختر اللغة التي تعرفها واللغة التي تريد تعلّمها.",
+  "pairKnownLabel": "اللغة التي تعرفها",
+  "pairTargetLabel": "اللغة التي ستتعلّمها",
+  "languageNameTr": "التركية",
+  "languageNameAr": "العربية",
+  "sectionLearnArabic": "تعلّم العربية",
+  "sectionReadingWriting": "تعلّم القراءة والكتابة",
+  "sectionQuran": "القرآن الكريم",
+  "sectionExams": "YDS / YDT / YÖKDİL",
+  "sectionAi": "تدرّب مع الذكاء الاصطناعي",
+  "comingSoonTag": "قريبًا",
+  "featureUnavailable": "هذا القسم غير متاح بعد.",
+  "levelPickerTitle": "اختيار المستوى",
+  "levelPickerSubtitle": "اختر مستواك لتعلّم العربية.",
+  "levelFromScratch": "ابدأ من الصفر",
+  "lessonMenuSubtitle": "اختر وضع التعلّم.",
+  "modeTest": "الاختبار"
+,
+  "continueButton": "متابعة",
+  "lessonMenuTitle": "دروس العربية"
 
 }

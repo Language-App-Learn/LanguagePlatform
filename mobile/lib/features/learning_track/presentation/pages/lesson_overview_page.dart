@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../core/design_system/widgets/app_card.dart';
 import '../../../../core/design_system/widgets/async_value_view.dart';
-import '../../../../core/design_system/widgets/content_width.dart';
 import '../../../../core/design_system/widgets/notice_banner.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
@@ -15,6 +14,7 @@ import '../../../lessons/domain/lesson.dart';
 import '../../application/track_providers.dart';
 import '../../domain/lesson_outcome.dart';
 import '../../domain/lesson_stage.dart';
+import '../widgets/lesson_mode_grid.dart';
 import '../widgets/stage_widgets.dart';
 import 'remote_lesson_pages.dart';
 
@@ -33,16 +33,11 @@ class LessonOverviewPage extends ConsumerWidget {
       return RemoteLessonOverviewPage(lessonId: lessonId);
     }
     final lesson = ref.watch(lessonProvider(lessonId));
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(lesson.value?.title.resolve(context.languageCode) ?? ''),
-      ),
-      body: SafeArea(
-        child: AsyncValueView<Lesson>(
-          value: lesson,
-          onRetry: () => ref.invalidate(lessonProvider(lessonId)),
-          data: (lesson) => _Body(lesson: lesson),
-        ),
+    return LessonMenuFrame(
+      child: AsyncValueView<Lesson>(
+        value: lesson,
+        onRetry: () => ref.invalidate(lessonProvider(lessonId)),
+        data: (lesson) => _Body(lesson: lesson),
       ),
     );
   }
@@ -64,48 +59,39 @@ class _Body extends ConsumerWidget {
     final outcome = lessonOutcome(records: records, serverResult: server);
     final hasDemoScore = records.values.any((r) => r.score != null);
 
-    return ContentWidth(
-      child: ListView(
-        padding: AppSpacing.page,
-        children: [
-          for (final stage in LessonStage.values)
-            Builder(
-              builder: (context) {
-                final status = stageStatus(
-                  stage: stage,
-                  records: records,
-                  hasContent: (s) => stageHasContent(lesson, content, s),
-                );
-                final open =
-                    status == StageStatus.available ||
-                    status == StageStatus.inProgress ||
-                    status == StageStatus.completed;
-                return Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    bottom: AppSpacing.md,
-                  ),
-                  child: StageCard(
-                    stage: stage,
-                    status: status,
-                    record: records[stage],
-                    onOpen: open
-                        ? () => context.push(
-                            AppRoutes.stageOf(lesson.id, stage.name),
-                          )
-                        : null,
-                  ),
-                );
-              },
-            ),
-          const SizedBox(height: AppSpacing.sm),
-          OverallPanel(
-            outcome: outcome,
-            server: server,
-            hasDemoScore: hasDemoScore,
-            l10n: l10n,
-          ),
-        ],
-      ),
+    return ListView(
+      padding: lessonMenuPadding,
+      children: [
+        const LessonMenuIntro(),
+        LessonModeGrid(
+          cardFor: (stage) {
+            final status = stageStatus(
+              stage: stage,
+              records: records,
+              hasContent: (s) => stageHasContent(lesson, content, s),
+            );
+            final open =
+                status == StageStatus.available ||
+                status == StageStatus.inProgress ||
+                status == StageStatus.completed;
+            return LessonModeCard(
+              stage: stage,
+              status: status,
+              record: records[stage],
+              onOpen: open
+                  ? () => context.push(AppRoutes.stageOf(lesson.id, stage.name))
+                  : null,
+            );
+          },
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        OverallPanel(
+          outcome: outcome,
+          server: server,
+          hasDemoScore: hasDemoScore,
+          l10n: l10n,
+        ),
+      ],
     );
   }
 }

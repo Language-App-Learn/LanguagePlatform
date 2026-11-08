@@ -1,12 +1,32 @@
 import 'package:flutter/material.dart';
 
 /// Marka paleti. Marka kimliği kesinleşince yalnızca burası güncellenir.
+///
+/// Kimlik: koyu mordan lavantaya uzanan uyumlu bir mor paleti, açık lavanta
+/// zeminler ve küçük bir amber vurgu. Metin/zemin çiftleri WCAG AA'yı geçer
+/// (koyu mor üzerinde beyaz ~11:1, beyaz üzerinde [brand] ~9:1).
 abstract final class AppColors {
-  /// İndigo: güven ve odak (birincil).
-  static const Color seed = Color(0xFF4455D6);
+  /// Tonal paletin tohumu (Material 3 `fromSeed`).
+  static const Color seed = Color(0xFF5B21B6);
 
   /// Sıcak amber: hedef/vurgu.
   static const Color accent = Color(0xFFF2A516);
+
+  // --- Marka renkleri (logo, düğmeler, kartlar) ---
+  /// En koyu mor: logo kapağı, "Language" yazısı, ana düğme.
+  static const Color brandDeep = Color(0xFF3B1470);
+
+  /// Ana mor.
+  static const Color brand = Color(0xFF5B21B6);
+
+  /// Orta mor: "Platform" yazısı, ikonlar, seçili çerçeve.
+  static const Color brandMid = Color(0xFF7C3AED);
+
+  /// Açık mor: dalgalar, seçili kart zemini.
+  static const Color brandLight = Color(0xFFE9DEFA);
+
+  /// Çok açık lavanta: ekran zemini.
+  static const Color brandMist = Color(0xFFF6F1FD);
 }
 
 /// ColorScheme'de karşılığı olmayan anlamsal renkler (başarı, uyarı, vurgu).

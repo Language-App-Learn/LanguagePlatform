@@ -28,10 +28,7 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('LanguagePlatform'), findsOneWidget);
-      expect(
-        find.text('Learn languages in your own language.'),
-        findsOneWidget,
-      );
+      expect(find.text('LANGUAGE LEARNING PLATFORM'), findsOneWidget);
     });
 
     testWidgets('tagline follows the interface language', (tester) async {
@@ -44,7 +41,7 @@ void main() {
         overrides: [startupRouteProvider.overrideWith((ref) => never.future)],
       );
       await tester.pump(const Duration(milliseconds: 300));
-      expect(find.text('تعلّم اللغات بلغتك.'), findsOneWidget);
+      expect(find.text('منصة تعلّم اللغات'), findsOneWidget);
     });
   });
 

@@ -737,7 +737,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewHistoryOpen => 'Review history';
 
   @override
-  String get brandTagline => 'Learn languages in your own language.';
+  String get brandTagline => 'LANGUAGE LEARNING PLATFORM';
 
   @override
   String lessonPosition(int current, int total) {
@@ -1264,4 +1264,80 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mediaListeningAudio => 'Listening audio';
+
+  @override
+  String get appLanguageTitle => 'Which language should the app use?';
+
+  @override
+  String get appLanguageSubtitle => 'Choose the app\'s interface language.';
+
+  @override
+  String get menuLearn => 'Learn a Language';
+
+  @override
+  String get menuTranslate => 'Translate in All Languages';
+
+  @override
+  String get menuTranslateSoon => 'Translation is coming soon.';
+
+  @override
+  String get languagePairTitle => 'Language pair';
+
+  @override
+  String get languagePairSubtitle =>
+      'Choose the language you know and the language you want to learn.';
+
+  @override
+  String get pairKnownLabel => 'Language you know';
+
+  @override
+  String get pairTargetLabel => 'Language you will learn';
+
+  @override
+  String get languageNameTr => 'Turkish';
+
+  @override
+  String get languageNameAr => 'Arabic';
+
+  @override
+  String get sectionLearnArabic => 'Learn Arabic';
+
+  @override
+  String get sectionReadingWriting => 'Learn Reading and Writing';
+
+  @override
+  String get sectionQuran => 'The Holy Quran';
+
+  @override
+  String get sectionExams => 'YDS / YDT / YÖKDİL';
+
+  @override
+  String get sectionAi => 'Practice with AI';
+
+  @override
+  String get comingSoonTag => 'Soon';
+
+  @override
+  String get featureUnavailable => 'This section is not available yet.';
+
+  @override
+  String get levelPickerTitle => 'Choose your level';
+
+  @override
+  String get levelPickerSubtitle => 'Choose your level to learn Arabic.';
+
+  @override
+  String get levelFromScratch => 'Start from scratch';
+
+  @override
+  String get lessonMenuSubtitle => 'Choose a learning mode.';
+
+  @override
+  String get modeTest => 'Test';
+
+  @override
+  String get continueButton => 'Continue';
+
+  @override
+  String get lessonMenuTitle => 'Arabic Lessons';
 }

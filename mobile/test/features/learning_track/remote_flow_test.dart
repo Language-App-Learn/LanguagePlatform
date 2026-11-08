@@ -25,7 +25,7 @@ List<Override> _remote(
 ];
 
 String _status(WidgetTester tester, String stage) =>
-    tester.widget<Text>(_key('stage-status:$stage')).data!;
+    tester.widget<Tooltip>(_key('stage-status:$stage')).message!;
 
 void main() {
   const lesson = Json.lessonId;
@@ -42,8 +42,10 @@ void main() {
         initialLocation: '/track/tr-ar',
         overrides: _remote(repo, session: SessionStatus.signedOut),
       );
-      expect(find.text('2 of 20 lessons published'), findsOneWidget);
-      expect(find.text('No lessons published yet'), findsNWidgets(5));
+      expect(find.textContaining('lessons published'), findsNothing);
+      final levels = c.read(levelOverviewsProvider).requireValue;
+      expect(levels.first.publishedLessons, 2);
+      expect(levels.skip(1).every((l) => l.publishedLessons == 0), isTrue);
       expect(find.text('Demo content'), findsNothing); // real data
 
       await tester.tap(_key('level-card:a1'));
@@ -60,12 +62,13 @@ void main() {
     testWidgets('passed lessons feed the level progress', (tester) async {
       useScreen(tester, height: 3200);
       final repo = FakeFiveStageRepository()..passed = {Json.lessonId};
-      await pumpApp(
+      final c = await pumpApp(
         tester,
         initialLocation: '/track/tr-ar',
         overrides: _remote(repo),
       );
-      expect(find.text('1 completed'), findsOneWidget);
+      final levels = c.read(levelOverviewsProvider).requireValue;
+      expect(levels.first.completedLessons, 1);
     });
 
     testWidgets('server failure shows an error with a working retry', (
@@ -81,20 +84,23 @@ void main() {
       );
       expect(find.textContaining('No internet connection'), findsOneWidget);
       repo.slotsError = null;
+      expect(_key('level-card:a1'), findsNothing);
       await tester.tap(find.text('Try again'));
       await tester.pumpAndSettle();
-      expect(find.text('2 of 20 lessons published'), findsOneWidget);
+      expect(_key('level-card:a1'), findsOneWidget); // recovered
     });
 
     testWidgets('no published course: honest empty state', (tester) async {
       useScreen(tester, height: 3200);
       final repo = FakeFiveStageRepository()..course = null;
-      await pumpApp(
+      final c = await pumpApp(
         tester,
         initialLocation: '/track/tr-ar',
         overrides: _remote(repo, session: SessionStatus.signedOut),
       );
-      expect(find.text('No lessons published yet'), findsNWidgets(6));
+      final levels = c.read(levelOverviewsProvider).requireValue;
+      expect(levels.length, 6);
+      expect(levels.every((l) => l.publishedLessons == 0), isTrue);
     });
   });
 
@@ -370,7 +376,7 @@ void main() {
           trToArPreferences,
         ],
       );
-      expect(find.text('3 of 20 lessons published'), findsOneWidget); // demo A1
+      expect(_key('level-card:a1'), findsOneWidget);
       expect(find.text('Demo content'), findsOneWidget);
       expect(repo.calls, isEmpty);
       expect(repo.progressCalls, 0);

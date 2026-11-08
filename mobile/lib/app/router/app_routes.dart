@@ -3,6 +3,10 @@ abstract final class AppRoutes {
   static const splash = '/splash';
   static const onboarding = '/onboarding';
   static const languageSetup = '/language-setup';
+  static const appLanguage = '/app-language';
+  static const menu = '/menu';
+  static const languagePair = '/language-pair';
+  static const arabicSections = '/arabic-sections';
 
   static const login = '/auth/login';
   static const register = '/auth/register';

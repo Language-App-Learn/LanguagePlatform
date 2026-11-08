@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../config/app_config.dart';
 import '../../theme/app_tokens.dart';
+import 'app_logo.dart';
 
-/// LanguagePlatform marka işareti (geçici; logo kesinleşince değişir).
+/// LanguagePlatform brand mark used on auth and other screens: the logo mark
+/// plus (optionally) the word mark. Same identity as the splash logo.
 class BrandMark extends StatelessWidget {
   const BrandMark({super.key, this.size = 88, this.showName = true});
 
@@ -12,35 +13,13 @@ class BrandMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        ExcludeSemantics(
-          child: Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(size * 0.3),
-              gradient: LinearGradient(
-                begin: AlignmentDirectional.topStart,
-                end: AlignmentDirectional.bottomEnd,
-                colors: [scheme.primary, scheme.tertiary],
-              ),
-            ),
-            child: Icon(
-              Icons.translate,
-              size: size * 0.5,
-              color: scheme.onPrimary,
-            ),
-          ),
-        ),
+        LogoMark(size: size),
         if (showName) ...[
-          const SizedBox(height: AppSpacing.lg),
-          Text(
-            AppConfig.appName,
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
+          const SizedBox(height: AppSpacing.md),
+          LogoWordmark(fontSize: size * 0.3),
         ],
       ],
     );

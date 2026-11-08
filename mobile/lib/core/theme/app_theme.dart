@@ -14,10 +14,25 @@ abstract final class AppTheme {
   static ThemeData get dark => _build(Brightness.dark);
 
   static ThemeData _build(Brightness brightness) {
-    final scheme = ColorScheme.fromSeed(
+    final seeded = ColorScheme.fromSeed(
       seedColor: AppColors.seed,
       brightness: brightness,
     );
+    // Light mode uses the exact brand purples; dark mode keeps the tonal
+    // palette derived from the same seed.
+    final scheme = brightness == Brightness.light
+        ? seeded.copyWith(
+            primary: AppColors.brand,
+            onPrimary: Colors.white,
+            primaryContainer: AppColors.brandLight,
+            onPrimaryContainer: AppColors.brandDeep,
+            secondary: AppColors.brandMid,
+            surface: Colors.white,
+            surfaceContainerLowest: Colors.white,
+            surfaceContainerLow: AppColors.brandMist,
+            surfaceContainer: AppColors.brandMist,
+          )
+        : seeded;
     final base = ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
@@ -33,10 +48,12 @@ abstract final class AppTheme {
       scaffoldBackgroundColor: scheme.surface,
       textTheme: text.copyWith(
         headlineMedium: text.headlineMedium?.copyWith(
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.4,
         ),
         headlineSmall: text.headlineSmall?.copyWith(
           fontWeight: FontWeight.w700,
+          letterSpacing: -0.2,
         ),
         titleLarge: text.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         titleMedium: text.titleMedium?.copyWith(fontWeight: FontWeight.w600),

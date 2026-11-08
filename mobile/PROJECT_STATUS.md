@@ -4,6 +4,21 @@
 
 Release verdict: **NO-GO for store release**, but a real A1 lesson now works end-to-end against the real backend (see `docs/testing/E2E_REAL_BACKEND.md`). Details: `docs/release/RELEASE_READINESS.md`, `docs/security/MASVS_FINDINGS.md`, `docs/api-feedback/BACKEND_FEEDBACK.md`, `docs/architecture/DEPENDENCY_REQUESTS.md`.
 
+## First three screens (branch `feature/first-three-screens`, from `origin/Develop`) - awaiting owner approval
+
+Splash -> one-time app (interface) language -> main menu with exactly two entries ("Dil Öğren", "Tüm Dillerde Çeviri"). New original logo (`core/design_system/widgets/app_logo.dart`, code-drawn, reusable as app icon), purple brand palette (`core/theme/app_colors.dart`), waves background. Flow: splash decides `/app-language` (no interface language saved) or `/menu`; the language is saved only on "Devam et"; "Dil Öğren" continues into the existing onboarding / learning flow; the translation entry only shows a "coming soon" message (no screen, no service). Previews: `docs/design/first-three-screens/` (regenerate with `LP_RENDER_PREVIEWS=1 flutter test test/preview/render_first_screens_test.dart --update-goldens`). Existing startup tests were updated to the new flow; 24 new tests. Not committed. The sketches mentioned in the request were not received; layout follows the written brief and the reference image.
+
+## Screens 4-7 (same branch, uncommitted) - corrected after owner review, awaiting approval
+
+References used: the owner's two design images (`images/1.png` screens 1-3, `images/2.png` screens 4-7); the handwritten sketches were never received.
+Flow: menu "Dil Öğren" -> 4 `/language-pair` -> 5 `/arabic-sections` -> 6 `/track/tr-ar` (existing route) -> existing level list `/track/tr-ar/level/<a1..c2>` (20 positions) -> 7 `/stages/<lessonId>` (existing route) -> existing stage routes.
+- Owner decisions applied: old onboarding/language-setup/home code and routes kept but not reachable from the menu; "Sıfırdan Öğren" visible, unavailable, no content; global `continueAction` restored ("Devam et"), the new `continueButton` ("Devam Et") is used only on screens 2 and 4; level cards show only SIFIRDAN ÖĞREN, A1..C2 (no names, counts or progress text; server counts stay in `levelOverviewsProvider`); screen 7 heading is the fixed "Arapça Dersleri" (the lesson context stays in the route).
+- Design follows the images: logo header with plain back arrow, code-drawn flags (`flag_badge.dart`) and hero illustrations (`brand_illustrations.dart`), dropdown-style fields (one valid choice each), filled/outlined/plain row cards (`brand_list_card.dart`), 2-column mode grid with icon + name only. Stage status is a corner badge (lock/check) with tooltip + screen-reader label (`stage-status:<name>` is a Tooltip). Unavailable items look like the others, show a snackbar when pressed, and are announced as "soon" by screen readers.
+- Statuses, unlocking, scores, 60/100 pass mark, `LessonStage` order untouched; "Test" is not a stage (visible, unavailable).
+- Screen 1-3 touched for the references: flags and gradient "Devam Et" button on screen 2, tagline "DİL ÖĞRENME PLATFORMU" between two lines on the splash.
+- Previews (Flutter test renderer, not an emulator): `docs/design/first-three-screens/`, `docs/design/screens-4-7/` (`LP_RENDER_PREVIEWS=1 flutter test test/preview --update-goldens`). The Pixel 7 API 35 emulator never finished booting (hangs at graphics init); no device testing was done.
+- Tests: groups in `test/features/first_screens_test.dart`; older tests adjusted to the new flow and level cards.
+
 ## Git state
 - Branch `Flutter`; `HEAD` = `origin/Flutter` = `b7ff409`; `origin/Backend-Database` = `dd09853` (read-only). All V8 work is **uncommitted and unpushed** (awaiting owner approval). The 7 `generated_plugin*` files are line-ending noise: keep them out of commits.
 

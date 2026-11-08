@@ -235,7 +235,7 @@
   "@historyNextReview": {"placeholders": {"date": {"type": "String"}}},
   "historyUnknownWord": "Word no longer available",
   "reviewHistoryOpen": "Review history",
-  "brandTagline": "Learn languages in your own language.",
+  "brandTagline": "LANGUAGE LEARNING PLATFORM",
   "lessonPosition": "Lesson {current} of {total}",
   "@lessonPosition": {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}}},
   "lessonCompletedSnack": "Lesson marked as complete",
@@ -409,5 +409,33 @@
   "mediaStop": "Stop",
   "mediaPlaybackFailed": "The media could not be played. The link may have expired or you may be offline.",
   "mediaListeningAudio": "Listening audio"
+,
+  "appLanguageTitle": "Which language should the app use?",
+  "appLanguageSubtitle": "Choose the app's interface language.",
+  "menuLearn": "Learn a Language",
+  "menuTranslate": "Translate in All Languages",
+  "menuTranslateSoon": "Translation is coming soon."
+,
+  "languagePairTitle": "Language pair",
+  "languagePairSubtitle": "Choose the language you know and the language you want to learn.",
+  "pairKnownLabel": "Language you know",
+  "pairTargetLabel": "Language you will learn",
+  "languageNameTr": "Turkish",
+  "languageNameAr": "Arabic",
+  "sectionLearnArabic": "Learn Arabic",
+  "sectionReadingWriting": "Learn Reading and Writing",
+  "sectionQuran": "The Holy Quran",
+  "sectionExams": "YDS / YDT / YÖKDİL",
+  "sectionAi": "Practice with AI",
+  "comingSoonTag": "Soon",
+  "featureUnavailable": "This section is not available yet.",
+  "levelPickerTitle": "Choose your level",
+  "levelPickerSubtitle": "Choose your level to learn Arabic.",
+  "levelFromScratch": "Start from scratch",
+  "lessonMenuSubtitle": "Choose a learning mode.",
+  "modeTest": "Test"
+,
+  "continueButton": "Continue",
+  "lessonMenuTitle": "Arabic Lessons"
 
 }

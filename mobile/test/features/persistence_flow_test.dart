@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:language_platform/app/router/app_routes.dart';
 import 'package:language_platform/core/storage/app_preferences.dart';
 import 'package:language_platform/core/storage/key_value_store.dart';
+import 'package:language_platform/features/language_selection/application/learning_preferences.dart';
 import 'package:language_platform/features/progress/application/progress_providers.dart';
 import 'package:language_platform/features/progress/domain/learning_progress.dart';
 import 'package:language_platform/features/vocabulary/application/vocabulary_providers.dart';
@@ -30,21 +31,28 @@ Future<MemoryKeyValueStore> _seededStore() async {
 
 void main() {
   group('cold start / restart', () {
-    testWidgets('first launch shows onboarding', (tester) async {
+    testWidgets('first launch asks for the app language (once)', (
+      tester,
+    ) async {
       final c = await launchApp(tester, MemoryKeyValueStore());
-      expect(currentPath(c), AppRoutes.onboarding);
+      expect(currentPath(c), AppRoutes.appLanguage);
     });
 
     testWidgets(
-      'returning user skips onboarding; language and theme restored',
+      'returning user goes straight to the menu; language and theme restored',
       (tester) async {
         useScreen(tester);
         final store = await _seededStore();
         final c = await launchApp(tester, store);
-        expect(currentPath(c), AppRoutes.home);
+        expect(currentPath(c), AppRoutes.menu);
         expect(currentDirection(tester), TextDirection.rtl); // Arabic restored
         final theme = Theme.of(tester.element(find.byType(Scaffold).first));
         expect(theme.brightness, Brightness.dark);
+        // Dil Öğren (Arabic UI: تعلّم لغة) opens the language pair screen.
+        await tester.tap(find.byKey(const ValueKey('menu-learn')));
+        await tester.pumpAndSettle();
+        expect(currentPath(c), AppRoutes.languagePair);
+        expect(currentDirection(tester), TextDirection.rtl);
       },
     );
 
@@ -72,19 +80,31 @@ void main() {
       expect(c.read(progressProvider).dailyGoalLessons, 3);
     });
 
-    testWidgets('finishing onboarding persists, next launch goes on', (
+    testWidgets('app language is asked once; the language pair is saved', (
       tester,
     ) async {
       useScreen(tester);
       final store = MemoryKeyValueStore();
       var c = await launchApp(tester, store);
-      await tester.tap(find.text('Skip'));
+      // First launch: the one-time app-language choice, then the menu.
+      expect(currentPath(c), AppRoutes.appLanguage);
+      await tester.tap(find.byKey(const ValueKey('app-language-continue')));
       await tester.pumpAndSettle();
-      expect(currentPath(c), AppRoutes.languageSetup);
+      expect(currentPath(c), AppRoutes.menu);
+      // Dil Öğren -> language pair (screen 4) -> Devam Et saves tr -> ar.
+      await tester.tap(find.byKey(const ValueKey('menu-learn')));
+      await tester.pumpAndSettle();
+      expect(currentPath(c), AppRoutes.languagePair);
+      await tester.tap(find.byKey(const ValueKey('pair-continue')));
+      await tester.pumpAndSettle();
+      expect(currentPath(c), AppRoutes.arabicSections);
 
       c = await launchApp(tester, store);
-      // Onboarding is done; languages are still missing → language setup.
-      expect(currentPath(c), AppRoutes.languageSetup);
+      // The app language is saved: no question again, straight to the menu.
+      expect(currentPath(c), AppRoutes.menu);
+      final prefs = c.read(learningPreferencesProvider);
+      expect(prefs.knownLanguage?.code, 'tr');
+      expect(prefs.targetLanguage?.code, 'ar');
     });
 
     testWidgets('lesson progress and last opened lesson survive a restart', (
@@ -136,11 +156,12 @@ void main() {
       await tester.tap(find.text('إعادة تعيين').last);
       await tester.pumpAndSettle();
 
-      expect(currentPath(c), AppRoutes.onboarding);
+      // Everything is gone, including the saved app language: the app asks
+      // for it again (device language is English here).
+      expect(currentPath(c), AppRoutes.appLanguage);
       expect(c.read(progressProvider).completedCount, 0);
       expect(store.read(AppPreferencesRepository.storageKey), isNull);
-      // Interface language went back to following the device (English here).
-      expect(find.text('Skip'), findsOneWidget);
+      expect(find.text('Which language should the app use?'), findsOneWidget);
     });
   });
 

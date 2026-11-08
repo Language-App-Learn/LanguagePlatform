@@ -736,7 +736,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get reviewHistoryOpen => 'Tekrar geçmişi';
 
   @override
-  String get brandTagline => 'Dilleri kendi dilinde öğren.';
+  String get brandTagline => 'DİL ÖĞRENME PLATFORMU';
 
   @override
   String lessonPosition(int current, int total) {
@@ -1264,4 +1264,80 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get mediaListeningAudio => 'Dinleme sesi';
+
+  @override
+  String get appLanguageTitle => 'Uygulama hangi dilde çalışsın?';
+
+  @override
+  String get appLanguageSubtitle => 'Uygulamanın arayüz dilini seçin.';
+
+  @override
+  String get menuLearn => 'Dil Öğren';
+
+  @override
+  String get menuTranslate => 'Tüm Dillerde Çeviri';
+
+  @override
+  String get menuTranslateSoon => 'Çeviri yakında geliyor.';
+
+  @override
+  String get languagePairTitle => 'Dil Seçimi';
+
+  @override
+  String get languagePairSubtitle =>
+      'Bildiğin dili ve öğrenmek istediğin dili seç.';
+
+  @override
+  String get pairKnownLabel => 'Bildiğin Dil';
+
+  @override
+  String get pairTargetLabel => 'Öğreneceğin Dil';
+
+  @override
+  String get languageNameTr => 'Türkçe';
+
+  @override
+  String get languageNameAr => 'Arapça';
+
+  @override
+  String get sectionLearnArabic => 'Arapça Öğren';
+
+  @override
+  String get sectionReadingWriting => 'Okuma Yazma Öğren';
+
+  @override
+  String get sectionQuran => 'Kur\'an-ı Kerim';
+
+  @override
+  String get sectionExams => 'YDS / YDT / YÖKDİL';
+
+  @override
+  String get sectionAi => 'AI ile Pratik Yap';
+
+  @override
+  String get comingSoonTag => 'Yakında';
+
+  @override
+  String get featureUnavailable => 'Bu bölüm henüz kullanıma açılmadı.';
+
+  @override
+  String get levelPickerTitle => 'Seviye Seçimi';
+
+  @override
+  String get levelPickerSubtitle => 'Arapça öğrenmek için seviyeni seç.';
+
+  @override
+  String get levelFromScratch => 'Sıfırdan Öğren';
+
+  @override
+  String get lessonMenuSubtitle => 'Öğrenme modunu seç.';
+
+  @override
+  String get modeTest => 'Test';
+
+  @override
+  String get continueButton => 'Devam Et';
+
+  @override
+  String get lessonMenuTitle => 'Arapça Dersleri';
 }

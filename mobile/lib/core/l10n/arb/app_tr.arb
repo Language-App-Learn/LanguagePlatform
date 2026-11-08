@@ -211,7 +211,7 @@
   "historyNextReview": "Sonraki tekrar: {date}",
   "historyUnknownWord": "Kelime artık mevcut değil",
   "reviewHistoryOpen": "Tekrar geçmişi",
-  "brandTagline": "Dilleri kendi dilinde öğren.",
+  "brandTagline": "DİL ÖĞRENME PLATFORMU",
   "lessonPosition": "Ders {current} / {total}",
   "lessonCompletedSnack": "Ders tamamlandı olarak işaretlendi",
   "leaveQuizTitle": "Testten çıkılsın mı?",
@@ -370,5 +370,33 @@
   "mediaStop": "Durdur",
   "mediaPlaybackFailed": "Medya oynatılamadı. Bağlantının süresi dolmuş olabilir veya çevrimdışı olabilirsiniz.",
   "mediaListeningAudio": "Dinleme sesi"
+,
+  "appLanguageTitle": "Uygulama hangi dilde çalışsın?",
+  "appLanguageSubtitle": "Uygulamanın arayüz dilini seçin.",
+  "menuLearn": "Dil Öğren",
+  "menuTranslate": "Tüm Dillerde Çeviri",
+  "menuTranslateSoon": "Çeviri yakında geliyor."
+,
+  "languagePairTitle": "Dil Seçimi",
+  "languagePairSubtitle": "Bildiğin dili ve öğrenmek istediğin dili seç.",
+  "pairKnownLabel": "Bildiğin Dil",
+  "pairTargetLabel": "Öğreneceğin Dil",
+  "languageNameTr": "Türkçe",
+  "languageNameAr": "Arapça",
+  "sectionLearnArabic": "Arapça Öğren",
+  "sectionReadingWriting": "Okuma Yazma Öğren",
+  "sectionQuran": "Kur'an-ı Kerim",
+  "sectionExams": "YDS / YDT / YÖKDİL",
+  "sectionAi": "AI ile Pratik Yap",
+  "comingSoonTag": "Yakında",
+  "featureUnavailable": "Bu bölüm henüz kullanıma açılmadı.",
+  "levelPickerTitle": "Seviye Seçimi",
+  "levelPickerSubtitle": "Arapça öğrenmek için seviyeni seç.",
+  "levelFromScratch": "Sıfırdan Öğren",
+  "lessonMenuSubtitle": "Öğrenme modunu seç.",
+  "modeTest": "Test"
+,
+  "continueButton": "Devam Et",
+  "lessonMenuTitle": "Arapça Dersleri"
 
 }

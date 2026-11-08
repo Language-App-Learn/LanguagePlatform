@@ -321,8 +321,10 @@ void main() {
       );
       final c = await launchApp(tester, store);
       expect(tester.takeException(), isNull);
-      // Onboarding was completed, but no valid languages → language setup.
-      expect(currentPath(c), AppRoutes.languageSetup);
+      // The saved interface language is invalid, so it counts as "not chosen":
+      // the app asks again instead of crashing. Learning languages are invalid
+      // too, which Dil Öğren would send to the language setup.
+      expect(currentPath(c), AppRoutes.appLanguage);
       expect(currentDirection(tester), TextDirection.ltr);
     });
 
