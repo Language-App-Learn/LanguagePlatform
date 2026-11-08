@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:language_platform/app/app.dart';
 import 'package:language_platform/app/router/app_router.dart';
 import 'package:language_platform/core/storage/key_value_store.dart';
+import 'package:language_platform/features/splash/application/startup_route.dart';
 
 /// Launches the REAL app wiring (no notifier overrides) on top of [store],
 /// like a cold start. Call again with the same store to simulate a restart.
@@ -21,6 +22,7 @@ Future<ProviderContainer> launchApp(
       retry: (retryCount, error) => null,
       overrides: [
         keyValueStoreProvider.overrideWithValue(store),
+        splashHoldProvider.overrideWithValue(Duration.zero),
         if (initialLocation != null)
           initialLocationProvider.overrideWithValue(initialLocation),
         ...overrides,

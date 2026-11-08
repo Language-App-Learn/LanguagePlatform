@@ -1369,7 +1369,7 @@ abstract class AppLocalizations {
   /// No description provided for @brandTagline.
   ///
   /// In en, this message translates to:
-  /// **'Learn languages in your own language.'**
+  /// **'LANGUAGE LEARNING PLATFORM'**
   String get brandTagline;
 
   /// No description provided for @lessonPosition.
@@ -2289,6 +2289,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Listening audio'**
   String get mediaListeningAudio;
+
+  /// No description provided for @appLanguageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Which language should the app use?'**
+  String get appLanguageTitle;
+
+  /// No description provided for @appLanguageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the app\'s interface language.'**
+  String get appLanguageSubtitle;
+
+  /// No description provided for @menuLearn.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn a Language'**
+  String get menuLearn;
+
+  /// No description provided for @menuTranslate.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate in All Languages'**
+  String get menuTranslate;
+
+  /// No description provided for @menuTranslateSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation is coming soon.'**
+  String get menuTranslateSoon;
+
+  /// No description provided for @languagePairTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Language pair'**
+  String get languagePairTitle;
+
+  /// No description provided for @languagePairSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the language you know and the language you want to learn.'**
+  String get languagePairSubtitle;
+
+  /// No description provided for @pairKnownLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Language you know'**
+  String get pairKnownLabel;
+
+  /// No description provided for @pairTargetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Language you will learn'**
+  String get pairTargetLabel;
+
+  /// No description provided for @languageNameTr.
+  ///
+  /// In en, this message translates to:
+  /// **'Turkish'**
+  String get languageNameTr;
+
+  /// No description provided for @languageNameAr.
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic'**
+  String get languageNameAr;
+
+  /// No description provided for @sectionLearnArabic.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn Arabic'**
+  String get sectionLearnArabic;
+
+  /// No description provided for @sectionReadingWriting.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn Reading and Writing'**
+  String get sectionReadingWriting;
+
+  /// No description provided for @sectionQuran.
+  ///
+  /// In en, this message translates to:
+  /// **'The Holy Quran'**
+  String get sectionQuran;
+
+  /// No description provided for @sectionExams.
+  ///
+  /// In en, this message translates to:
+  /// **'YDS / YDT / YÖKDİL'**
+  String get sectionExams;
+
+  /// No description provided for @sectionAi.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice with AI'**
+  String get sectionAi;
+
+  /// No description provided for @comingSoonTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Soon'**
+  String get comingSoonTag;
+
+  /// No description provided for @featureUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This section is not available yet.'**
+  String get featureUnavailable;
+
+  /// No description provided for @levelPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your level'**
+  String get levelPickerTitle;
+
+  /// No description provided for @levelPickerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your level to learn Arabic.'**
+  String get levelPickerSubtitle;
+
+  /// No description provided for @levelFromScratch.
+  ///
+  /// In en, this message translates to:
+  /// **'Start from scratch'**
+  String get levelFromScratch;
+
+  /// No description provided for @lessonMenuSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a learning mode.'**
+  String get lessonMenuSubtitle;
+
+  /// No description provided for @modeTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Test'**
+  String get modeTest;
+
+  /// No description provided for @continueButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueButton;
+
+  /// No description provided for @lessonMenuTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic Lessons'**
+  String get lessonMenuTitle;
 }
 
 class _AppLocalizationsDelegate

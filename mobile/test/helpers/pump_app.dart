@@ -9,6 +9,7 @@ import 'package:language_platform/core/theme/theme_mode_provider.dart';
 import 'package:language_platform/features/language_selection/application/learning_preferences.dart';
 import 'package:language_platform/features/language_selection/domain/learning_language.dart';
 import 'package:language_platform/features/progress/application/progress_providers.dart';
+import 'package:language_platform/features/splash/application/startup_route.dart';
 
 /// Uygulamayı verilen dil/tema/rota ile açar ve (varsayılan olarak) ilk
 /// kareler oturana kadar bekler. Dönen container ile state okunabilir.
@@ -19,6 +20,7 @@ Future<ProviderContainer> pumpApp(
   String? initialLocation,
   List<Override> overrides = const [],
   bool settle = true,
+  Duration splashHold = Duration.zero,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -26,6 +28,7 @@ Future<ProviderContainer> pumpApp(
       overrides: [
         appLanguageProvider.overrideWith(() => AppLanguageNotifier(language)),
         themeModeProvider.overrideWith(() => ThemeModeNotifier(themeMode)),
+        splashHoldProvider.overrideWithValue(splashHold),
         if (initialLocation != null)
           initialLocationProvider.overrideWithValue(initialLocation),
         ...overrides,

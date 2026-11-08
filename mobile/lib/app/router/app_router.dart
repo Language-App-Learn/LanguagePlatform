@@ -21,6 +21,10 @@ import '../../features/onboarding/presentation/pages/onboarding_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/progress/presentation/pages/progress_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/language_selection/presentation/pages/app_language_page.dart';
+import '../../features/language_selection/presentation/pages/language_pair_page.dart';
+import '../../features/menu/presentation/pages/arabic_sections_page.dart';
+import '../../features/menu/presentation/pages/main_menu_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../features/vocabulary/presentation/pages/review_history_page.dart';
 import '../../features/vocabulary/presentation/pages/review_page.dart';
@@ -61,6 +65,24 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.languageSetup,
         builder: (context, state) => const LanguageSelectionPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.appLanguage,
+        builder: (context, state) => const AppLanguagePage(),
+      ),
+      GoRoute(
+        path: AppRoutes.menu,
+        builder: (context, state) => const MainMenuPage(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.languagePair,
+        builder: (context, state) => const LanguagePairPage(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.arabicSections,
+        builder: (context, state) => const ArabicSectionsPage(),
       ),
       GoRoute(
         path: AppRoutes.login,

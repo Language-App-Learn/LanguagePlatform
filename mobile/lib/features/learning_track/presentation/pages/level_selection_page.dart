@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_routes.dart';
-import '../../../../core/design_system/widgets/app_card.dart';
-import '../../../../core/design_system/widgets/app_progress_bar.dart';
 import '../../../../core/design_system/widgets/async_value_view.dart';
+import '../../../../core/design_system/widgets/brand_illustrations.dart';
+import '../../../../core/design_system/widgets/brand_list_card.dart';
+import '../../../../core/design_system/widgets/brand_screen_header.dart';
+import '../../../../core/design_system/widgets/brand_waves.dart';
 import '../../../../core/design_system/widgets/content_width.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_tokens.dart';
@@ -15,7 +17,11 @@ import '../../domain/learning_track.dart';
 import '../../domain/level_overview.dart';
 import '../widgets/stage_widgets.dart';
 
-/// CEFR level selection (A1-C2) of a learning track with real counts.
+/// Screen 6: level selection of a learning track, exactly the seven drawn
+/// options: "Sıfırdan Öğren" (visible, not available: there is no such
+/// content) and A1-C2. A level opens the existing list of its 20 lesson
+/// positions. The server's lesson counts and progress still drive that list;
+/// they are not written on these cards.
 class LevelSelectionPage extends ConsumerWidget {
   const LevelSelectionPage({super.key, required this.trackId});
 
@@ -26,111 +32,104 @@ class LevelSelectionPage extends ConsumerWidget {
     final l10n = context.l10n;
     final track = LearningTracks.byId(trackId);
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.trackTitle)),
-      body: SafeArea(
-        child: track == null
-            ? Center(child: Text(l10n.errorNotFound))
-            : AsyncValueView<List<LevelOverview>>(
-                value: ref.watch(levelOverviewsProvider),
-                onRetry: () => reloadTrackCatalog(ref),
-                data: (levels) => ContentWidth(
-                  child: ListView(
-                    padding: AppSpacing.page,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              l10n.trackSubtitle,
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
-                          ),
-                          if (ref.watch(contentModeProvider) ==
-                              ContentMode.demo)
-                            const DemoBadge(),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      for (final level in levels)
-                        Padding(
-                          padding: const EdgeInsetsDirectional.only(
-                            bottom: AppSpacing.md,
-                          ),
-                          child: _LevelCard(trackId: trackId, overview: level),
+      backgroundColor: Colors.white,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          const BrandWaves(bottomHeight: 96, soft: true),
+          SafeArea(
+            child: ContentWidth(
+              child: track == null
+                  ? Column(
+                      children: [
+                        const BrandScreenHeader(),
+                        Expanded(
+                          child: Center(child: Text(l10n.errorNotFound)),
                         ),
-                    ],
-                  ),
-                ),
-              ),
+                      ],
+                    )
+                  : AsyncValueView<List<LevelOverview>>(
+                      value: ref.watch(levelOverviewsProvider),
+                      onRetry: () => reloadTrackCatalog(ref),
+                      data: (levels) => _LevelList(
+                        trackId: trackId,
+                        levels: levels,
+                        demo:
+                            ref.watch(contentModeProvider) == ContentMode.demo,
+                      ),
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _LevelCard extends StatelessWidget {
-  const _LevelCard({required this.trackId, required this.overview});
+class _LevelList extends StatelessWidget {
+  const _LevelList({
+    required this.trackId,
+    required this.levels,
+    required this.demo,
+  });
 
   final String trackId;
-  final LevelOverview overview;
+  final List<LevelOverview> levels;
+  final bool demo;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final hasLessons = overview.publishedLessons > 0;
-    return AppCard(
-      key: ValueKey('level-card:${overview.level.name}'),
-      onTap: () =>
-          context.push(AppRoutes.levelOf(trackId, overview.level.name)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Column(
+      children: [
+        const BrandScreenHeader(),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsetsDirectional.fromSTEB(
+              AppSpacing.xl,
+              AppSpacing.md,
+              AppSpacing.xl,
+              AppSpacing.xxxl,
+            ),
             children: [
-              Text(
-                overview.level.code.isolateLtr,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  color: theme.colorScheme.primary,
-                ),
+              const Center(child: LevelsHero()),
+              const SizedBox(height: AppSpacing.sm),
+              BrandTitleBlock(
+                title: l10n.levelPickerTitle,
+                subtitle: l10n.levelPickerSubtitle,
               ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Text(
-                  l10n.levelName(overview.level),
-                  style: theme.textTheme.titleMedium,
+              if (demo)
+                const Padding(
+                  padding: EdgeInsetsDirectional.only(top: AppSpacing.md),
+                  child: Center(child: DemoBadge()),
                 ),
+              const SizedBox(height: AppSpacing.lg),
+              BrandListCard(
+                key: const ValueKey('level-card:scratch'),
+                title: l10n.levelFromScratch,
+                icon: Icons.signal_cellular_alt_rounded,
+                style: BrandCardStyle.outlined,
+                available: false,
+                minHeight: 54,
+                onTap: () => showUnavailable(context),
               ),
-              const Icon(Icons.chevron_right),
+              for (final level in levels) ...[
+                const SizedBox(height: AppSpacing.sm),
+                BrandListCard(
+                  key: ValueKey('level-card:${level.level.name}'),
+                  // The CEFR code, always left-to-right.
+                  title: level.level.code.isolateLtr,
+                  icon: Icons.signal_cellular_alt_rounded,
+                  minHeight: 54,
+                  onTap: () => context.push(
+                    AppRoutes.levelOf(trackId, level.level.name),
+                  ),
+                ),
+              ],
             ],
           ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            hasLessons
-                ? l10n.levelPublishedCount(
-                    overview.publishedLessons,
-                    overview.capacity,
-                  )
-                : l10n.levelNoLessons,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          if (hasLessons) ...[
-            const SizedBox(height: AppSpacing.sm),
-            AppProgressBar(
-              value: overview.progress,
-              semanticLabel: l10n.levelCompletedCount(
-                overview.completedLessons,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              l10n.levelCompletedCount(overview.completedLessons),
-              style: theme.textTheme.bodySmall,
-            ),
-          ],
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

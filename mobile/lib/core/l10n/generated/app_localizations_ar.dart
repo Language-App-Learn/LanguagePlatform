@@ -746,7 +746,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reviewHistoryOpen => 'سجل المراجعة';
 
   @override
-  String get brandTagline => 'تعلّم اللغات بلغتك.';
+  String get brandTagline => 'منصة تعلّم اللغات';
 
   @override
   String lessonPosition(int current, int total) {
@@ -1268,4 +1268,80 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get mediaListeningAudio => 'الاستماع الصوتي';
+
+  @override
+  String get appLanguageTitle => 'بأي لغة يعمل التطبيق؟';
+
+  @override
+  String get appLanguageSubtitle => 'اختر لغة واجهة التطبيق.';
+
+  @override
+  String get menuLearn => 'تعلّم لغة';
+
+  @override
+  String get menuTranslate => 'الترجمة بجميع اللغات';
+
+  @override
+  String get menuTranslateSoon => 'الترجمة قريبًا.';
+
+  @override
+  String get languagePairTitle => 'اختيار اللغة';
+
+  @override
+  String get languagePairSubtitle =>
+      'اختر اللغة التي تعرفها واللغة التي تريد تعلّمها.';
+
+  @override
+  String get pairKnownLabel => 'اللغة التي تعرفها';
+
+  @override
+  String get pairTargetLabel => 'اللغة التي ستتعلّمها';
+
+  @override
+  String get languageNameTr => 'التركية';
+
+  @override
+  String get languageNameAr => 'العربية';
+
+  @override
+  String get sectionLearnArabic => 'تعلّم العربية';
+
+  @override
+  String get sectionReadingWriting => 'تعلّم القراءة والكتابة';
+
+  @override
+  String get sectionQuran => 'القرآن الكريم';
+
+  @override
+  String get sectionExams => 'YDS / YDT / YÖKDİL';
+
+  @override
+  String get sectionAi => 'تدرّب مع الذكاء الاصطناعي';
+
+  @override
+  String get comingSoonTag => 'قريبًا';
+
+  @override
+  String get featureUnavailable => 'هذا القسم غير متاح بعد.';
+
+  @override
+  String get levelPickerTitle => 'اختيار المستوى';
+
+  @override
+  String get levelPickerSubtitle => 'اختر مستواك لتعلّم العربية.';
+
+  @override
+  String get levelFromScratch => 'ابدأ من الصفر';
+
+  @override
+  String get lessonMenuSubtitle => 'اختر وضع التعلّم.';
+
+  @override
+  String get modeTest => 'الاختبار';
+
+  @override
+  String get continueButton => 'متابعة';
+
+  @override
+  String get lessonMenuTitle => 'دروس العربية';
 }

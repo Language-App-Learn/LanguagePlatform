@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:language_platform/core/network/token_store.dart';
 import 'package:language_platform/core/utils/bidi.dart';
 import 'package:language_platform/features/authentication/application/auth_providers.dart';
+import 'package:language_platform/features/learning_track/application/track_providers.dart';
 
 import '../helpers/pump_app.dart';
 
@@ -66,7 +67,7 @@ void main() {
   ) async {
     useScreen(tester, height: 3600);
     final tokens = InMemoryTokenStore();
-    await pumpApp(
+    final c = await pumpApp(
       tester,
       initialLocation: '/auth/login',
       overrides: _real(tokens),
@@ -80,9 +81,11 @@ void main() {
     // Track -> six level cards with the server's counts.
     await tester.tap(_key('track-card'));
     await _waitFor(tester, _key('level-card:a1'));
-    expect(find.text('2 of 20 lessons published'), findsOneWidget);
-    expect(find.text('1 completed'), findsOneWidget); // server-passed lesson
-    expect(find.text('No lessons published yet'), findsNWidgets(5));
+    // The cards show only the level; the counts stay in the provider.
+    final levels = c.read(levelOverviewsProvider).requireValue;
+    expect(levels.first.publishedLessons, 2);
+    expect(levels.first.completedLessons, 1); // server-passed lesson
+    expect(levels.skip(1).every((l) => l.publishedLessons == 0), isTrue);
     expect(find.text('Demo content'), findsNothing);
 
     // A1 -> twenty positions, server titles, preserved empty slots.
@@ -121,7 +124,7 @@ void main() {
   ) async {
     useScreen(tester, height: 3600);
     final tokens = InMemoryTokenStore();
-    await pumpApp(
+    final c = await pumpApp(
       tester,
       initialLocation: '/auth/login',
       overrides: _real(tokens),
@@ -129,8 +132,8 @@ void main() {
     await _login(tester, 'student2');
     await tester.tap(_key('track-card'));
     await _waitFor(tester, _key('level-card:a1'));
-    expect(find.text('0 completed'), findsWidgets);
-    expect(find.text('1 completed'), findsNothing);
+    final levels = c.read(levelOverviewsProvider).requireValue;
+    expect(levels.every((l) => l.completedLessons == 0), isTrue);
     await tester.tap(_key('level-card:a1'));
     await _waitFor(tester, _key('position:1'));
     await tester.tap(_key('position:1'));
@@ -169,7 +172,7 @@ void main() {
 }
 
 String _status(WidgetTester tester, String stage) =>
-    tester.widget<Text>(_key('stage-status:$stage')).data!;
+    tester.widget<Tooltip>(_key('stage-status:$stage')).message!;
 
 /// Unmounts the app and advances the fake clock so request-timeout timers
 /// created by the real transport do not outlive the test.

@@ -74,25 +74,23 @@ void main() {
   });
 
   group('splash', () {
-    testWidgets('taze açılışta onboarding\'e yönlenir', (tester) async {
+    testWidgets('app language chosen -> main menu', (tester) async {
       final container = await pumpApp(
         tester,
         initialLocation: AppRoutes.splash,
       );
-      expect(currentPath(container), AppRoutes.onboarding);
+      expect(currentPath(container), AppRoutes.menu);
     });
 
-    testWidgets('tanıtım tamamsa dil kurulumuna yönlenir', (tester) async {
+    testWidgets('no app language yet -> the one-time language screen', (
+      tester,
+    ) async {
       final container = await pumpApp(
         tester,
+        language: null,
         initialLocation: AppRoutes.splash,
-        overrides: [
-          onboardingCompletedProvider.overrideWith(
-            () => OnboardingCompletedNotifier(true),
-          ),
-        ],
       );
-      expect(currentPath(container), AppRoutes.languageSetup);
+      expect(currentPath(container), AppRoutes.appLanguage);
     });
 
     testWidgets('yönlendirme hesaplanamazsa hata ve tekrar dene', (

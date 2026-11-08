@@ -39,7 +39,7 @@ void main() {
       // The only entry leads to the Turkish -> Arabic track.
       await tester.tap(_key('remote-course-card'));
       await tester.pumpAndSettle();
-      expect(find.text('2 of 20 lessons published'), findsOneWidget);
+      expect(find.byKey(const ValueKey('level-card:a1')), findsOneWidget);
     });
 
     testWidgets('a changed server title is shown after a refresh', (

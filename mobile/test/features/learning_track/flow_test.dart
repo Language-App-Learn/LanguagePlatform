@@ -14,7 +14,7 @@ import '../../helpers/pump_app.dart';
 Finder _key(String k) => find.byKey(ValueKey(k));
 
 String _statusOf(WidgetTester tester, String stage) =>
-    tester.widget<Text>(_key('stage-status:$stage')).data!;
+    tester.widget<Tooltip>(_key('stage-status:$stage')).message!;
 
 Future<MemoryKeyValueStore> _store() async {
   final store = MemoryKeyValueStore();
@@ -47,10 +47,13 @@ void main() {
       for (final level in ['a1', 'a2', 'b1', 'b2', 'c1', 'c2']) {
         expect(_key('level-card:$level'), findsOneWidget);
       }
-      expect(find.text('Beginner'), findsOneWidget);
-      expect(find.text('Proficient'), findsOneWidget);
-      expect(find.text('3 of 20 lessons published'), findsOneWidget); // A1 only
-      expect(find.text('No lessons published yet'), findsNWidgets(5));
+      // The cards carry only the CEFR code (no names, no counts); the real
+      // counts stay available to the list behind them.
+      expect(find.text('Beginner'), findsNothing);
+      expect(find.textContaining('lessons published'), findsNothing);
+      final levels = c.read(levelOverviewsProvider).requireValue;
+      expect(levels.first.publishedLessons, 3); // A1 only
+      expect(levels.skip(1).every((l) => l.publishedLessons == 0), isTrue);
 
       await tester.tap(_key('level-card:a1'));
       await tester.pumpAndSettle();

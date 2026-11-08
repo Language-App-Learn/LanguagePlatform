@@ -56,6 +56,14 @@ class LearningPreferencesNotifier extends Notifier<LearningPreferences> {
     _persist();
   }
 
+  /// Sets both languages at once (the language-pair screen). Ignored when
+  /// they are the same language.
+  void setPair(LearningLanguage known, LearningLanguage target) {
+    if (known == target) return;
+    state = LearningPreferences(knownLanguage: known, targetLanguage: target);
+    _persist();
+  }
+
   void _persist() {
     ref
         .read(appPreferencesRepositoryProvider)

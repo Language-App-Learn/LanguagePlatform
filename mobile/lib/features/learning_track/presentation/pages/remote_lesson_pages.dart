@@ -19,6 +19,7 @@ import '../../application/track_providers.dart';
 import '../../domain/lesson_outcome.dart';
 import '../../domain/lesson_stage.dart';
 import '../../domain/remote_models.dart';
+import '../widgets/lesson_mode_grid.dart';
 import '../widgets/remote_assessment_view.dart';
 import '../widgets/reading_material_view.dart';
 import '../widgets/remote_speaking_view.dart';
@@ -45,14 +46,11 @@ class RemoteLessonOverviewPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final lesson = ref.watch(remoteLessonProvider(lessonId));
-    return Scaffold(
-      appBar: AppBar(title: Text(lesson.value?.title ?? '')),
-      body: SafeArea(
-        child: AsyncValueView<RemoteLesson>(
-          value: lesson,
-          onRetry: () => ref.invalidate(remoteLessonProvider(lessonId)),
-          data: (lesson) => _RemoteOverviewBody(lesson: lesson),
-        ),
+    return LessonMenuFrame(
+      child: AsyncValueView<RemoteLesson>(
+        value: lesson,
+        onRetry: () => ref.invalidate(remoteLessonProvider(lessonId)),
+        data: (lesson) => _RemoteOverviewBody(lesson: lesson),
       ),
     );
   }
@@ -117,93 +115,83 @@ class _RemoteOverviewBodyState extends ConsumerState<_RemoteOverviewBody> {
         ? LessonOutcomeStatus.inProgress
         : LessonOutcomeStatus.notStarted;
 
-    return ContentWidth(
-      child: ListView(
-        padding: AppSpacing.page,
-        children: [
-          if (!signedIn) ...[
-            NoticeBanner(
-              key: const ValueKey('sign-in-prompt'),
-              message: l10n.remoteSignInPrompt,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            OutlinedButton(
-              onPressed: () => context.go(AppRoutes.login),
-              child: Text(l10n.loginButton),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-          ] else if (progress == null &&
-              !progressAsync.isLoading &&
-              !progressAsync.hasError) ...[
-            AppPrimaryButton(
-              key: const ValueKey('begin-lesson'),
-              label: l10n.remoteBeginLesson,
-              icon: Icons.play_arrow,
-              isLoading: _beginning,
-              onPressed: _begin,
-            ),
-            if (_beginError != null)
-              Padding(
-                padding: const EdgeInsetsDirectional.only(top: AppSpacing.sm),
-                child: Text(failureOf(_beginError).message(l10n)),
-              ),
-            const SizedBox(height: AppSpacing.lg),
-          ] else if (progressAsync.hasError) ...[
-            InlineErrorCard(
-              error: progressAsync.error,
-              onRetry: () => ref.invalidate(remoteProgressProvider(lesson.id)),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-          ],
-          for (final kind in LessonStage.values)
-            Builder(
-              builder: (context) {
-                final sp = progress?.stageOf(kind);
-                final status = sp == null
-                    ? StageStatus.locked
-                    : _statusOf(sp.status, sp);
-                final open =
-                    status == StageStatus.available ||
-                    status == StageStatus.inProgress ||
-                    status == StageStatus.completed;
-                return Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    bottom: AppSpacing.md,
-                  ),
-                  child: StageCard(
-                    stage: kind,
-                    status: status,
-                    record: null,
-                    officialScore: sp?.score,
-                    onOpen: open
-                        ? () => context.push(
-                            AppRoutes.stageOf(lesson.id, kind.name),
-                          )
-                        : null,
-                  ),
-                );
-              },
-            ),
-          const SizedBox(height: AppSpacing.sm),
-          OverallPanel(
-            outcome: outcome,
-            server: server,
-            hasDemoScore: false,
-            l10n: l10n,
+    return ListView(
+      padding: lessonMenuPadding,
+      children: [
+        const LessonMenuIntro(),
+        if (!signedIn) ...[
+          NoticeBanner(
+            key: const ValueKey('sign-in-prompt'),
+            message: l10n.remoteSignInPrompt,
           ),
-          if (server?.passed == true && server?.nextLessonId != null) ...[
-            const SizedBox(height: AppSpacing.md),
-            AppPrimaryButton(
-              key: const ValueKey('next-lesson'),
-              label: l10n.nextLessonAction,
-              icon: Icons.arrow_forward,
-              onPressed: () => context.pushReplacement(
-                AppRoutes.stagesOf(server!.nextLessonId!),
-              ),
+          const SizedBox(height: AppSpacing.sm),
+          OutlinedButton(
+            onPressed: () => context.go(AppRoutes.login),
+            child: Text(l10n.loginButton),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+        ] else if (progress == null &&
+            !progressAsync.isLoading &&
+            !progressAsync.hasError) ...[
+          AppPrimaryButton(
+            key: const ValueKey('begin-lesson'),
+            label: l10n.remoteBeginLesson,
+            icon: Icons.play_arrow,
+            isLoading: _beginning,
+            onPressed: _begin,
+          ),
+          if (_beginError != null)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(top: AppSpacing.sm),
+              child: Text(failureOf(_beginError).message(l10n)),
             ),
-          ],
+          const SizedBox(height: AppSpacing.lg),
+        ] else if (progressAsync.hasError) ...[
+          InlineErrorCard(
+            error: progressAsync.error,
+            onRetry: () => ref.invalidate(remoteProgressProvider(lesson.id)),
+          ),
+          const SizedBox(height: AppSpacing.lg),
         ],
-      ),
+        LessonModeGrid(
+          cardFor: (kind) {
+            final sp = progress?.stageOf(kind);
+            final status = sp == null
+                ? StageStatus.locked
+                : _statusOf(sp.status, sp);
+            final open =
+                status == StageStatus.available ||
+                status == StageStatus.inProgress ||
+                status == StageStatus.completed;
+            return LessonModeCard(
+              stage: kind,
+              status: status,
+              officialScore: sp?.score,
+              onOpen: open
+                  ? () => context.push(AppRoutes.stageOf(lesson.id, kind.name))
+                  : null,
+            );
+          },
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        OverallPanel(
+          outcome: outcome,
+          server: server,
+          hasDemoScore: false,
+          l10n: l10n,
+        ),
+        if (server?.passed == true && server?.nextLessonId != null) ...[
+          const SizedBox(height: AppSpacing.md),
+          AppPrimaryButton(
+            key: const ValueKey('next-lesson'),
+            label: l10n.nextLessonAction,
+            icon: Icons.arrow_forward,
+            onPressed: () => context.pushReplacement(
+              AppRoutes.stagesOf(server!.nextLessonId!),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
