@@ -215,25 +215,6 @@ void main() {
       },
     );
 
-    test('expiry does not touch a demo session', () {
-      final c = containerWith(tokens: InMemoryTokenStore());
-      c.read(sessionProvider.notifier).enterDemo();
-      c.read(sessionProvider.notifier).expired();
-      expect(c.read(sessionProvider), SessionStatus.demo);
-    });
-
-    test('entering demo wipes any real tokens and pending attempts', () async {
-      final tokens = InMemoryTokenStore();
-      await tokens.save(_pair);
-      final prefs = MemoryKeyValueStore();
-      final c = containerWith(tokens: tokens, prefs: prefs);
-      await c.read(pendingAttemptStoreProvider).keyFor('assess');
-      c.read(sessionProvider.notifier).enterDemo();
-      await Future<void>.delayed(Duration.zero);
-      expect(tokens.read(), isNull);
-      expect(prefs.read('lp.attempts'), isNull);
-    });
-
     test('every identity change bumps the account epoch', () {
       final c = containerWith(tokens: InMemoryTokenStore());
       final seen = <int>[];

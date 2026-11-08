@@ -79,29 +79,6 @@ final class MultipleChoiceAnswer extends QuizAnswer {
   final String optionId;
 }
 
-/// Tamamlanan bir quiz'in özeti. Yalnızca yerel demo verisidir; sunucuya
-/// kaydedilmez.
-@immutable
-class QuizResult {
-  const QuizResult({
-    required this.lessonId,
-    required this.totalQuestions,
-    required this.correctAnswers,
-  });
-
-  /// Başarı için gereken yüzde.
-  static const int passingPercentage = 70;
-
-  final String lessonId;
-  final int totalQuestions;
-  final int correctAnswers;
-
-  int get percentage =>
-      totalQuestions == 0 ? 0 : (correctAnswers * 100 / totalQuestions).round();
-
-  bool get passed => percentage >= passingPercentage;
-}
-
 /// Statement the learner marks as true or false. Scoring: all-or-nothing.
 final class TrueFalseQuestion extends QuizQuestion {
   const TrueFalseQuestion({

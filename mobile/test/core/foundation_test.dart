@@ -9,15 +9,8 @@ void main() {
   group('AppTheme', () {
     test('Material 3, doğru parlaklık ve anlamsal renkler', () {
       expect(AppTheme.light.useMaterial3, isTrue);
-      expect(AppTheme.dark.useMaterial3, isTrue);
       expect(AppTheme.light.colorScheme.brightness, Brightness.light);
-      expect(AppTheme.dark.colorScheme.brightness, Brightness.dark);
       expect(AppTheme.light.extension<AppSemanticColors>(), isNotNull);
-      expect(AppTheme.dark.extension<AppSemanticColors>(), isNotNull);
-      expect(
-        AppTheme.light.colorScheme.surface,
-        isNot(AppTheme.dark.colorScheme.surface),
-      );
     });
   });
 
@@ -50,7 +43,7 @@ void main() {
       final retries = <String>{};
       for (final language in AppLanguage.values) {
         final l10n = await AppLocalizations.delegate.load(language.locale);
-        expect(l10n.settingsTitle, isNotEmpty);
+        expect(l10n.retry, isNotEmpty);
         retries.add(l10n.retry);
       }
       expect(retries, hasLength(AppLanguage.values.length));

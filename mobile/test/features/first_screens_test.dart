@@ -9,6 +9,9 @@ import 'package:language_platform/core/l10n/app_language.dart';
 import 'package:language_platform/features/language_selection/application/learning_preferences.dart';
 import 'package:language_platform/features/language_selection/domain/learning_language.dart';
 
+import 'package:language_platform/features/learning_track/application/track_providers.dart';
+
+import '../fakes/five_stage_fakes.dart';
 import '../helpers/pump_app.dart';
 
 Finder _key(String k) => find.byKey(ValueKey(k));
@@ -380,7 +383,9 @@ void main() {
   });
 
   group('screen 6: level selection', () {
-    testWidgets('seven entries in the drawn order', (tester) async {
+    testWidgets('seven entries in the drawn order, nothing else', (
+      tester,
+    ) async {
       useScreen(tester, width: 400, height: 1400);
       await pumpApp(
         tester,
@@ -396,11 +401,11 @@ void main() {
         last = y;
       }
       for (final code in ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']) {
-        expect(find.text('\u{2066}$code\u{2069}'), findsOneWidget);
+        expect(find.text('\u2066$code\u2069'), findsOneWidget);
       }
       expect(_key('level-card:c3'), findsNothing); // no seventh CEFR level
-      // Only the seven approved options: no names, counts or descriptions.
-      for (final text in ['Başlangıç', 'Henüz yayınlanmış ders yok']) {
+      // No names, counts, demo badge or descriptions.
+      for (final text in ['Başlangıç', 'Demo içerik']) {
         expect(find.text(text), findsNothing, reason: text);
       }
       expect(find.textContaining('yayında'), findsNothing);
@@ -419,7 +424,7 @@ void main() {
       expect(find.text('Bu bölüm henüz kullanıma açılmadı.'), findsOneWidget);
     });
 
-    testWidgets('a level opens the existing 20-position lesson list', (
+    testWidgets('a level opens screen 7 directly (no lesson list between)', (
       tester,
     ) async {
       useScreen(tester, width: 400, height: 1400);
@@ -431,35 +436,28 @@ void main() {
       await tester.tap(_key('level-card:a1'));
       await tester.pumpAndSettle();
       expect(currentPath(c), '/track/tr-ar/level/a1');
-      expect(_key('position:1'), findsOneWidget);
-      await tester.scrollUntilVisible(_key('position:20'), 300);
-      expect(_key('position:20'), findsOneWidget);
-      expect(_key('position:21'), findsNothing);
+      expect(find.text('Arapça Dersleri'), findsOneWidget);
+      expect(_key('position:1'), findsNothing); // no old lesson list
     });
   });
 
   group('screen 7: lesson menu', () {
-    const lesson = '/stages/ar-a1-l1';
+    const screen = '/track/tr-ar/level/a1';
+    const stages = [
+      'stage-card:reading',
+      'stage-card:listening',
+      'stage-card:translation',
+      'stage-card:writing',
+      'stage-card:speaking',
+      'mode-test',
+    ];
 
     testWidgets('exactly six cards in two columns, in the drawn order', (
       tester,
     ) async {
       useScreen(tester, width: 400, height: 1200);
-      await pumpApp(
-        tester,
-        language: AppLanguage.tr,
-        initialLocation: lesson,
-        overrides: [trToArPreferences],
-      );
-      final ids = [
-        'stage-card:reading',
-        'stage-card:listening',
-        'stage-card:translation',
-        'stage-card:writing',
-        'stage-card:speaking',
-        'mode-test',
-      ];
-      final pos = [for (final id in ids) tester.getTopLeft(_key(id))];
+      await pumpApp(tester, language: AppLanguage.tr, initialLocation: screen);
+      final pos = [for (final id in stages) tester.getTopLeft(_key(id))];
       // Row 1: Okuma | Dinleme, Row 2: Tercüme | Yazma, Row 3: Konuşma | Test
       for (var row = 0; row < 3; row++) {
         final left = pos[row * 2];
@@ -483,70 +481,93 @@ void main() {
       expect(find.byKey(const ValueKey('stage-card:test')), findsNothing);
     });
 
-    testWidgets('fixed heading, never an individual lesson title', (
+    testWidgets('fixed heading; no lesson title, panel, score or progress', (
       tester,
     ) async {
       useScreen(tester, width: 400, height: 1200);
-      await pumpApp(
-        tester,
-        language: AppLanguage.tr,
-        initialLocation: lesson,
-        overrides: [trToArPreferences],
-      );
+      await pumpApp(tester, language: AppLanguage.tr, initialLocation: screen);
       expect(find.text('Arapça Dersleri'), findsOneWidget);
       expect(find.text('Öğrenme modunu seç.'), findsOneWidget);
-      expect(find.text('Selamlaşma'), findsNothing);
+      expect(_key('overall-panel'), findsNothing);
+      expect(_key('sign-in-prompt'), findsNothing);
     });
 
-    testWidgets('server-driven status: only the open stage is tappable', (
+    testWidgets('no lesson is selected: every card is safely unavailable', (
       tester,
     ) async {
       useScreen(tester, width: 400, height: 1200);
       final c = await pumpApp(
         tester,
         language: AppLanguage.tr,
-        initialLocation: lesson,
-        overrides: [trToArPreferences],
+        initialLocation: screen,
       );
-      // Locked stages never open, whatever the visual order.
-      for (final name in ['listening', 'translation', 'writing', 'speaking']) {
-        await tester.tap(_key('stage-card:$name'));
-        await tester.pumpAndSettle();
-        expect(currentPath(c), lesson, reason: name);
+      for (final id in stages) {
+        await tester.tap(_key(id));
+        await tester.pump();
+        expect(currentPath(c), screen, reason: id); // nothing opened
+        expect(
+          find.text('Bu bölüm henüz kullanıma açılmadı.'),
+          findsOneWidget,
+          reason: id,
+        );
+        await tester.pumpAndSettle(const Duration(seconds: 5));
       }
-      await tester.tap(_key('stage-card:reading'));
-      await tester.pumpAndSettle();
-      expect(currentPath(c), '$lesson/reading');
     });
 
-    testWidgets('Test is not a stage: visible, unavailable, opens nothing', (
+    testWidgets('cards are announced as unavailable to screen readers', (
       tester,
     ) async {
+      final handle = tester.ensureSemantics();
       useScreen(tester, width: 400, height: 1200);
-      final c = await pumpApp(
-        tester,
-        language: AppLanguage.tr,
-        initialLocation: lesson,
-        overrides: [trToArPreferences],
-      );
-      await tester.tap(_key('mode-test'));
-      await tester.pump();
-      expect(currentPath(c), lesson);
-      expect(find.text('Bu bölüm henüz kullanıma açılmadı.'), findsOneWidget);
+      await pumpApp(tester, language: AppLanguage.tr, initialLocation: screen);
+      expect(find.bySemanticsLabel('Okuma, Yakında'), findsOneWidget);
+      expect(find.bySemanticsLabel('Test, Yakında'), findsOneWidget);
+      handle.dispose();
     });
+  });
 
-    testWidgets('the overall panel and 60/100 pass mark are unchanged', (
+  group('no legacy or demo content', () {
+    testWidgets('screens 3-7 never ask a content source for lessons', (
       tester,
     ) async {
+      final repo = FakeFiveStageRepository();
       useScreen(tester, width: 400, height: 1400);
       await pumpApp(
         tester,
-        language: AppLanguage.en,
-        initialLocation: lesson,
-        overrides: [trToArPreferences],
+        language: AppLanguage.tr,
+        initialLocation: AppRoutes.menu,
+        overrides: [fiveStageRepositoryProvider.overrideWithValue(repo)],
       );
-      expect(find.text('Not started'), findsOneWidget);
-      expect(find.text('Overall pass mark: 60 out of 100'), findsOneWidget);
+      for (final key in [
+        'menu-learn',
+        'pair-continue',
+        'section:learn-arabic',
+      ]) {
+        await tester.tap(_key(key));
+        await tester.pumpAndSettle();
+      }
+      await tester.tap(_key('level-card:a1'));
+      await tester.pumpAndSettle();
+      expect(find.text('Arapça Dersleri'), findsOneWidget);
+      expect(repo.calls, isEmpty);
+    });
+
+    testWidgets('the screens show no sample lesson text', (tester) async {
+      useScreen(tester, width: 400, height: 1400);
+      await pumpApp(
+        tester,
+        language: AppLanguage.tr,
+        initialLocation: '/track/tr-ar/level/a1',
+      );
+      for (final text in [
+        'Selamlaşma',
+        'Merhaba',
+        'مرحبا',
+        'Demo içerik',
+        'Ders 1',
+      ]) {
+        expect(find.textContaining(text), findsNothing, reason: text);
+      }
     });
   });
 
@@ -559,7 +580,7 @@ void main() {
           AppRoutes.languagePair,
           AppRoutes.arabicSections,
           '/track/tr-ar',
-          '/stages/ar-a1-l1',
+          '/track/tr-ar/level/a1',
         ]) {
           testWidgets('$route / ${lang.code} / x$scale on a 320x568 phone', (
             tester,

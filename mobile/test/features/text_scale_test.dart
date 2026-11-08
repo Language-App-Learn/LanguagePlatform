@@ -1,28 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:language_platform/app/router/app_routes.dart';
-import 'package:language_platform/core/l10n/l10n.dart';
+import 'package:language_platform/core/l10n/app_language.dart';
 
 import '../helpers/pump_app.dart';
 
-/// Large system font on a narrow phone (360x640): no render overflow on any
-/// screen, in a LTR and the RTL language.
+/// The account screens (kept infrastructure) must stay usable at large text
+/// sizes on a small phone, in an LTR and the RTL language. The seven approved
+/// screens have the same check in `first_screens_test.dart`.
 void main() {
-  final screens = <String, String>{
-    'onboarding': AppRoutes.onboarding,
-    'language-setup': AppRoutes.languageSetup,
+  const screens = <String, String>{
     'login': AppRoutes.login,
     'register': AppRoutes.register,
-    'home': AppRoutes.home,
-    'courses': AppRoutes.courses,
-    'vocabulary': AppRoutes.vocabulary,
-    'review': AppRoutes.review,
-    'review-history': AppRoutes.reviewHistory,
-    'progress': AppRoutes.progress,
-    'profile': AppRoutes.profile,
-    'settings': AppRoutes.settings,
-    'course': '/course/ar-a1-basics',
-    'lesson': '/lesson/ar-a1-l1',
-    'quiz': '/quiz/ar-a1-l1',
+    'forgot-password': AppRoutes.forgotPassword,
+    'confirm-email': AppRoutes.confirmEmail,
+    'delete-account': AppRoutes.deleteAccount,
   };
 
   for (final scale in [1.5, 2.0]) {
@@ -38,7 +29,6 @@ void main() {
             tester,
             language: language,
             initialLocation: entry.value,
-            overrides: [trToArPreferences, fixedClock],
           );
           expect(tester.takeException(), isNull);
         });

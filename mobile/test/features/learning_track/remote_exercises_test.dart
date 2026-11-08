@@ -690,27 +690,13 @@ void main() {
     ) async {
       useScreen(tester);
       final repo = FakeFiveStageRepository(initialProgress: progressOf());
-      final c = await pumpApp(
+      await pumpApp(
         tester,
         initialLocation: '/stages/$lesson/writing',
         overrides: _remote(repo),
       );
       expect(find.text('Not yet accessible'), findsOneWidget);
       expect(repo.calls, isEmpty); // no enroll / start / attempt
-      expect(c.read(stageRecordsProvider), isEmpty); // no local record
-    });
-
-    testWidgets('demo: a locked stage no longer records "started"', (
-      tester,
-    ) async {
-      useScreen(tester);
-      final c = await pumpApp(
-        tester,
-        initialLocation: '/stages/ar-a1-l1/listening',
-        overrides: [trToArPreferences],
-      );
-      expect(find.text('Not yet accessible'), findsOneWidget);
-      expect(c.read(stageRecordsProvider), isEmpty);
     });
   });
 

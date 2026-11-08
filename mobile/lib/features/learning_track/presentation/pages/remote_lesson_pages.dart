@@ -25,7 +25,7 @@ import '../widgets/reading_material_view.dart';
 import '../widgets/remote_speaking_view.dart';
 import '../widgets/stage_media_panel.dart';
 import '../widgets/stage_widgets.dart';
-import 'lesson_overview_page.dart';
+import 'lesson_menu_page.dart';
 
 StageStatus _statusOf(RemoteStageStatus s, RemoteStageProgress p) =>
     switch (s) {
@@ -174,12 +174,7 @@ class _RemoteOverviewBodyState extends ConsumerState<_RemoteOverviewBody> {
           },
         ),
         const SizedBox(height: AppSpacing.xl),
-        OverallPanel(
-          outcome: outcome,
-          server: server,
-          hasDemoScore: false,
-          l10n: l10n,
-        ),
+        OverallPanel(outcome: outcome, server: server, l10n: l10n),
         if (server?.passed == true && server?.nextLessonId != null) ...[
           const SizedBox(height: AppSpacing.md),
           AppPrimaryButton(

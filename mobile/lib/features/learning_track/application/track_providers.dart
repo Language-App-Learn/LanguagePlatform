@@ -3,16 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/l10n/app_language.dart';
 import '../../../core/l10n/localized_text.dart';
-import '../../../core/storage/key_value_store.dart';
 import '../../authentication/application/auth_providers.dart';
-import '../../courses/application/course_providers.dart';
 import '../../courses/domain/course.dart';
-import '../../lessons/application/lesson_providers.dart';
-import '../../lessons/domain/lesson.dart';
 import '../data/api_five_stage_repository.dart';
-import '../data/demo_stage_content.dart';
 import '../data/just_audio_playback.dart';
-import '../data/local_stage_store.dart';
 import '../data/share_pdf_delivery.dart';
 import '../data/video_player_playback.dart';
 import '../domain/five_stage_repository.dart';
@@ -23,97 +17,6 @@ import '../domain/lesson_outcome.dart';
 import '../domain/lesson_stage.dart';
 import '../domain/level_overview.dart';
 import '../domain/remote_models.dart';
-import '../domain/stage_content.dart';
-
-final stageStoreProvider = Provider<LocalStageStore>(
-  (ref) => LocalStageStore(ref.watch(keyValueStoreProvider)),
-);
-
-/// Locally recorded DEMO stage outcomes per lesson (persisted, `lp.stages`).
-/// These are practice records, never official results.
-class StageRecordsNotifier
-    extends Notifier<Map<String, Map<LessonStage, StageRecord>>> {
-  StageRecordsNotifier([this._initial]);
-
-  final Map<String, Map<LessonStage, StageRecord>>? _initial;
-
-  @override
-  Map<String, Map<LessonStage, StageRecord>> build() =>
-      _initial ?? ref.read(stageStoreProvider).load();
-
-  void _set(Map<String, Map<LessonStage, StageRecord>> next) {
-    state = next;
-    ref.read(stageStoreProvider).save(next);
-  }
-
-  Map<LessonStage, StageRecord> recordsOf(String lessonId) =>
-      state[lessonId] ?? const {};
-
-  /// Records a finished practice (retries overwrite the previous score).
-  void complete(String lessonId, LessonStage stage, int? score) {
-    _set({
-      ...state,
-      lessonId: {
-        ...recordsOf(lessonId),
-        stage: StageRecord(completed: true, score: score?.clamp(0, 100)),
-      },
-    });
-  }
-
-  /// Marks a stage as started (no effect on a completed stage).
-  void start(String lessonId, LessonStage stage) {
-    final current = recordsOf(lessonId)[stage];
-    if (current?.completed ?? false) return;
-    _set({
-      ...state,
-      lessonId: {
-        ...recordsOf(lessonId),
-        stage: const StageRecord(completed: false, inProgress: true),
-      },
-    });
-  }
-}
-
-final stageRecordsProvider =
-    NotifierProvider<
-      StageRecordsNotifier,
-      Map<String, Map<LessonStage, StageRecord>>
-    >(StageRecordsNotifier.new);
-
-/// Source of stage content (DEMO fixture today; published server content
-/// once the five-stage contract exists).
-final stageContentProvider = Provider.family<LessonStageContent?, String>(
-  (ref, lessonId) => demoStageContent[lessonId],
-);
-
-/// Whether a stage of [lesson] can be opened (published content present).
-bool stageHasContent(
-  Lesson lesson,
-  LessonStageContent? content,
-  LessonStage stage,
-) {
-  return switch (stage) {
-    LessonStage.reading => content?.reading != null,
-    LessonStage.speaking => lesson.contents.any((c) => c is DialogueContent),
-    LessonStage.listening => content?.listening != null,
-    LessonStage.writing => content?.writing != null,
-    LessonStage.translation => content?.translation != null,
-  };
-}
-
-/// Where lesson content comes from. `remote` = the real backend (only when
-/// a backend is configured and the learner is NOT in the explicit local
-/// demo); `demo` = local sandbox content. The two never mix: ids, scores and
-/// progress of one mode are not used in the other.
-enum ContentMode { demo, remote }
-
-final contentModeProvider = Provider<ContentMode>((ref) {
-  final configured = ref.watch(apiBaseUriProvider) != null;
-  final session = ref.watch(sessionProvider);
-  return configured && session != SessionStatus.demo
-      ? ContentMode.remote
-      : ContentMode.demo;
-});
 
 final fiveStageRepositoryProvider = Provider<FiveStageRepository>(
   (ref) => ApiFiveStageRepository(ref.watch(apiClientProvider)),
@@ -228,7 +131,6 @@ final remoteProgressProvider =
 /// server's `passed` flag and never recomputes it.
 final serverLessonResultProvider = Provider.family<ServerLessonResult?, String>(
   (ref, lessonId) {
-    if (ref.watch(contentModeProvider) != ContentMode.remote) return null;
     final progress = ref.watch(remoteProgressProvider(lessonId)).value;
     final score = progress?.finalScore;
     if (progress == null || score == null) return null;
@@ -251,43 +153,30 @@ final serverLessonResultProvider = Provider.family<ServerLessonResult?, String>(
   },
 );
 
-/// The 20 positions of [level] of the active track.
+/// The 20 positions of [level] of the active track, from the real server
+/// slots (unpublished positions have no lesson id). Not used by the screens
+/// yet: it is the foundation for the lesson selection the owner will define.
 final levelPositionsProvider =
     FutureProvider.family<List<LessonPosition>, CourseLevel>((
       ref,
       level,
     ) async {
-      if (ref.watch(contentModeProvider) == ContentMode.remote) {
-        final slots = await ref.watch(remoteSlotsProvider(level).future);
-        final byPosition = {for (final s in slots) s.position: s};
-        return [
-          for (var n = 1; n <= lessonsPerLevel; n++)
-            LessonPosition(
-              level: level,
-              number: n,
-              lessonId: byPosition[n]?.lessonId,
-              title: byPosition[n]?.title == null
-                  ? null
-                  : LocalizedText.plain(byPosition[n]!.title!),
-            ),
-        ];
-      }
-      final courses = await ref.watch(coursesProvider.future);
-      final lessons = <Lesson>[];
-      for (final course in courses) {
-        if (course.level != level ||
-            course.languageCode !=
-                LearningTracks.turkishToArabic.targetLanguage) {
-          continue;
-        }
-        lessons.addAll(
-          await ref.watch(lessonsForCourseProvider(course.id).future),
-        );
-      }
-      return buildLevelPositions(level, lessons);
+      final slots = await ref.watch(remoteSlotsProvider(level).future);
+      final byPosition = {for (final s in slots) s.position: s};
+      return [
+        for (var n = 1; n <= lessonsPerLevel; n++)
+          LessonPosition(
+            level: level,
+            number: n,
+            lessonId: byPosition[n]?.lessonId,
+            title: byPosition[n]?.title == null
+                ? null
+                : LocalizedText.plain(byPosition[n]!.title!),
+          ),
+      ];
     });
 
-/// Retry for the catalog screens: also drops the cached server failure of the
+/// Retry for catalog loads: also drops the cached server failure of the
 /// providers upstream (invalidating only the derived one would re-read it).
 void reloadTrackCatalog(WidgetRef ref) {
   ref
@@ -295,42 +184,8 @@ void reloadTrackCatalog(WidgetRef ref) {
     ..invalidate(remoteLevelsProvider)
     ..invalidate(remoteSlotsProvider)
     ..invalidate(passedLessonIdsProvider)
-    ..invalidate(levelPositionsProvider)
-    ..invalidate(levelOverviewsProvider);
+    ..invalidate(levelPositionsProvider);
 }
-
-bool _allStagesDone(Map<LessonStage, StageRecord>? records) =>
-    records != null &&
-    LessonStage.values.every((s) => records[s]?.completed ?? false);
-
-/// Six level cards with REAL counts (published / completed lessons).
-/// Completed = passed on the server (remote) or fully practiced (demo).
-final levelOverviewsProvider = FutureProvider<List<LevelOverview>>((ref) async {
-  final remote = ref.watch(contentModeProvider) == ContentMode.remote;
-  final records = ref.watch(stageRecordsProvider);
-  final passed = remote
-      ? await ref.watch(passedLessonIdsProvider.future)
-      : const <String>{};
-  final result = <LevelOverview>[];
-  for (final level in CourseLevel.values) {
-    final positions = await ref.watch(levelPositionsProvider(level).future);
-    final published = positions.where((p) => p.isPublished).toList();
-    result.add(
-      LevelOverview(
-        level: level,
-        publishedLessons: published.length,
-        completedLessons: published
-            .where(
-              (p) => remote
-                  ? passed.contains(p.lessonId)
-                  : _allStagesDone(records[p.lessonId]),
-            )
-            .length,
-      ),
-    );
-  }
-  return result;
-});
 
 /// Factories for the media players (replaced by fakes in tests). Each player
 /// widget creates its own instance and disposes it when it leaves the screen.

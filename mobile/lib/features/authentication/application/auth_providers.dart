@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/api_config.dart';
-import '../../../core/config/app_config.dart';
 import '../../../core/errors/app_exceptions.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/authenticated_api_client.dart';
@@ -14,8 +13,8 @@ import '../data/remote_auth_repository.dart';
 import '../data/unavailable_auth_repository.dart';
 import '../domain/auth_repository.dart';
 
-/// Base URL of the backend (`--dart-define=API_BASE_URL=...`); `null` keeps
-/// the app in local demo mode with no network calls.
+/// Base URL of the backend (`--dart-define=API_BASE_URL=...`); `null` means
+/// no backend: no network calls are made and no content is shown.
 final apiBaseUriProvider = Provider<Uri?>((ref) => ApiConfig.baseUri);
 
 /// Session tokens are NEVER written to SharedPreferences. `bootstrap`
@@ -47,7 +46,7 @@ class _UnconfiguredApiClient implements ApiClient {
 }
 
 /// Real repository when a backend is configured, otherwise the honest
-/// "not connected" placeholder. Demo mode is never an authenticated account.
+/// "not connected" placeholder.
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   if (ref.watch(apiBaseUriProvider) == null) {
     return const UnavailableAuthRepository();
@@ -59,16 +58,15 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 });
 
 /// Session status. `authenticated` means real tokens obtained from the
-/// backend; `demo` is an explicit local sandbox that creates no account or
-/// token.
-enum SessionStatus { signedOut, demo, authenticated }
+/// backend.
+enum SessionStatus { signedOut, authenticated }
 
 class SessionNotifier extends Notifier<SessionStatus> {
   SessionNotifier([this._initial]);
 
   final SessionStatus? _initial;
 
-  /// An explicit status wins (tests, demo). Otherwise the session is
+  /// An explicit status wins (tests). Otherwise the session is
   /// restored from the secure token store: tokens present means "signed in"
   /// until the server says otherwise (a revoked or expired session fails its
   /// first call, the refresh fails and [expired] returns the app to
@@ -81,16 +79,6 @@ class SessionNotifier extends Notifier<SessionStatus> {
     return ref.read(tokenStoreProvider).read() == null
         ? SessionStatus.signedOut
         : SessionStatus.authenticated;
-  }
-
-  /// Does nothing when demo mode is disabled (`DEMO_MODE=false`).
-  void enterDemo() {
-    if (!AppConfig.demoModeEnabled) return;
-    state = SessionStatus.demo;
-    // The sandbox must never inherit (or later resurrect) a real session.
-    unawaited(ref.read(tokenStoreProvider).clear());
-    unawaited(ref.read(pendingAttemptStoreProvider).clearAll());
-    ref.read(accountEpochProvider.notifier).bump();
   }
 
   void authenticated() {
@@ -121,7 +109,7 @@ final sessionProvider = NotifierProvider<SessionNotifier, SessionStatus>(
 );
 
 /// Changes whenever the signed-in identity may have changed (sign-in,
-/// sign-out, expiry, demo entry). Every provider that holds learner-specific
+/// sign-out, expiry). Every provider that holds learner-specific
 /// server data watches it, so one account's cache is never shown to the next.
 class AccountEpoch extends Notifier<int> {
   @override

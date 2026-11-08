@@ -11,8 +11,6 @@ import 'app_tokens.dart';
 abstract final class AppTheme {
   static ThemeData get light => _build(Brightness.light);
 
-  static ThemeData get dark => _build(Brightness.dark);
-
   static ThemeData _build(Brightness brightness) {
     final seeded = ColorScheme.fromSeed(
       seedColor: AppColors.seed,
