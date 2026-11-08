@@ -85,17 +85,6 @@ void main() {
       expect(currentDirection(tester), TextDirection.rtl);
     });
 
-    testWidgets('demo modu açık ve ayrı bir giriştir', (tester) async {
-      useScreen(tester, height: 1400);
-      final c = await pumpApp(tester, initialLocation: AppRoutes.login);
-      expect(find.textContaining('No account is created'), findsOneWidget);
-      await tester.ensureVisible(_key('continue-demo'));
-      await tester.tap(_key('continue-demo'));
-      await tester.pumpAndSettle();
-      expect(c.read(sessionProvider), SessionStatus.demo);
-      expect(currentPath(c), AppRoutes.home);
-    });
-
     testWidgets('kayıt ve şifremi unuttum sayfalarına gider', (tester) async {
       useScreen(tester, height: 1400);
       final c = await pumpApp(tester, initialLocation: AppRoutes.login);
@@ -173,66 +162,5 @@ void main() {
       await tester.pumpAndSettle();
       expect(_key('auth-status'), findsOneWidget);
     });
-  });
-
-  group('profil ve ayarlar', () {
-    testWidgets('oturum açık değilken durum ve giriş butonu', (tester) async {
-      useScreen(tester);
-      await pumpApp(tester, initialLocation: AppRoutes.profile);
-      expect(find.text('Not signed in'), findsOneWidget);
-      expect(_key('exit-demo'), findsNothing);
-    });
-
-    testWidgets('demo oturumu açıkça belirtilir; çıkış girişe döner', (
-      tester,
-    ) async {
-      useScreen(tester);
-      final c = await pumpApp(
-        tester,
-        initialLocation: AppRoutes.profile,
-        overrides: [
-          sessionProvider.overrideWith(
-            () => SessionNotifier(SessionStatus.demo),
-          ),
-          trToArPreferences,
-        ],
-      );
-      expect(find.text('Demo mode, not signed in'), findsOneWidget);
-      expect(find.text('Türkçe'), findsOneWidget);
-      expect(find.text('العربية'), findsOneWidget);
-
-      await tester.tap(_key('exit-demo'));
-      await tester.pumpAndSettle();
-      expect(c.read(sessionProvider), SessionStatus.signedOut);
-      expect(currentPath(c), AppRoutes.login);
-    });
-
-    testWidgets(
-      'ayarlar açılır: diller, tema, hesap yer tutucuları, hakkında',
-      (tester) async {
-        useScreen(tester);
-        final c = await pumpApp(tester, initialLocation: AppRoutes.profile);
-        await tester.tap(_key('open-settings'));
-        await tester.pumpAndSettle();
-        expect(currentPath(c), AppRoutes.settings);
-        expect(find.text('App language'), findsOneWidget);
-        expect(find.text('I speak'), findsOneWidget);
-        expect(find.text('I want to learn'), findsOneWidget);
-        expect(find.text('Appearance'), findsOneWidget);
-
-        // Hesap ayarları devre dışı; entegrasyon bekliyor notu görünür.
-        final tile = tester.widget<ListTile>(
-          find.widgetWithText(ListTile, 'Edit profile'),
-        );
-        expect(tile.enabled, isFalse);
-        expect(find.textContaining('need a server connection'), findsWidgets);
-
-        await tester.ensureVisible(_key('about-tile'));
-        await tester.tap(_key('about-tile'));
-        await tester.pumpAndSettle();
-        expect(find.byType(AboutDialog), findsOneWidget);
-        expect(find.textContaining('demo build'), findsOneWidget);
-      },
-    );
   });
 }

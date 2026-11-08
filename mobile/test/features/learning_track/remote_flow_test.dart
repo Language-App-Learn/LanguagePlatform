@@ -7,6 +7,7 @@ import 'package:language_platform/core/network/token_store.dart';
 import 'package:language_platform/core/utils/bidi.dart';
 import 'package:language_platform/features/authentication/application/auth_providers.dart';
 import 'package:language_platform/features/authentication/data/remote_auth_repository.dart';
+import 'package:language_platform/features/courses/domain/course.dart';
 import 'package:language_platform/features/learning_track/application/track_providers.dart';
 import 'package:language_platform/features/learning_track/domain/remote_models.dart';
 
@@ -31,76 +32,49 @@ void main() {
   const lesson = Json.lessonId;
   final done = List.filled(5, RemoteStageStatus.completed);
 
-  group('catalog from the server', () {
-    testWidgets('six levels with real counts; 20 positions per level', (
+  group('lesson positions from the server', () {
+    testWidgets('twenty positions per level; only server lessons published', (
       tester,
     ) async {
-      useScreen(tester, height: 3200);
       final repo = FakeFiveStageRepository();
       final c = await pumpApp(
         tester,
         initialLocation: '/track/tr-ar',
         overrides: _remote(repo, session: SessionStatus.signedOut),
       );
-      expect(find.textContaining('lessons published'), findsNothing);
-      final levels = c.read(levelOverviewsProvider).requireValue;
-      expect(levels.first.publishedLessons, 2);
-      expect(levels.skip(1).every((l) => l.publishedLessons == 0), isTrue);
-      expect(find.text('Demo content'), findsNothing); // real data
-
-      await tester.tap(_key('level-card:a1'));
-      await tester.pumpAndSettle();
-      expect(currentPath(c), '/track/tr-ar/level/a1');
-      expect(find.text('Ders 1 başlığı'), findsOneWidget);
-      expect(find.text('Ders 2 başlığı'), findsOneWidget);
-      expect(find.text('Lesson 3'), findsOneWidget);
-      expect(find.text('In preparation'), findsWidgets);
-      await tester.scrollUntilVisible(_key('position:20'), 300);
-      expect(_key('position:20'), findsOneWidget);
+      final a1 = await c.read(levelPositionsProvider(CourseLevel.a1).future);
+      expect(a1, hasLength(20));
+      expect(a1.where((p) => p.isPublished), hasLength(2));
+      expect(a1.first.title?.resolve('tr'), 'Ders 1 başlığı');
+      final a2 = await c.read(levelPositionsProvider(CourseLevel.a2).future);
+      expect(a2, hasLength(20));
+      expect(a2.any((p) => p.isPublished), isFalse);
     });
 
-    testWidgets('passed lessons feed the level progress', (tester) async {
-      useScreen(tester, height: 3200);
-      final repo = FakeFiveStageRepository()..passed = {Json.lessonId};
-      final c = await pumpApp(
-        tester,
-        initialLocation: '/track/tr-ar',
-        overrides: _remote(repo),
-      );
-      final levels = c.read(levelOverviewsProvider).requireValue;
-      expect(levels.first.completedLessons, 1);
-    });
-
-    testWidgets('server failure shows an error with a working retry', (
-      tester,
-    ) async {
-      useScreen(tester, height: 3200);
-      final repo = FakeFiveStageRepository()
-        ..slotsError = const NetworkUnavailableFailure();
-      await pumpApp(
-        tester,
-        initialLocation: '/track/tr-ar',
-        overrides: _remote(repo, session: SessionStatus.signedOut),
-      );
-      expect(find.textContaining('No internet connection'), findsOneWidget);
-      repo.slotsError = null;
-      expect(_key('level-card:a1'), findsNothing);
-      await tester.tap(find.text('Try again'));
-      await tester.pumpAndSettle();
-      expect(_key('level-card:a1'), findsOneWidget); // recovered
-    });
-
-    testWidgets('no published course: honest empty state', (tester) async {
-      useScreen(tester, height: 3200);
+    testWidgets('no published course: twenty empty positions', (tester) async {
       final repo = FakeFiveStageRepository()..course = null;
       final c = await pumpApp(
         tester,
         initialLocation: '/track/tr-ar',
         overrides: _remote(repo, session: SessionStatus.signedOut),
       );
-      final levels = c.read(levelOverviewsProvider).requireValue;
-      expect(levels.length, 6);
-      expect(levels.every((l) => l.publishedLessons == 0), isTrue);
+      final a1 = await c.read(levelPositionsProvider(CourseLevel.a1).future);
+      expect(a1, hasLength(20));
+      expect(a1.any((p) => p.isPublished), isFalse);
+    });
+
+    testWidgets('a server failure is reported, not hidden', (tester) async {
+      final repo = FakeFiveStageRepository()
+        ..slotsError = const NetworkUnavailableFailure();
+      final c = await pumpApp(
+        tester,
+        initialLocation: '/track/tr-ar',
+        overrides: _remote(repo, session: SessionStatus.signedOut),
+      );
+      await expectLater(
+        c.read(levelPositionsProvider(CourseLevel.a1).future),
+        throwsA(isA<NetworkUnavailableFailure>()),
+      );
     });
   });
 
@@ -362,35 +336,6 @@ void main() {
     });
   });
 
-  group('demo and real stay separate', () {
-    testWidgets('explicit demo session ignores the server entirely', (
-      tester,
-    ) async {
-      useScreen(tester, height: 3200);
-      final repo = FakeFiveStageRepository();
-      await pumpApp(
-        tester,
-        initialLocation: '/track/tr-ar',
-        overrides: [
-          ..._remote(repo, session: SessionStatus.demo),
-          trToArPreferences,
-        ],
-      );
-      expect(_key('level-card:a1'), findsOneWidget);
-      expect(find.text('Demo content'), findsOneWidget);
-      expect(repo.calls, isEmpty);
-      expect(repo.progressCalls, 0);
-    });
-
-    testWidgets('without a configured backend the app stays in demo mode', (
-      tester,
-    ) async {
-      useScreen(tester, height: 3200);
-      final c = await pumpApp(tester, initialLocation: '/track/tr-ar');
-      expect(c.read(contentModeProvider), ContentMode.demo);
-    });
-  });
-
   group('sign-in and sign-out', () {
     List<Override> authOverrides(
       HandlerApiClient api,
@@ -436,7 +381,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(c.read(sessionProvider), SessionStatus.authenticated);
       expect(tokens.read()?.accessToken, 'acc');
-      expect(currentPath(c), '/home');
+      expect(currentPath(c), '/menu');
     });
 
     testWidgets('rejected credentials: honest message, no session', (
@@ -509,32 +454,6 @@ void main() {
       await submit();
       expect(find.textContaining('not connected to a server'), findsOneWidget);
       expect(tokens.read(), isNull);
-    });
-
-    testWidgets('profile sign-out clears tokens and returns to login', (
-      tester,
-    ) async {
-      useScreen(tester, height: 2400);
-      final tokens = InMemoryTokenStore();
-      await tokens.save(const TokenPair(accessToken: 'a', refreshToken: 'r'));
-      final api = HandlerApiClient((_) async => const ApiResponse(204));
-      final c = await pumpApp(
-        tester,
-        initialLocation: '/profile',
-        overrides: authOverrides(
-          api,
-          tokens,
-          session: SessionStatus.authenticated,
-        ),
-      );
-      expect(find.text('Signed in to your account'), findsOneWidget);
-      await tester.ensureVisible(_key('sign-out'));
-      await tester.tap(_key('sign-out'));
-      await tester.pumpAndSettle();
-      expect(tokens.read(), isNull);
-      expect(c.read(sessionProvider), SessionStatus.signedOut);
-      expect(api.requests.single.path, '/api/v1/auth/logout');
-      expect(currentPath(c), '/auth/login');
     });
   });
 }

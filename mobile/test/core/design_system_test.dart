@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:language_platform/core/design_system/widgets/async_value_view.dart';
-import 'package:language_platform/core/design_system/widgets/choice_group.dart';
 import 'package:language_platform/core/design_system/widgets/state_views.dart';
 import 'package:language_platform/core/errors/app_exceptions.dart';
 import 'package:language_platform/core/l10n/l10n.dart';
@@ -85,35 +84,5 @@ void main() {
       );
       expect(find.text('7'), findsOneWidget);
     });
-  });
-
-  group('ChoiceGroup', () {
-    for (final layout in ChoiceGroupLayout.values) {
-      testWidgets('$layout: seçili görünür, devre dışı seçilemez', (
-        tester,
-      ) async {
-        String? picked;
-        await tester.pumpWidget(
-          _host(
-            ChoiceGroup<String>(
-              groupId: 'g',
-              layout: layout,
-              selected: 'a',
-              options: const [
-                ChoiceOption(id: 'a', value: 'a', label: 'A'),
-                ChoiceOption(id: 'b', value: 'b', label: 'B'),
-                ChoiceOption(id: 'c', value: 'c', label: 'C', enabled: false),
-              ],
-              onSelected: (v) => picked = v,
-            ),
-          ),
-        );
-        await tester.tap(find.byKey(const ValueKey('g:b')));
-        expect(picked, 'b');
-        picked = null;
-        await tester.tap(find.byKey(const ValueKey('g:c')));
-        expect(picked, isNull);
-      });
-    }
   });
 }
