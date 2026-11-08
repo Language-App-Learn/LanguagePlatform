@@ -4,7 +4,7 @@ The five-stage API supports authoring, review, publication and server-graded lea
 
 ## Student catalog
 
-The student release exposes the active Turkish-to-Arabic path and published Modern Language courses using the five-stage curriculum. Other catalog records remain in PostgreSQL. The languages lookup still supports interface language selection. Development and Testing can explicitly opt into the legacy catalog using `StudentRelease:IncludeLegacyContent=true`.
+The API exposes the active Turkish-to-Arabic path and published Modern Language courses using the five-stage curriculum in every runtime environment. Other catalog records remain in PostgreSQL. The languages lookup still supports interface language selection. A catalog without teacher-published courses returns an empty course list. Empty lesson outlines and vacant slots contain no substitute content.
 
 | Method and path | Result |
 | --- | --- |

@@ -29,10 +29,6 @@ SmtpAccountEmailDelivery.Configure(builder.Services, builder.Configuration);
 if (builder.Environment.IsProduction())
     builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 4 * 1024 * 1024);
 
-builder.Services.AddSingleton(services =>
-    new StudentReleaseOptions((builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing"))
-        && services.GetRequiredService<IConfiguration>().GetValue<bool>("StudentRelease:IncludeLegacyContent")));
-
 builder.Services.AddDbContext<LanguagePlatformDbContext>((services, options) =>
     options.UseNpgsql(
         ProductionSecurity.DatabaseConnection(services.GetRequiredService<IConfiguration>(),
@@ -43,7 +39,6 @@ builder.Services.AddDbContext<LanguagePlatformDbContext>((services, options) =>
 builder.Services.AddScoped<ILearningCatalogRepository, EfLearningCatalogRepository>();
 builder.Services.AddScoped<ILearningCatalogService, LearningCatalogService>();
 builder.Services.AddScoped<CatalogDataSeeder>();
-builder.Services.AddScoped<DevelopmentContentSeeder>();
 builder.Services.AddScoped<IPublishedContentQueries, PublishedContentQueries>();
 builder.Services.AddScoped<StudentLearningService>();
 builder.Services.AddScoped<ObjectiveAssessmentService>();
@@ -145,9 +140,7 @@ static async Task InitializeDatabaseWhenRequestedAsync(WebApplication app)
 {
     var applyMigrations = app.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup");
     var seedData = app.Configuration.GetValue<bool>("Database:SeedOnStartup");
-    var seedDemo = app.Configuration.GetValue<bool>("Database:SeedDemoContentOnStartup");
-
-    if (!applyMigrations && !seedData && !seedDemo)
+    if (!applyMigrations && !seedData)
     {
         return;
     }
@@ -168,11 +161,7 @@ static async Task InitializeDatabaseWhenRequestedAsync(WebApplication app)
         await dbContext.Database.MigrateAsync();
     }
 
-    if (seedDemo)
-    {
-        await scope.ServiceProvider.GetRequiredService<DevelopmentContentSeeder>().SeedAsync(CancellationToken.None);
-    }
-    else if (seedData)
+    if (seedData)
     {
         var seeder = scope.ServiceProvider.GetRequiredService<CatalogDataSeeder>();
         await seeder.SeedAsync();

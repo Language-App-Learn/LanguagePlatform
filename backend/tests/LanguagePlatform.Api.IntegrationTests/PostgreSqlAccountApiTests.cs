@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using LanguagePlatform.Application.Common;
 using LanguagePlatform.Application.Identity;
 using LanguagePlatform.Domain.Platform;
+using LanguagePlatform.Infrastructure.Catalog;
 using LanguagePlatform.Infrastructure.Identity;
 using LanguagePlatform.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.BearerToken;
@@ -22,6 +23,41 @@ namespace LanguagePlatform.Api.IntegrationTests;
 
 public sealed class PostgreSqlAccountApiTests
 {
+    [Fact]
+    public async Task ProductionIgnoresObsoleteDemoSettingsWithoutConnectingToDatabase()
+    {
+        var directory = Directory.CreateTempSubdirectory("lp-production-probe-");
+        try
+        {
+            var certificatePath = Path.Combine(directory.FullName, "test-protection.pfx");
+            using var rsa = RSA.Create(2048);
+            var request = new CertificateRequest("CN=LanguagePlatform Startup Test", rsa, HashAlgorithmName.SHA256,
+                RSASignaturePadding.Pkcs1);
+            using var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddMinutes(-1), DateTimeOffset.UtcNow.AddDays(1));
+            await File.WriteAllBytesAsync(certificatePath, certificate.Export(X509ContentType.Pkcs12));
+
+            await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+                builder.UseEnvironment("Production")
+                    .UseSetting("AllowedHosts", "localhost")
+                    .UseSetting("DataProtection:KeyDirectory", directory.FullName)
+                    .UseSetting("DataProtection:CertificatePath", certificatePath)
+                    .UseSetting("Database:ApplyMigrationsOnStartup", "false")
+                    .UseSetting("Database:SeedOnStartup", "false")
+                    .UseSetting("Database:SeedDemoContentOnStartup", "true")
+                    .UseSetting("StudentRelease:IncludeLegacyContent", "true")
+                    .UseSetting("ConnectionStrings:LanguagePlatform",
+                        "Host=127.0.0.1;Port=1;Database=language_platform_startup_probe;Username=probe;SSL Mode=VerifyFull"));
+            using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost") });
+            using var response = await client.GetAsync("/health");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Null(factory.Services.GetService<StudentReleaseOptions>());
+        }
+        finally
+        {
+            directory.Delete(recursive: true);
+        }
+    }
+
     [PostgreSqlFact]
     public Task EncryptedKeyRingKeepsTicketsValidAcrossHosts() => PostgreSqlTestSchema.RunAsync(async (connection, _) =>
     {
