@@ -1,0 +1,10 @@
+root = true
+
+[*.cs]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+
+[src/LanguagePlatform.Infrastructure/Persistence/Migrations/*.cs]
+# EF Core owns generated migration code; hand-optimizing generated index arrays is not durable.
+dotnet_diagnostic.CA1861.severity = none
