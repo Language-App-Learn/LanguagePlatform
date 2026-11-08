@@ -60,25 +60,3 @@ enum LessonOutcomeStatus {
   passed,
   failed,
 }
-
-/// Overall lesson status.
-///
-/// Without a [ServerLessonResult] the lesson can never be passed or failed:
-/// a local average is not an authoritative result.
-LessonOutcomeStatus lessonOutcome({
-  required Map<LessonStage, StageRecord> records,
-  ServerLessonResult? serverResult,
-}) {
-  if (serverResult != null) {
-    return serverResult.passed
-        ? LessonOutcomeStatus.passed
-        : LessonOutcomeStatus.failed;
-  }
-  final completed = records.values.where((r) => r.completed).length;
-  if (completed == 0 && !records.values.any((r) => r.inProgress)) {
-    return LessonOutcomeStatus.notStarted;
-  }
-  return completed == LessonStage.values.length
-      ? LessonOutcomeStatus.awaitingAssessment
-      : LessonOutcomeStatus.inProgress;
-}
