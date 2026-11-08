@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/theme/app_theme.dart';
-import '../core/theme/theme_mode_provider.dart';
 import 'router/app_router.dart';
 
 /// Kök widget: tema, dil, yön (RTL/LTR) ve router burada bağlanır.
@@ -18,8 +17,9 @@ class LanguagePlatformApp extends ConsumerWidget {
       onGenerateTitle: (context) => context.l10n.appTitle,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ref.watch(themeModeProvider),
+      // The approved design is purple-and-white only: always the light theme,
+      // whatever the device or an old saved preference says.
+      themeMode: ThemeMode.light,
       locale: language?.locale,
       supportedLocales: AppLanguage.supportedLocales,
       localizationsDelegates: const [

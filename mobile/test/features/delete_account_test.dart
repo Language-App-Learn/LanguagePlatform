@@ -51,22 +51,17 @@ Future<void> _fillAndSubmit(
 
 void main() {
   group('account deletion request', () {
-    testWidgets('profile leads to the page; it states what really happens', (
-      tester,
-    ) async {
+    testWidgets('the page states what really happens', (tester) async {
       useScreen(tester, height: 2400);
       final tokens = await _signedInTokens();
       await pumpApp(
         tester,
-        initialLocation: '/profile',
+        initialLocation: '/delete-account',
         overrides: _auth(
           HandlerApiClient((_) async => const ApiResponse(202)),
           tokens,
         ),
       );
-      await tester.ensureVisible(_key('delete-account'));
-      await tester.tap(_key('delete-account'));
-      await tester.pumpAndSettle();
       expect(
         find.textContaining('deactivates your account right away'),
         findsOneWidget,

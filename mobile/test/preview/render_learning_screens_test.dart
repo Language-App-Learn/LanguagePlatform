@@ -51,8 +51,8 @@ void main() {
     ('04b_language_pair_ar_rtl', AppLanguage.ar, AppRoutes.languagePair),
     ('05_arabic_sections_tr', AppLanguage.tr, AppRoutes.arabicSections),
     ('06_level_selection_tr', AppLanguage.tr, '/track/tr-ar'),
-    ('07_lesson_menu_tr', AppLanguage.tr, '/stages/ar-a1-l1'),
-    ('07b_lesson_menu_ar_rtl', AppLanguage.ar, '/stages/ar-a1-l1'),
+    ('07_lesson_menu_tr', AppLanguage.tr, '/track/tr-ar/level/a1'),
+    ('07b_lesson_menu_ar_rtl', AppLanguage.ar, '/track/tr-ar/level/a1'),
   ];
   for (final (name, language, route) in cases) {
     testWidgets(

@@ -5,18 +5,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:language_platform/app/app.dart';
 import 'package:language_platform/app/router/app_router.dart';
 import 'package:language_platform/core/l10n/l10n.dart';
-import 'package:language_platform/core/theme/theme_mode_provider.dart';
 import 'package:language_platform/features/language_selection/application/learning_preferences.dart';
 import 'package:language_platform/features/language_selection/domain/learning_language.dart';
-import 'package:language_platform/features/progress/application/progress_providers.dart';
 import 'package:language_platform/features/splash/application/startup_route.dart';
 
-/// Uygulamayı verilen dil/tema/rota ile açar ve (varsayılan olarak) ilk
+/// Uygulamayı verilen dil/rota ile açar ve (varsayılan olarak) ilk
 /// kareler oturana kadar bekler. Dönen container ile state okunabilir.
 Future<ProviderContainer> pumpApp(
   WidgetTester tester, {
   AppLanguage? language = AppLanguage.en,
-  ThemeMode themeMode = ThemeMode.light,
   String? initialLocation,
   List<Override> overrides = const [],
   bool settle = true,
@@ -27,7 +24,6 @@ Future<ProviderContainer> pumpApp(
       retry: (retryCount, error) => null,
       overrides: [
         appLanguageProvider.overrideWith(() => AppLanguageNotifier(language)),
-        themeModeProvider.overrideWith(() => ThemeModeNotifier(themeMode)),
         splashHoldProvider.overrideWithValue(splashHold),
         if (initialLocation != null)
           initialLocationProvider.overrideWithValue(initialLocation),
@@ -65,11 +61,6 @@ final Override trToArPreferences = learningPreferencesProvider.overrideWith(
       targetLanguage: LearningLanguage.fromCode('ar'),
     ),
   ),
-);
-
-/// Sabit saat: 2026-11-06 12:00.
-final Override fixedClock = clockProvider.overrideWithValue(
-  () => DateTime(2026, 11, 6, 12),
 );
 
 /// Ekrandaki etkin yazı yönü.

@@ -141,15 +141,13 @@ class LessonModeCard extends StatelessWidget {
     required this.stage,
     required this.status,
     required this.onOpen,
-    this.record,
     this.officialScore,
   });
 
   final LessonStage stage;
   final StageStatus status;
-  final StageRecord? record;
 
-  /// OFFICIAL server score (0..100); wins over a local practice score.
+  /// OFFICIAL server score (0..100).
   final double? officialScore;
   final VoidCallback? onOpen;
 
@@ -158,14 +156,12 @@ class LessonModeCard extends StatelessWidget {
     final l10n = context.l10n;
     final semantic = context.semanticColors;
     final statusText = l10n.statusName(status);
-    final score = officialScore != null
-        ? l10n.officialResultScore(
+    final score = officialScore == null
+        ? null
+        : l10n.officialResultScore(
             formatScore(officialScore!).isolateLtr,
             '100'.isolateLtr,
-          )
-        : record?.score != null
-        ? l10n.stageScoreLabel('${record!.score}'.isolateLtr)
-        : null;
+          );
     final (badge, badgeColor) = switch (status) {
       StageStatus.completed => (Icons.check_circle, semantic.success),
       StageStatus.inProgress => (Icons.timelapse, AppColors.brand),
@@ -194,6 +190,27 @@ class LessonModeCard extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall,
             ),
+    );
+  }
+}
+
+/// The lesson menu while NO lesson is selected: all six cards look as drawn
+/// but none opens anything; pressing one only says it is not available.
+class UnavailableLessonMenuGrid extends StatelessWidget {
+  const UnavailableLessonMenuGrid({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return LessonModeGrid(
+      cardFor: (stage) => _ModeCardShell(
+        cardKey: ValueKey('stage-card:${stage.name}'),
+        icon: modeIcon(stage),
+        title: l10n.stageName(stage),
+        muted: false,
+        onTap: () => showUnavailable(context),
+        semanticsLabel: '${l10n.stageName(stage)}, ${l10n.comingSoonTag}',
+      ),
     );
   }
 }
