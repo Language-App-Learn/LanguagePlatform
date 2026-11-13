@@ -88,6 +88,11 @@ public sealed class PostgreSqlCatalogApiTests
         Assert.True(paths.GetProperty("/api/v1/me/courses/{courseId}/lessons/{lessonId}/reading-material/original")
             .GetProperty("get").GetProperty("responses").GetProperty("200").GetProperty("content")
             .TryGetProperty("application/pdf", out _));
+        var readingSubmission = paths.GetProperty(
+            "/api/v1/me/courses/{courseId}/lessons/{lessonId}/reading-progress/lines/{lineId}/evaluations").GetProperty("post");
+        Assert.True(readingSubmission.GetProperty("security")[0].TryGetProperty("Bearer", out _));
+        Assert.True(readingSubmission.GetProperty("requestBody").GetProperty("content").TryGetProperty("audio/wav", out _));
+        Assert.True(readingSubmission.GetProperty("responses").TryGetProperty("202", out _));
         if (Environment.GetEnvironmentVariable("LANGUAGEPLATFORM_OPENAPI_OUTPUT") is { Length: > 0 } output)
             await File.WriteAllTextAsync(output, document);
     });

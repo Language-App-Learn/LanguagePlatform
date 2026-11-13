@@ -34,10 +34,18 @@ The teacher-only content cleanup is based on `origin/Develop` at `5f66656`. The 
 
 The build completed with zero warnings and errors. All 45 tests passed with zero failures and zero skips on disposable PostgreSQL 18.6. The new checks cover Development startup with obsolete flags, empty catalog and slot responses, and Production startup with a nonconnecting test target. Updated tests cover historical vocabulary visibility, draft isolation, preserved stored progress, teacher publication and the 60/100 gate. EF reports no pending model changes and all nine migrations remain intact.
 
+## Interactive Arabic reading
+
+The local feature branch starts from `origin/Develop` at `a455ad6`. Teachers can attach private PCM reference audio to reviewed PDF lines before publication. The student API exposes the current line and previously approved lines. PostgreSQL enforces one pending or approved attempt per student and line, and a UUID prevents duplicate evaluation. Student audio and transcripts stay in memory. See the [interactive reading contract](../docs/api/INTERACTIVE_READING_CONTRACT.md).
+
+The local FastAPI worker uses faster-whisper with Arabic transcription and CPU INT8. Both model candidates were exercised on five test noise signals. Small peaked at 715 MiB and medium at 1,691 MiB. No teacher-approved voice recordings were supplied for accuracy calibration, so production model selection and automatic progression are pending. See the [worker setup and benchmark](speech/README.md).
+
+The solution builds with zero warnings and errors. All 58 .NET tests passed, including 23 API/model tests with PostgreSQL 18.6 and the 50/100 and 60/100 regression checks. The API suite substitutes the recognizer for deterministic outcomes. Four Python tests passed, and the actual small model served the private FastAPI route with a speech-free recording. EF found no pending model changes. The additive migration was exercised in the disposable test cluster, and its idempotent SQL was reviewed for existing-data impact. Applying it to an existing database remains a separate approved deployment step.
+
 ## Next checkpoint
 
 1. Configure staging SMTP, ClamAV, HTTPS, PostgreSQL TLS and service resource isolation. Verify live delivery and scanning, the operator command, and deployment restart behavior. See the [deployment runbook](../docs/deployment/BACKEND_PRODUCTION.md).
 2. Load teacher-provided A1 materials and approved weights, rubric and media. Complete retention, purge and controlled media delivery before public access. See the [security register](../docs/security/PRODUCTION_REGISTER.md).
-3. Keep instructor evaluation until automated speech providers, consent, budgets and retention are approved. Integrate the published endpoints in Flutter using the [client handoff](../docs/api/FIVE_STAGE_LESSON_CONTRACT.md#flutter-handoff).
+3. Compare small and medium on consented, teacher-labelled Arabic recordings before enabling automatic reading progression. Integrate the endpoints in Flutter using the [client handoff](../docs/api/FIVE_STAGE_LESSON_CONTRACT.md#flutter-handoff). The separate speaking stage uses instructor evaluation.
 
 PDF ingestion extracts embedded text. Scans need teacher-entered lines. A production ClamAV daemon and signed media provider have not been verified. Public release remains NO-GO.

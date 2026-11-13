@@ -107,9 +107,11 @@ Upload accepts up to 2 MiB and 30 pages. Oversized uploads return 413, unsupport
 
 Students use `GET /api/v1/me/courses/{courseId}/lessons/{lessonId}/reading-material` for `{lines:[{id,page,order,text}],hasOriginalPdf}`, and append `/original` for the unchanged PDF attachment. Both require enrollment and access to the published reading stage. Missing or inaccessible material returns 404. If the lesson was authored with text only, use its published stage text when the lines list is empty.
 
+For the line-by-line reader, follow the [interactive reading contract](INTERACTIVE_READING_CONTRACT.md). It defines teacher reference audio, student recording submission and server-controlled line progression within the reading stage.
+
 ## Flutter handoff
 
 - Consume catalog and slot identifiers as strings. In remote mode, adapt `levelPositionsProvider` to render server `position` and preserve empty slots. One server course spans all six levels.
 - The Flutter `LessonStage` enum already matches the five backend kinds. Adapt the response to the existing stage UI using server status and version IDs. Set `serverLessonResultProvider` only when `finalScore` exists. Change the official result's integer score fields to accept fractional values, keep stage scores nullable until graded, and use the server's `passed` and `nextLessonId`.
 - Reuse the [base Flutter contract](FLUTTER_BACKEND_CONTRACT.md) for authentication, ProblemDetails, lesson detail and objective snapshots. Keep demo `lp.stages` and demo answer-bearing exercise models separate from the remote attempt model. Map stage weights from published lesson metadata. Render Arabic with RTL direction and preserve its Unicode.
-- Use the attempt snapshots for the four objective stages. Open reading originals as authenticated attachments, and use the protected media endpoint for playback metadata. For speaking, display a pending result until the evaluator records a score. Automated speech requires a future provider and capture contract.
+- Use the attempt snapshots for the four objective stages. Open reading originals as authenticated attachments. Use the interactive reading progress and reference audio routes for line playback and recording. For the separate speaking stage, display a pending result until the evaluator records a score.

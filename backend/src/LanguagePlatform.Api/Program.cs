@@ -14,6 +14,7 @@ using LanguagePlatform.Infrastructure.StudentProgress;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 using Npgsql;
 
 if (args is [IsolatedPdfTextExtractor.WorkerCommand])
@@ -48,6 +49,21 @@ builder.Services.AddScoped<LessonPublicationService>();
 builder.Services.AddScoped<CurriculumAuthoringService>();
 builder.Services.AddScoped<CurriculumQueries>();
 builder.Services.AddScoped<ReadingPdfService>();
+builder.Services.AddScoped<InteractiveReadingService>();
+builder.Services.AddOptions<ReadingSpeechOptions>().BindConfiguration("ReadingSpeech")
+    .Validate(x => x.IsValid(), "Invalid private reading speech service configuration.").ValidateOnStart();
+builder.Services.AddHttpClient<IReadingSpeechRecognizer, ReadingSpeechRecognizer>((services, client) =>
+    {
+        client.Timeout = TimeSpan.FromSeconds(services.GetRequiredService<IOptions<ReadingSpeechOptions>>().Value.TimeoutSeconds);
+        client.MaxResponseContentBufferSize = 64 * 1024;
+    })
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        AllowAutoRedirect = false,
+        UseCookies = false,
+        UseProxy = false
+    })
+    .RedactLoggedHeaders(["Authorization"]);
 builder.Services.AddScoped<OperatorAccessService>();
 if (builder.Environment.IsProduction())
 {
@@ -74,12 +90,20 @@ builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddHealthChecks().AddCheck<PostgreSqlReadiness>("postgresql", tags: ["ready"]);
 builder.Services.AddMobileAuthentication(builder.Environment.IsProduction());
-builder.Services.AddRateLimiter(options => options.AddConcurrencyLimiter(ReadingPdfEndpoints.UploadRatePolicy,
-    limiter =>
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddConcurrencyLimiter(ReadingPdfEndpoints.UploadRatePolicy, limiter => limiter.PermitLimit = 2);
+    options.AddPolicy(InteractiveReadingEndpoints.UploadRatePolicy, _ =>
+        System.Threading.RateLimiting.RateLimitPartition.GetConcurrencyLimiter("reading-audio",
+            _ => new System.Threading.RateLimiting.ConcurrencyLimiterOptions { PermitLimit = 4 }));
+    options.OnRejected = (context, _) =>
     {
-        limiter.PermitLimit = 2;
-        limiter.QueueLimit = 0;
-    }));
+        if (context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName
+            == InteractiveReadingEndpoints.UploadRatePolicy)
+            context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        return ValueTask.CompletedTask;
+    };
+});
 builder.Services.AddOpenApi("v1", OpenApiAuthentication.Configure);
 
 var app = builder.Build();
@@ -132,6 +156,7 @@ app.MapVocabularyEndpoints();
 app.MapAdminPublicationEndpoints();
 app.MapFiveStageEndpoints();
 app.MapReadingPdfEndpoints();
+app.MapInteractiveReadingEndpoints();
 
 await InitializeDatabaseWhenRequestedAsync(app);
 await app.RunAsync();

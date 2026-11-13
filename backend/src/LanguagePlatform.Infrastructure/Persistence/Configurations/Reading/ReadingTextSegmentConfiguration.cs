@@ -21,6 +21,7 @@ public sealed class ReadingTextSegmentConfiguration : IEntityTypeConfiguration<R
         builder.ToTable(t => t.HasCheckConstraint("ck_reading_text_segments_1", "sequence > 0"));
         builder.ToTable(t => t.HasCheckConstraint("ck_reading_text_segments_2", "start_offset >= 0 AND length > 0"));
         builder.ToTable(t => t.HasCheckConstraint("ck_reading_text_segments_3", "alignment_schema_version > 0"));
-
+        builder.ToTable(t => t.HasCheckConstraint("ck_reading_text_segments_reference_audio",
+            "reference_audio IS NULL OR octet_length(reference_audio) BETWEEN 8044 AND 640044"));
     }
 }

@@ -11,4 +11,7 @@ public sealed class ReadingTextSegment : PlatformEntity
     public required int Length { get; init; }
     public required int AlignmentSchemaVersion { get; init; }
     public required string AlignmentJson { get; init; }
+    public byte[]? ReferenceAudio { get; private set; }
+
+    public void SetReferenceAudio(byte[] audio) => ReferenceAudio = audio;
 }

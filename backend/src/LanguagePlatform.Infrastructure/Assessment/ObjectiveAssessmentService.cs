@@ -17,7 +17,8 @@ using AssessmentEntity = LanguagePlatform.Domain.Assessment.Assessment;
 
 namespace LanguagePlatform.Infrastructure.Assessment;
 
-public sealed class ObjectiveAssessmentService(LanguagePlatformDbContext db, IPublishedContentQueries content, TimeProvider clock)
+public sealed class ObjectiveAssessmentService(LanguagePlatformDbContext db, IPublishedContentQueries content,
+    TimeProvider clock, InteractiveReadingService reading)
 {
     private const int MaximumQuestions = 100;
 
@@ -263,10 +264,13 @@ public sealed class ObjectiveAssessmentService(LanguagePlatformDbContext db, IPu
                          select result.Id).Any())
             select assessment.Id).AnyAsync(ct);
         if (locked) throw new StateConflictException("Complete the earlier stages first.");
-        return await (from assessment in db.Set<AssessmentEntity>().AsNoTracking()
+        var available = await (from assessment in db.Set<AssessmentEntity>().AsNoTracking()
             join stage in db.Set<LessonStage>() on assessment.LessonStageId equals stage.Id
             where assessment.Id == assessmentId && assessment.IsPublished && stage.IsActive && stage.LessonVersionId == versionId
-            select assessment).SingleOrDefaultAsync(ct);
+            select new { Assessment = assessment, stage.StageType }).SingleOrDefaultAsync(ct);
+        if (available?.StageType == "reading" && await reading.IsAssessmentBlockedAsync(userId, versionId.Value, ct))
+            throw new StateConflictException("Complete the interactive reading lines before taking the reading assessment.");
+        return available?.Assessment;
     }
 
     private Task<AssessmentAttempt?> FindByKeyAsync(Guid userId, string key, CancellationToken ct) =>

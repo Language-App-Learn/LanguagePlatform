@@ -3780,6 +3780,71 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                     b.ToTable("reading_evaluations", (string)null);
                 });
 
+            modelBuilder.Entity("LanguagePlatform.Domain.Reading.ReadingLineAttempt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<DateTime>("DeadlineUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deadline_utc");
+
+                    b.Property<Guid>("IdempotencyKey")
+                        .HasColumnType("uuid")
+                        .HasColumnName("idempotency_key");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("reason");
+
+                    b.Property<byte[]>("RecordingDigest")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("recording_digest");
+
+                    b.Property<Guid>("SegmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("segment_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("student_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SegmentId");
+
+                    b.HasIndex("StudentId", "IdempotencyKey")
+                        .IsUnique()
+                        .HasDatabaseName("ux_reading_line_attempts_idempotency");
+
+                    b.HasIndex("StudentId", "SegmentId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_reading_line_attempts_active_line")
+                        .HasFilter("status IN ('Pending', 'Approved')");
+
+                    b.ToTable("reading_line_attempts", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_reading_line_attempts_deadline", "deadline_utc > created_at_utc");
+
+                            t.HasCheckConstraint("ck_reading_line_attempts_digest", "octet_length(recording_digest) = 32");
+
+                            t.HasCheckConstraint("ck_reading_line_attempts_status", "(status IN ('Pending', 'Approved') AND reason IS NULL) OR (status IN ('RetryRequired', 'Inconclusive', 'TechnicalError') AND reason IS NOT NULL)");
+                        });
+                });
+
             modelBuilder.Entity("LanguagePlatform.Domain.Reading.ReadingMaterial", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3834,11 +3899,11 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("LanguageId");
 
+                    b.HasIndex("LessonVersionId");
+
                     b.HasIndex("PdfAssetId");
 
                     b.HasIndex("UploadedBy");
-
-                    b.HasIndex("LessonVersionId");
 
                     b.HasIndex(new[] { "LessonVersionId" }, "UX_reading_materials_inline_pdf_version")
                         .IsUnique()
@@ -3956,6 +4021,10 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("reading_passage_id");
 
+                    b.Property<byte[]>("ReferenceAudio")
+                        .HasColumnType("bytea")
+                        .HasColumnName("reference_audio");
+
                     b.Property<int>("Sequence")
                         .HasColumnType("integer")
                         .HasColumnName("sequence");
@@ -3982,6 +4051,8 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("ck_reading_text_segments_2", "start_offset >= 0 AND length > 0");
 
                             t.HasCheckConstraint("ck_reading_text_segments_3", "alignment_schema_version > 0");
+
+                            t.HasCheckConstraint("ck_reading_text_segments_reference_audio", "reference_audio IS NULL OR octet_length(reference_audio) BETWEEN 8044 AND 640044");
                         });
                 });
 
@@ -5680,6 +5751,21 @@ namespace LanguagePlatform.Infrastructure.Persistence.Migrations
                     b.HasOne("LanguagePlatform.Domain.Reading.ReadingSession", null)
                         .WithMany()
                         .HasForeignKey("ReadingSessionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("LanguagePlatform.Domain.Reading.ReadingLineAttempt", b =>
+                {
+                    b.HasOne("LanguagePlatform.Domain.Reading.ReadingTextSegment", null)
+                        .WithMany()
+                        .HasForeignKey("SegmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("LanguagePlatform.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

@@ -60,7 +60,10 @@ public sealed class ReadingPdfService(LanguagePlatformDbContext db, IPdfTextExtr
             where source.UploadedBy == owner
             select new { source.Id, source.ExtractedPagesJson, source.ReviewedAtUtc, version.Version }).SingleOrDefaultAsync(ct);
         return row is null ? null : new ReadingPdfDraftDto(row.Id, row.Version, row.ReviewedAtUtc != null,
-            DeserializePages(row.ExtractedPagesJson!));
+            DeserializePages(row.ExtractedPagesJson!))
+        {
+            Lines = await ReviewedLineMetadata(versionId).ToListAsync(ct)
+        };
     }
 
     public async Task<ReadingPdfDraftDto> ReviewAsync(Guid owner, Guid versionId, ReviewReadingPdf request, CancellationToken ct)
@@ -79,7 +82,7 @@ public sealed class ReadingPdfService(LanguagePlatformDbContext db, IPdfTextExtr
             var lines = page.Lines;
             Guard.Against(!allowedPages.Contains(page.Page) || lines is not { Count: >= 1 and <= 150 }
                 || lines.Any(line => string.IsNullOrWhiteSpace(line) || line.Length > 2000 ||
-                    line.Contains('\0') || line.Contains('\r') || line.Contains('\n')) ||
+                    line.Contains('\0') || line.Contains('\r') || line.Contains('\n') || !ArabicReadingText.ContainsArabic(line)) ||
                 lines.Sum(line => line.Length + 1) > 64000, "Provide valid single-line Arabic segments for an existing PDF page.");
             var passage = new ReadingPassage
             {
@@ -101,7 +104,29 @@ public sealed class ReadingPdfService(LanguagePlatformDbContext db, IPdfTextExtr
         source.Approve(clock.GetUtcNow().UtcDateTime);
         version.RecordReadingMaterialChange();
         await db.SaveChangesAsync(ct);
-        return new ReadingPdfDraftDto(source.Id, version.Version, true, extracted);
+        return new ReadingPdfDraftDto(source.Id, version.Version, true, extracted)
+        {
+            Lines = await ReviewedLineMetadata(versionId).ToListAsync(ct)
+        };
+    }
+
+    public async Task<ReadingPdfDraftDto> SetReferenceAudioAsync(Guid owner, Guid versionId, Guid lineId, uint revision,
+        Stream stream, CancellationToken ct)
+    {
+        var source = await Sources(versionId).Where(x => x.UploadedBy == owner && x.ReviewedAtUtc != null)
+            .Select(x => new { x.Id, x.ExtractedPagesJson }).SingleOrDefaultAsync(ct) ?? throw new ResourceNotFoundException();
+        var version = await FindDraftAsync(versionId, revision, ct);
+        var line = await (from passage in db.Set<ReadingPassage>()
+            join segment in db.Set<ReadingTextSegment>() on passage.Id equals segment.ReadingPassageId
+            where passage.ReadingMaterialId == source.Id && passage.PageNumber != null && segment.Id == lineId
+            select segment).SingleOrDefaultAsync(ct) ?? throw new ResourceNotFoundException();
+        line.SetReferenceAudio(await ReadingWave.ReadAsync(stream, ct));
+        version.RecordReadingMaterialChange();
+        await db.SaveChangesAsync(ct);
+        return new ReadingPdfDraftDto(source.Id, version.Version, true, DeserializePages(source.ExtractedPagesJson!))
+        {
+            Lines = await ReviewedLineMetadata(versionId).ToListAsync(ct)
+        };
     }
 
     public Task<byte[]?> GetOwnerPdfAsync(Guid owner, Guid versionId, CancellationToken ct) =>
@@ -111,12 +136,8 @@ public sealed class ReadingPdfService(LanguagePlatformDbContext db, IPdfTextExtr
     {
         var versionId = await ReadableVersionAsync(user, courseId, lessonId, ct);
         if (versionId is null) return null;
-        var lines = await (from source in Sources(versionId.Value)
-            join passage in db.Set<ReadingPassage>() on source.Id equals passage.ReadingMaterialId
-            join segment in db.Set<ReadingTextSegment>() on passage.Id equals segment.ReadingPassageId
-            where source.ReviewedAtUtc != null && passage.PageNumber != null
-            orderby passage.Sequence, segment.Sequence
-            select new ApprovedReadingLineDto(segment.Id, passage.PageNumber!.Value, segment.Sequence, segment.Text)).ToListAsync(ct);
+        var lines = await ReviewedLines(versionId.Value)
+            .Select(x => new ApprovedReadingLineDto(x.Segment.Id, x.Page, x.Segment.Sequence, x.Segment.Text)).ToListAsync(ct);
         return new ApprovedReadingDto(lines, lines.Count > 0);
     }
 
@@ -145,7 +166,25 @@ public sealed class ReadingPdfService(LanguagePlatformDbContext db, IPdfTextExtr
     private IQueryable<ReadingMaterial> Sources(Guid versionId) =>
         db.Set<ReadingMaterial>().Where(x => x.LessonVersionId == versionId && x.OriginalPdf != null);
 
-    private async Task<Guid?> ReadableVersionAsync(Guid user, Guid courseId, Guid lessonId, CancellationToken ct)
+    private IQueryable<ReviewedPdfLineDto> ReviewedLineMetadata(Guid versionId) =>
+        ReviewedLines(versionId).Select(x => new ReviewedPdfLineDto(x.Segment.Id, x.Page,
+            x.Segment.Sequence, x.Segment.Text, x.Segment.ReferenceAudio != null));
+
+    internal IQueryable<ReviewedPdfLine> ReviewedLines(Guid versionId) =>
+        from source in Sources(versionId).AsNoTracking()
+        join passage in db.Set<ReadingPassage>() on source.Id equals passage.ReadingMaterialId
+        join segment in db.Set<ReadingTextSegment>() on passage.Id equals segment.ReadingPassageId
+        where source.ReviewedAtUtc != null && passage.PageNumber != null
+        orderby passage.Sequence, segment.Sequence
+        select new ReviewedPdfLine { Segment = segment, Page = passage.PageNumber!.Value };
+
+    internal sealed class ReviewedPdfLine
+    {
+        public required ReadingTextSegment Segment { get; init; }
+        public required int Page { get; init; }
+    }
+
+    internal async Task<Guid?> ReadableVersionAsync(Guid user, Guid courseId, Guid lessonId, CancellationToken ct)
     {
         var progress = await learning.GetCurriculumProgressAsync(user, courseId, lessonId, ct);
         return progress?.Stages.Any(x => x.Kind == "reading" && x.Status is "available" or "completed") == true

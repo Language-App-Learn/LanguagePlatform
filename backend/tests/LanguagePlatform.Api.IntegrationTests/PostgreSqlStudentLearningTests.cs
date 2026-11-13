@@ -178,10 +178,20 @@ public sealed class PostgreSqlStudentLearningTests
     {
         await new LegacyContentFixture(db).SeedAsync(CancellationToken.None);
         var scanner = new TestPdfScanner();
+        var recognizer = new TestReadingRecognizer();
         await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             builder.UseEnvironment("Testing").ConfigureAppConfiguration((_, config) =>
-                config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:LanguagePlatform"] = connection }))
-                .ConfigureServices(services => services.AddSingleton<IPdfMalwareScanner>(scanner)));
+                config.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["ConnectionStrings:LanguagePlatform"] = connection,
+                    ["ReadingSpeech:Endpoint"] = "http://127.0.0.1:8080/internal/transcribe",
+                    ["ReadingSpeech:Token"] = new string('T', 32),
+                    ["ReadingSpeech:AutomaticProgressionEnabled"] = "true",
+                    ["ReadingSpeech:MinimumAverageLogProbability"] = "-0.5",
+                    ["ReadingSpeech:MaximumNoSpeechProbability"] = "0.3"
+                }))
+                .ConfigureServices(services => services.AddSingleton<IPdfMalwareScanner>(scanner)
+                    .AddSingleton<IReadingSpeechRecognizer>(recognizer)));
         using var student = factory.CreateClient();
         using var author = factory.CreateClient();
         using var publisher = factory.CreateClient();
@@ -274,6 +284,7 @@ public sealed class PostgreSqlStudentLearningTests
         var page = pdf.AddPage(PageSize.A4);
         var font = pdf.AddStandard14Font(Standard14Font.Helvetica);
         page.AddText("Reading draft", 12, new PdfPoint(25, 700), font);
+        pdf.AddPage(PageSize.A4).AddText("Second page", 12, new PdfPoint(25, 700), font);
         var original = pdf.Build();
         scanner.Unavailable = true;
         using var unavailable = await UploadPdfAsync(original);
@@ -292,17 +303,35 @@ public sealed class PostgreSqlStudentLearningTests
         using var uploaded = await UploadPdfAsync(original);
         uploaded.EnsureSuccessStatusCode();
         var pdfDraft = (await uploaded.Content.ReadFromJsonAsync<ReadingPdfDraftDto>())!;
-        Assert.Contains("Reading draft", Assert.Single(pdfDraft.Pages).Text, StringComparison.Ordinal);
+        Assert.Contains("Reading draft", pdfDraft.Pages[0].Text, StringComparison.Ordinal);
+        Assert.Empty(pdfDraft.Lines);
         using var stolenPdf = await otherAuthor.GetAsync(pdfRoute + "/original");
         Assert.Equal(HttpStatusCode.NotFound, stolenPdf.StatusCode);
         using var prematureReview = await author.PostAsJsonAsync($"/api/v1/admin/five-stage/versions/{first.VersionId}/review",
             new ReviewCurriculumVersion(pdfDraft.Revision));
         Assert.Equal(HttpStatusCode.BadRequest, prematureReview.StatusCode);
         using var approved = await author.PutAsJsonAsync(pdfRoute + "/review",
-            new ReviewReadingPdf(pdfDraft.Revision, [new(1, [greeting])]));
+            new ReviewReadingPdf(pdfDraft.Revision, [new(2, [greeting]), new(1, [greeting, greeting])]));
         approved.EnsureSuccessStatusCode();
         var approvedPdf = (await approved.Content.ReadFromJsonAsync<ReadingPdfDraftDto>())!;
-        await PublishAsync(first with { Revision = approvedPdf.Revision });
+        Assert.Equal([(1, 1), (1, 2), (2, 1)], approvedPdf.Lines.Select(x => (x.Page, x.Order)));
+        var audioRoute = pdfRoute + $"/lines/{approvedPdf.Lines[0].Id}/reference-audio?expectedVersion={approvedPdf.Revision}";
+        using var foreignAudio = await SendWaveAsync(otherAuthor, HttpMethod.Put, audioRoute);
+        Assert.Equal(HttpStatusCode.NotFound, foreignAudio.StatusCode);
+        using var learnerUpload = await SendWaveAsync(student, HttpMethod.Put, audioRoute);
+        Assert.Equal(HttpStatusCode.Forbidden, learnerUpload.StatusCode);
+        using var invalidAudio = await SendWaveAsync(author, HttpMethod.Put, audioRoute, [1, 2]);
+        Assert.Equal(HttpStatusCode.BadRequest, invalidAudio.StatusCode);
+        using var audioUpload = await SendWaveAsync(author, HttpMethod.Put, audioRoute);
+        audioUpload.EnsureSuccessStatusCode();
+        var attached = (await audioUpload.Content.ReadFromJsonAsync<ReadingPdfDraftDto>())!;
+        Assert.True(attached.Lines[0].HasReferenceAudio);
+        using var staleAudio = await SendWaveAsync(author, HttpMethod.Put, audioRoute);
+        Assert.Equal(HttpStatusCode.Conflict, staleAudio.StatusCode);
+        await PublishAsync(first with { Revision = attached.Revision });
+        using var lockedAudio = await SendWaveAsync(author, HttpMethod.Put,
+            pdfRoute + $"/lines/{approvedPdf.Lines[0].Id}/reference-audio?expectedVersion={attached.Revision}");
+        Assert.Equal(HttpStatusCode.Conflict, lockedAudio.StatusCode);
         await PublishAsync(second);
         using var invalidVersion = await author.PostAsJsonAsync(slotsUrl + "/3/versions", request with
         {
@@ -338,7 +367,8 @@ public sealed class PostgreSqlStudentLearningTests
         Assert.Equal(original, await pdfDownload.Content.ReadAsByteArrayAsync());
         var material = (await student.GetFromJsonAsync<ApprovedReadingDto>(firstLesson + "/reading-material"))!;
         Assert.True(material.HasOriginalPdf);
-        Assert.Equal(greeting, Assert.Single(material.Lines).Text);
+        Assert.Equal(approvedPdf.Lines.Select(x => x.Id), material.Lines.Select(x => x.Id));
+        Assert.All(material.Lines, line => Assert.Equal(greeting, line.Text));
         var lessonPayload = await student.GetStringAsync($"/api/v1/courses/{curriculum.CourseId}/lessons/{first.LessonId}");
         Assert.DoesNotContain("private-listening-transcript", lessonPayload, StringComparison.Ordinal);
         using var locked = await student.PutAsync(secondLesson + "/start", null);
@@ -353,6 +383,80 @@ public sealed class PostgreSqlStudentLearningTests
         Assert.Null(initial.FinalScore);
         var readingUrl = Attempts("reading");
         var translationUrl = Attempts("translation");
+        var readingProgress = firstLesson + "/reading-progress";
+        var progress = (await student.GetFromJsonAsync<InteractiveReadingProgressDto>(readingProgress))!;
+        var firstLine = Assert.Single(progress.AvailableLines);
+        var secondLine = material.Lines[1];
+        Assert.True(progress.AutomaticProgressionEnabled);
+        Assert.Equal(3, progress.TotalLines);
+        Assert.Equal(firstLine.Id, progress.CurrentLineId);
+        Assert.False(progress.Completed);
+        var reference = readingProgress + $"/lines/{firstLine.Id}/reference-audio";
+        using var inaccessibleAudio = await otherAuthor.GetAsync(reference);
+        Assert.Equal(HttpStatusCode.NotFound, inaccessibleAudio.StatusCode);
+        using var referenceAudio = await student.GetAsync(reference);
+        referenceAudio.EnsureSuccessStatusCode();
+        Assert.True(referenceAudio.Headers.CacheControl!.Private);
+        Assert.True(referenceAudio.Headers.CacheControl.NoStore);
+        Assert.Equal(Wave(), await referenceAudio.Content.ReadAsByteArrayAsync());
+        using var blockedQuiz = await student.PostAsJsonAsync(readingUrl, new StartObjectiveAttempt("reading-too-early"));
+        Assert.Equal(HttpStatusCode.Conflict, blockedQuiz.StatusCode);
+        using var skip = await SubmitWaveAsync(secondLine.Id, Guid.NewGuid());
+        Assert.Equal(HttpStatusCode.Conflict, skip.StatusCode);
+        recognizer.Result = new(null, null, null, false);
+        Assert.Equal("NO_SPEECH", (await EvaluateAsync(firstLine.Id)).Reason);
+        recognizer.Result = null;
+        Assert.Equal("TECHNICAL_ERROR", (await EvaluateAsync(firstLine.Id)).Status);
+        recognizer.Result = new(greeting, -1.0, 0.1, true);
+        Assert.Equal("LOW_CONFIDENCE", (await EvaluateAsync(firstLine.Id)).Reason);
+        recognizer.Result = new("السلام", -0.2, 0.1, true);
+        Assert.Equal("RETRY_REQUIRED", (await EvaluateAsync(firstLine.Id)).Status);
+        Assert.Equal(firstLine.Id, (await student.GetFromJsonAsync<InteractiveReadingProgressDto>(readingProgress))!.CurrentLineId);
+
+        recognizer.Result = new("السلام عليكم", -0.2, 0.1, true);
+        var approvalKey = Guid.NewGuid();
+        recognizer.Started = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        recognizer.Resume = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        var originalSubmission = SubmitWaveAsync(firstLine.Id, approvalKey);
+        try
+        {
+            await recognizer.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            using var replayPending = await SubmitWaveAsync(firstLine.Id, approvalKey);
+            Assert.Equal(HttpStatusCode.Accepted, replayPending.StatusCode);
+            var pending = (await replayPending.Content.ReadFromJsonAsync<ReadingLineEvaluationDto>())!;
+            Assert.Equal("PENDING", pending.Status);
+            Assert.Equal(pending, await student.GetFromJsonAsync<ReadingLineEvaluationDto>(replayPending.Headers.Location));
+            using var unauthorizedResult = await otherAuthor.GetAsync(replayPending.Headers.Location);
+            Assert.Equal(HttpStatusCode.NotFound, unauthorizedResult.StatusCode);
+            using var concurrent = await SubmitWaveAsync(firstLine.Id, Guid.NewGuid());
+            Assert.Equal(HttpStatusCode.Conflict, concurrent.StatusCode);
+        }
+        finally
+        {
+            recognizer.Resume.TrySetResult();
+        }
+        using var firstApproval = await originalSubmission;
+        firstApproval.EnsureSuccessStatusCode();
+        var result = (await firstApproval.Content.ReadFromJsonAsync<ReadingLineEvaluationDto>())!;
+        Assert.Equal("APPROVED", result.Status);
+        var calls = recognizer.Calls;
+        using var replay = await SubmitWaveAsync(firstLine.Id, approvalKey);
+        Assert.Equal(result, await replay.Content.ReadFromJsonAsync<ReadingLineEvaluationDto>());
+        Assert.Equal(calls, recognizer.Calls);
+        using var reusedKey = await SubmitWaveAsync(firstLine.Id, approvalKey, Wave(2));
+        Assert.Equal(HttpStatusCode.Conflict, reusedKey.StatusCode);
+        var next = (await student.GetFromJsonAsync<InteractiveReadingProgressDto>(readingProgress))!;
+        Assert.Equal(secondLine.Id, next.CurrentLineId);
+        Assert.Equal([firstLine.Id, secondLine.Id], next.AvailableLines.Select(x => x.Id));
+        Assert.True(next.AvailableLines[0].Approved);
+        using var previousAudio = await student.GetAsync(reference);
+        previousAudio.EnsureSuccessStatusCode();
+        Assert.Equal("APPROVED", (await EvaluateAsync(secondLine.Id)).Status);
+        Assert.Equal("APPROVED", (await EvaluateAsync(material.Lines[2].Id)).Status);
+        var allRead = (await student.GetFromJsonAsync<InteractiveReadingProgressDto>(readingProgress))!;
+        Assert.True(allRead.Completed);
+        Assert.Null(allRead.CurrentLineId);
+        Assert.All(allRead.AvailableLines, line => Assert.True(line.Approved));
         using var lockedStage = await student.PostAsJsonAsync(translationUrl, new StartObjectiveAttempt("translation-too-early"));
         Assert.Equal(HttpStatusCode.Conflict, lockedStage.StatusCode);
         using var quiz = await student.PostAsJsonAsync(readingUrl, new StartObjectiveAttempt("curriculum-reading"));
@@ -420,6 +524,10 @@ public sealed class PostgreSqlStudentLearningTests
         Assert.Equal(second.LessonId, complete.NextLessonId);
         using var unlocked = await student.PutAsync(secondLesson + "/start", null);
         unlocked.EnsureSuccessStatusCode();
+        var emptyReading = (await student.GetFromJsonAsync<InteractiveReadingProgressDto>(secondLesson + "/reading-progress"))!;
+        Assert.Empty(emptyReading.AvailableLines);
+        Assert.Null(emptyReading.CurrentLineId);
+        Assert.False(emptyReading.Completed);
         using var changedVersion = await author.PostAsJsonAsync(slotsUrl + "/1/versions", request with { Title = "Selamlaşma 2" });
         changedVersion.EnsureSuccessStatusCode();
         var replacement = (await changedVersion.Content.ReadFromJsonAsync<CurriculumDraftDto>())!;
@@ -437,6 +545,8 @@ public sealed class PostgreSqlStudentLearningTests
         Assert.Equal(HttpStatusCode.NoContent, withdrawRetry.StatusCode);
         using var afterWithdrawal = await student.GetAsync(stateUrl);
         Assert.Equal(HttpStatusCode.NotFound, afterWithdrawal.StatusCode);
+        using var withdrawnAudio = await student.GetAsync(reference);
+        Assert.Equal(HttpStatusCode.NotFound, withdrawnAudio.StatusCode);
         Assert.Equal(1, await db.Set<AuditLog>().CountAsync(x => x.EntityId == replacement.VersionId && x.Action == "content.withdraw"));
 
         async Task<HttpResponseMessage> UploadPdfAsync(byte[] data)
@@ -444,6 +554,16 @@ public sealed class PostgreSqlStudentLearningTests
             using var body = new ByteArrayContent(data);
             body.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
             return await author.PostAsync(uploadUrl, body);
+        }
+
+        Task<HttpResponseMessage> SubmitWaveAsync(Guid lineId, Guid key, byte[]? audio = null) =>
+            SendWaveAsync(student, HttpMethod.Post, readingProgress + $"/lines/{lineId}/evaluations", audio, key);
+
+        async Task<ReadingLineEvaluationDto> EvaluateAsync(Guid lineId)
+        {
+            using var response = await SubmitWaveAsync(lineId, Guid.NewGuid());
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<ReadingLineEvaluationDto>())!;
         }
 
         async Task PublishAsync(CurriculumDraftDto version, HttpStatusCode expected = HttpStatusCode.NoContent)
@@ -473,6 +593,52 @@ public sealed class PostgreSqlStudentLearningTests
             return (await response.Content.ReadFromJsonAsync<ObjectiveResultDto>())!.Percentage;
         }
     });
+
+    private static async Task<HttpResponseMessage> SendWaveAsync(HttpClient client, HttpMethod method, string url,
+        byte[]? audio = null, Guid? key = null)
+    {
+        using var request = new HttpRequestMessage(method, url) { Content = new ByteArrayContent(audio ?? Wave()) };
+        request.Content.Headers.ContentType = new MediaTypeHeaderValue("audio/wav");
+        if (key is { } value) request.Headers.Add("Idempotency-Key", value.ToString());
+        return await client.SendAsync(request);
+    }
+
+    private static byte[] Wave(short sample = 1)
+    {
+        using var stream = new MemoryStream();
+        using var writer = new BinaryWriter(stream);
+        writer.Write("RIFF"u8);
+        writer.Write(8036);
+        writer.Write("WAVEfmt "u8);
+        writer.Write(16);
+        writer.Write((short)1);
+        writer.Write((short)1);
+        writer.Write(16000);
+        writer.Write(32000);
+        writer.Write((short)2);
+        writer.Write((short)16);
+        writer.Write("data"u8);
+        writer.Write(8000);
+        for (var i = 0; i < 4000; i++) writer.Write(sample);
+        return stream.ToArray();
+    }
+
+    private sealed class TestReadingRecognizer : IReadingSpeechRecognizer
+    {
+        private int calls;
+        public int Calls => Volatile.Read(ref calls);
+        public ReadingRecognition? Result { get; set; }
+        public TaskCompletionSource? Started { get; set; }
+        public TaskCompletionSource? Resume { get; set; }
+
+        public async Task<ReadingRecognition?> RecognizeAsync(byte[] audio, CancellationToken ct)
+        {
+            Interlocked.Increment(ref calls);
+            Started?.TrySetResult();
+            if (Resume is { } resume) await resume.Task.WaitAsync(ct);
+            return Result;
+        }
+    }
 
     private sealed class TestPdfScanner : IPdfMalwareScanner
     {
